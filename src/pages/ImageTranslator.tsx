@@ -38,7 +38,12 @@ const ImageTranslator: FC = () => {
   const isMobile = platform === 'mobile';
   const [file, setFile] = useState<GetFileReturn>();
   const sourceListWidth = 400;
-  const sourceListHeightMobile = 200;
+  const sourceListHeightMobileDefault = 200;
+  const sourceListHeightMobileMin = 100;
+  const sourceListHeightMobileMax = 500;
+  const [sourceListHeightMobile, setSourceListHeightMobile] = useState(
+    sourceListHeightMobileDefault,
+  );
   const [settingModalVisible, setSettingModalVisible] = useState(false);
   const currentProject = useSelector(
     (state: AppState) => state.project.currentProject,
@@ -66,6 +71,14 @@ const ImageTranslator: FC = () => {
     sourceListWidth,
     sourceListHeightMobile,
   ]);
+
+  const handleSourceListHeightChange = (newHeight: number) => {
+    const clampedHeight = Math.min(
+      Math.max(newHeight, sourceListHeightMobileMin),
+      sourceListHeightMobileMax,
+    );
+    setSourceListHeightMobile(clampedHeight);
+  };
 
   // 获取图片信息
   useEffect(() => {
@@ -169,6 +182,7 @@ const ImageTranslator: FC = () => {
         sources={sources}
         targetID={targetID}
         loading={!currentProject || sourcesLoading}
+        onHeightChange={isMobile ? handleSourceListHeightChange : undefined}
       />
       <Modal
         width={700}

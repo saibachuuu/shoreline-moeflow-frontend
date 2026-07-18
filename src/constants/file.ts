@@ -7,22 +7,6 @@ export const FILE_TYPE = {
 };
 export type FileTypes = (typeof PARSE_STATUS)[keyof typeof PARSE_STATUS];
 
-// 文件安全检测状态
-export const FILE_SAFE_STATUS = {
-  // 第一步
-  NEED_MACHINE_CHECK: 0 as 0, // 需要机器检测
-  QUEUING: 1 as 1, // 机器检测排队中
-  WAIT_RESULT: 2 as 2, // 机器检测等待结果
-  // 第二步（根据机器检测结果）
-  NEED_HUMAN_CHECK: 3 as 3, // 需要人工检查
-  // 第三步
-  SAFE: 4 as 4, // 已检测安全
-  BLOCK: 5 as 5, // 文件被删除屏蔽，需要重新上传
-};
-export type FileSafeStatuses =
-  (typeof FILE_SAFE_STATUS)[keyof typeof FILE_SAFE_STATUS];
-
-// 文件处理状态
 export const PARSE_STATUS = {
   NOT_START: 0 as 0, // 未开始
   QUEUING: 1 as 1, // 排队中

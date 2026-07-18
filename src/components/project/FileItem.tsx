@@ -8,7 +8,6 @@ import { TranslationProgress } from '@/components/shared/TranslationProgress';
 import { ImageOCRProgress } from '@/components/unused/ImageOCRProgress';
 import {
   FILE_NOT_EXIST_REASON,
-  FILE_SAFE_STATUS,
   IMAGE_COVER,
 } from '@/constants';
 import { FC, File } from '@/interfaces';
@@ -190,10 +189,6 @@ export const FileItem: FC<FileItemProps> = ({
         {file.coverUrl === 'generating' ? (
           <div className="FileItem__ImageTip">
             {formatMessage({ id: 'file.generating' })}
-          </div>
-        ) : file.safeStatus === FILE_SAFE_STATUS.BLOCK ? (
-          <div className="FileItem__ImageTip">
-            {formatMessage({ id: 'file.blockTip' })}
           </div>
         ) : file.fileNotExistReason === FILE_NOT_EXIST_REASON.NOT_UPLOAD ? (
           <div className="FileItem__ImageTip">

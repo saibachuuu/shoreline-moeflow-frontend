@@ -38,6 +38,7 @@ export interface APIProject {
   importFromLabelplusPercent: number;
   importFromLabelplusErrorType: IMPORT_FROM_LABELPLUS_ERROR_TYPE;
   importFromLabelplusErrorTypeName: string;
+  workers?: any;
 }
 
 /** 获取团队的项目列表的请求数据 */
@@ -249,6 +250,43 @@ const startProjectOCR = ({
   });
 };
 
+/** 解析翻译数据并保存工作人员 */
+const parseProjectWorkers = ({
+  id,
+  configs,
+}: {
+  id: string;
+  configs?: AxiosRequestConfig;
+}) => {
+  return request({
+    method: 'POST',
+    url: `/v1/projects/${id}/workers/parse`,
+    ...configs,
+  });
+};
+
+/** 更新工作人员的请求数据 */
+interface UpdateWorkersData {
+  workers: Record<string, string[]>;
+}
+/** 更新工作人员列表 */
+const updateProjectWorkers = ({
+  id,
+  data,
+  configs,
+}: {
+  id: string;
+  data: UpdateWorkersData;
+  configs?: AxiosRequestConfig;
+}) => {
+  return request({
+    method: 'PUT',
+    url: `/v1/projects/${id}/workers`,
+    data: toUnderScoreCase(data),
+    ...configs,
+  });
+};
+
 export default {
   getUserProjects,
   getTeamProjects,
@@ -259,4 +297,6 @@ export default {
   startProjectOCR,
   importProject,
   uploadFile,
+  parseProjectWorkers,
+  updateProjectWorkers,
 };

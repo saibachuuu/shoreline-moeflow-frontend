@@ -14,7 +14,6 @@ import { FC } from '@/interfaces';
 import { Layout, Menu } from 'antd';
 import { useIntl } from 'react-intl';
 import { AdminUserList } from '@/components/admin/AdminUserList';
-import { AdminImageSafeCheck } from '@/components/admin/AdminImageSafeCheck';
 import { AdminSiteSetting } from '@/components/admin/AdminSiteSetting';
 import { AdminVCodeList } from '@/components/admin/AdminVCodeList';
 
@@ -75,14 +74,6 @@ const Admin: FC<AdminProps> = () => {
               {formatMessage({ id: 'admin.users' })}
             </Menu.Item>
             <Menu.Item
-              key="image-moderation"
-              onClick={() => {
-                history.push(`${url}/image-moderation`);
-              }}
-            >
-              {formatMessage({ id: 'admin.imageModeration' })}
-            </Menu.Item>
-            <Menu.Item
               key="site-v-code"
               onClick={() => {
                 history.push(`${url}/site-v-code`);
@@ -99,9 +90,6 @@ const Admin: FC<AdminProps> = () => {
             </Route>
             <Route path={`${path}/users`}>
               <AdminUserList />
-            </Route>
-            <Route path={`${path}/image-moderation`}>
-              <AdminImageSafeCheck />
             </Route>
             <Route path={`${path}/site-setting`}>
               <AdminSiteSetting />

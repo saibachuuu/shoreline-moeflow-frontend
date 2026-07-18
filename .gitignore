@@ -30,3 +30,5 @@ yarn-error.log*
 stats.html
 
 /public/moeflow-runtime-config.json
+
+api-thumbnail-regenerate.md

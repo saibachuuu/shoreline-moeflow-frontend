@@ -1,6 +1,6 @@
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { css } from '@emotion/core';
-import { Modal, Spin } from 'antd';
+import { Modal, message, Spin } from 'antd';
 import Bowser from 'bowser';
 import { debounce } from 'lodash-es';
 import { useEffect, useRef, useState } from 'react';
@@ -21,6 +21,7 @@ import {
 } from '@/components/shared/Movable';
 import { SOURCE_POSITION_TYPE } from '@/constants/source';
 import { FC, File, Source } from '@/interfaces';
+import { api } from '@/apis';
 import { AppState } from '@/store';
 import { createSourceSaga, focusSource } from '@/store/source/slice';
 import style from '@/style';
@@ -124,6 +125,8 @@ export const ImageViewer: FC<ImageViewerProps> = ({
   const [imageMaxScale, setImageMaxScale] = useState(5);
   const [imageScaleStep, setImageScaleStep] = useState(0.15);
   const [labelsVisible, setLabelsVisible] = useState(true); // 用于在缩放时隐藏子元素，防止渲染卡顿
+  const [useOriginalImage, setUseOriginalImage] = useState(false);
+  const [imageError, setImageError] = useState<{ url: string; status?: number } | null>(null);
 
   // 图片 ref
   const imageRef = useRef() as MovableItemUseRef;
@@ -445,12 +448,63 @@ export const ImageViewer: FC<ImageViewerProps> = ({
     imageSize.height,
   ]);
 
+  // 当 file 变化时打印 File 内容到控制台
+  useEffect(() => {
+    console.log('File Information:', file);
+  }, [file]);
+
   // 图片
-  const backgroundImage = file.url ? (
-    <MovableAreaImageBackground
-      onLoad={handleImageLoad}
-      src={file.url}
-    ></MovableAreaImageBackground>
+  const currentImageUrl = useOriginalImage ? file.url : file.resampleUrl;
+  
+  const handleImageError = () => {
+    setImageLoading(false);
+    setImageError({ url: currentImageUrl || '' });
+    setImageSize({ width: 800, height: 600 });
+    console.error('Failed to load image:', currentImageUrl);
+  };
+
+  const handleRetryLoadImage = () => {
+    setImageLoading(true);
+    setImageError(null);
+  };
+
+  const backgroundImage = currentImageUrl ? (
+    imageError ? (
+      <div
+        css={css`
+          width: 100%;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          background-color: #f5f5f5;
+          color: #666;
+          padding: 20px;
+          text-align: center;
+        `}
+      >
+        <Icon
+          icon="exclamation-triangle"
+          style={{ fontSize: '48px', color: '#ff9800', marginBottom: '16px' }}
+        />
+        <p style={{ marginBottom: '8px', fontSize: '14px', fontWeight: 'bold' }}>
+          {formatMessage({ id: 'imageTranslator.imageLoadFailed' })}
+        </p>
+        <p style={{ marginBottom: '4px', fontSize: '12px', color: '#999' }}>
+          {formatMessage({ id: 'imageTranslator.imageUrl' })}: {imageError.url}
+        </p>
+        <p style={{ fontSize: '12px', color: '#999' }}>
+          {formatMessage({ id: 'imageTranslator.imageLoadFailedTip' })}
+        </p>
+      </div>
+    ) : (
+      <MovableAreaImageBackground
+        onLoad={handleImageLoad}
+        onError={handleImageError}
+        src={currentImageUrl}
+      ></MovableAreaImageBackground>
+    )
   ) : (
     <div></div>
   );
@@ -464,6 +518,28 @@ export const ImageViewer: FC<ImageViewerProps> = ({
         routes.dashboard.project.show.replace(':projectId', projectId),
       );
     }
+  };
+
+  const handleRegenerateThumbnail = (fileId: string) => {
+    Modal.confirm({
+      title: formatMessage({ id: 'imageTranslator.regenerateThumbnail.title' }),
+      content: formatMessage({ id: 'imageTranslator.regenerateThumbnail.content' }),
+      onOk: () => {
+        api.file
+          .regenerateThumbnail({
+            fileID: fileId,
+          })
+          .then((result) => {
+            message.success(result.data.message);
+          })
+          .catch((error) => {
+            error.default();
+          });
+      },
+      onCancel: () => {},
+      okText: formatMessage({ id: 'form.ok' }),
+      cancelText: formatMessage({ id: 'form.cancel' }),
+    });
   };
 
   // 标签
@@ -579,6 +655,10 @@ export const ImageViewer: FC<ImageViewerProps> = ({
               imageScaleStep={imageScaleStep}
               zoomImageByAreaWidth={zoomImageByAreaWidth}
               zoomImageByAreaHeight={zoomImageByAreaHeight}
+              showOriginalImage={useOriginalImage}
+              onShowOriginalImage={setUseOriginalImage}
+              fileId={file.id}
+              onRegenerateThumbnail={handleRegenerateThumbnail}
             />
           </MovableItem>
           <MovableItem
@@ -687,14 +767,14 @@ export const ImageViewer: FC<ImageViewerProps> = ({
 
       {file.prevImage && (
         <img
-          src={file.prevImage.url}
+          src={file.prevImage.resampleUrl}
           style={{ display: 'none' }}
           alt="prev img cache"
         />
       )}
       {file.nextImage && (
         <img
-          src={file.nextImage.url}
+          src={file.nextImage.resampleUrl}
           style={{ display: 'none' }}
           alt="next img cache"
         />

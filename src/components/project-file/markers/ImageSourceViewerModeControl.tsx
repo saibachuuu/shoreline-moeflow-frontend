@@ -36,6 +36,7 @@ export const ImageSourceViewerModeControl: FC<
         justify-content: space-evenly;
         align-items: center;
         border-bottom: 1px solid ${style.borderColorBase};
+        background: #fff;
 
         .ImageSourceViewerModeControl__Button {
           text-align: center;

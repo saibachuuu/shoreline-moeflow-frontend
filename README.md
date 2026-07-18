@@ -1,94 +1,206 @@
-# 萌翻[MoeFlow]前端项目
-[![GitHubStars](https://img.shields.io/github/stars/moeflow-com/moeflow-frontend)]()
-[![GitHubForks](https://img.shields.io/github/forks/moeflow-com/moeflow-frontend)]()
-[![Chinese README](https://img.shields.io/badge/README-中文-red)](README.md)
-[![English README](https://img.shields.io/badge/README-English-blue)](ENG_README.md)
+# Moeflow Frontend 更新包
 
-**由于部分API代码调整，请更新萌翻后端到对应 Version.1.0.1 后继续使用。**
+## 📦 更新包信息
 
-## 部署方法
+- **版本**: v1.1.7-update-1
+- **创建时间**: 2026-03-11
+- **适用版本**: Moeflow Frontend 1.1.7 原版
 
-非开发者建议参考 [moeflow-deploy](https://github.com/moeflow-com/moeflow-deploy) ，用docker和docker-compose部署。
+## ✨ 新增功能
 
-## 技术栈
+### 项目工作人员管理功能
 
-- Core
-  - react
-  - react-router // 路由
-  - emotion // CSS in JS
-  - react-intl // i18n
-  - redux
-    - react-redux
-    - redux-saga // 副作用处理
-  - immer.js // 不可变对象处理
-- UI
-  - antd
-  - antd-mobile
-  - classnames
-  - fontawesome
-- Other
-  - pepjs // Pointer 事件垫片
-  - bowser // 浏览器识别
-  - why-did-you-render // 性能优化
-  - lodash // 工具库
-  - uuid
-  - fontmin // 字体剪切
+本更新包为项目管理系统添加了完整的工作人员管理功能，支持在项目列表页面直接查看和编辑项目团队成员配置。
 
-## 本地开发
+#### 主要功能
 
-1. 安装 Node.js 近期LTS版本，如v18 v20
-2. `npm install` 安装依赖项
-3. `npm start` 启动vite 开发服务器
-    - 开发服务器自带API反向代理。默认将 `localhost:5173/api/*` 的请求转发到 `localhost:5000/*` (本地moeflow-backend开发版地址)
-    - 上述配置可在 `vite.config.ts` 修改。比如不用本地的moeflow-backend，改用公网的服务器。
-4. `npm build` 发布前端代码，**请注意** 此时使用的后端地址配置为 `.env` 中的配置。
-    - 如果没有创建 `.env` 则为默认值 `/api`。
+1. **工作人员状态显示**
+   - 在项目卡片上显示翻译、校对、嵌字人员状态
+   - 状态图标：
+     - 🟢 绿色用户图标：该职位有人员
+     - 🔵 蓝色空心圆：该职位暂无人员
+     - 🟡 黄色问号：工作人员信息未知
 
-如果您要部署到 `Vercel` 之类的网站托管程序上，您可以直接将 `REACT_APP_BASE_URL` 相对应的后端接口地址配置到托管程序的环境变量中。
+2. **工作人员编辑**
+   - 支持 6 个职位：图源、扫图、修图、翻译、校对、嵌字
+   - 逗号分隔的多人输入
+   - 实时保存更新
 
-## 修改项目配置
+3. **数据同步**
+   - 自动从翻译数据解析工作人员信息
+   - 手动刷新功能
 
-如果您的译制组不是从 日语(ja) 翻译为 繁体中文(zh-TW) 您可以修改 `src/configs.tsx` 文件中的对应位置的配置（文件中有注释）。
-以下是常见的几个语言代码：
+## 📝 更新文件清单
 
-- `ja` 日语
-- `en` 英语
-- `ko` 朝鲜语（韩语）
-- `zh-CN` 简体中文
-- `zh-TW` 繁体中文
+### 修改的文件 (5 个)
 
-## 版本更新内容
+```
+src/
+├── apis/
+│   └── project.ts              # 新增工作人员管理 API
+├── components/
+│   ├── index.ts                # 导出新增组件
+│   ├── project-list/
+│   │   └── ProjectItem.tsx     # 项目卡片集成工作人员显示
+│   └── shared/
+│       ├── EditWorkers.tsx     # 工作人员编辑组件（新增）
+│       └── MemberStats.tsx     # 工作人员统计组件（新增）
+├── fontAwesome.ts              # 新增状态图标
+└── vite.config.mts             # 配置文件更新
+```
 
-### Version 1.0.0
+### 新增的文件 (2 个)
 
-萌翻前后端开源的首个版本
+- `src/components/shared/EditWorkers.tsx` - 工作人员编辑组件
+- `src/components/shared/MemberStats.tsx` - 工作人员统计组件
 
-### Version 1.0.1
+## 🚀 安装说明
 
-1. 处理一些数据处理和界面上的BUG
-2. 调整需要初始化的默认配置内容，减少后只需要修改环境变量 `REACT_APP_BASE_URL` 指向您部署的后端地址。
-3. 调整静态文件生成的目录结构，方便前后端联合部署。
-4. 调整“创建团队”、“创建项目”页面中部分项目提交的内容。**（请配合最新版本的后端，避免出现数据格式问题！）**
-5. 可配置网站标题等位置的内容，请从 `src/locales` 中查找对应词汇进行修改。
+### 方法一：直接覆盖（推荐）
 
-### Version 1.0.3
+1. 确认你的项目版本为 Moeflow Frontend 1.1.7 原版
+2. 将本更新包中的所有文件复制到项目根目录
+3. 覆盖提示的文件
 
-(旧构架的最后稳定版本。如果新版本中遇到问题，建议回退至此版本尝试。)
+**Windows PowerShell:**
+```powershell
+# 在项目根目录执行
+Copy-Item -Path update-package\* -Destination . -Recurse -Force
+```
 
-1. 支持设置和显示首页 HTML/CSS
-2. 同时构建linux-amd64和linux-aarch64镜像。此版本起可以部署到ARM机器。
+**Linux/Mac:**
+```bash
+# 在项目根目录执行
+cp -r update-package/* ./
+```
 
-### Version 1.1.0
+### 方法二：手动复制
 
-1. 抛弃create-react-app和webpack，改用vite构建。
+逐个复制以下文件到对应目录：
 
-### Version 1.1.1
+1. `src/apis/project.ts` → 覆盖原文件
+2. `src/components/index.ts` → 覆盖原文件
+3. `src/components/project-list/ProjectItem.tsx` → 覆盖原文件
+4. `src/components/shared/EditWorkers.tsx` → 新文件
+5. `src/components/shared/MemberStats.tsx` → 新文件
+6. `src/fontAwesome.ts` → 覆盖原文件
+7. `vite.config.mts` → 覆盖原文件
 
-- i18n: english locale
-- EXPERIMENTAL manga-image-translator based assisted translation
-- upgrade deps
-- minor fixes
+## ✅ 验证安装
 
-### Version NEXT
+安装完成后，检查以下内容：
 
-- [diff](https://github.com/moeflow-com/moeflow-frontend/compare/v1.1.1...main)
+1. **文件检查**
+   - 确认所有文件已正确复制
+   - 确认 `src/components/shared/` 目录下有 `EditWorkers.tsx` 和 `MemberStats.tsx`
+
+2. **功能检查**
+   - 启动项目：`npm run dev`
+   - 打开项目列表页面
+   - 查看项目卡片是否显示工作人员状态
+   - 点击铅笔图标测试编辑功能
+   - 点击刷新图标测试同步功能
+
+## 🔧 API 接口说明
+
+### 新增 API
+
+#### 1. 解析工作人员
+```typescript
+POST /v1/projects/{id}/workers/parse
+```
+从项目的翻译数据中自动解析工作人员信息
+
+#### 2. 更新工作人员
+```typescript
+PUT /v1/projects/{id}/workers
+```
+手动更新项目的工作人员配置
+
+**请求数据格式:**
+```json
+{
+  "workers": {
+    "翻译": ["张三", "李四"],
+    "校对": ["王五"],
+    "嵌字": ["赵六"]
+  }
+}
+```
+
+## 📊 组件使用说明
+
+### MemberStats 组件
+
+在项目卡片中显示工作人员状态：
+
+```tsx
+<MemberStats
+  workers={workers}
+  projectId={project.id}
+  onWorkersUpdate={setWorkers}
+/>
+```
+
+**属性说明:**
+- `workers`: 工作人员数据对象
+- `projectId`: 项目 ID
+- `onWorkersUpdate`: 更新回调函数
+
+### EditWorkers 组件
+
+工作人员编辑弹窗：
+
+```tsx
+<EditWorkers
+  workers={workers}
+  projectId={projectId}
+  onSave={handleSave}
+  onCancel={handleCancel}
+/>
+```
+
+**属性说明:**
+- `workers`: 工作人员数据对象
+- `projectId`: 项目 ID
+- `onSave`: 保存回调函数
+- `onCancel`: 取消回调函数
+
+## ⚠️ 注意事项
+
+1. **版本兼容性**: 本更新包仅适用于 Moeflow Frontend 1.1.7 原版
+2. **备份**: 安装前请备份原项目文件
+3. **依赖**: 确保已安装所有必需的依赖包
+4. **测试**: 建议在开发环境先测试后再部署到生产环境
+
+## 🐛 问题反馈
+
+如遇到问题，请提供以下信息：
+
+1. 项目版本
+2. 安装步骤
+3. 错误信息
+4. 复现步骤
+
+## 📄 更新日志
+
+### v1.1.7-update-1 (2026-03-11)
+
+**新增:**
+- 项目工作人员管理功能
+- 工作人员状态显示组件 (MemberStats)
+- 工作人员编辑组件 (EditWorkers)
+- 工作人员解析和更新 API
+- 状态图标支持（问号、空心圆）
+
+**修改:**
+- 项目 API 接口扩展 (project.ts)
+- 项目列表项组件集成工作人员显示 (ProjectItem.tsx)
+- 组件导出文件更新 (index.ts)
+- FontAwesome 图标库更新 (fontAwesome.ts)
+- Vite 配置文件更新 (vite.config.mts)
+
+---
+
+**更新包创建工具**: compare_projects.py
+**创建时间**: 2026-03-11 00:28

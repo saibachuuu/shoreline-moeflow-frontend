@@ -1,0 +1,260 @@
+import { css } from '@emotion/core';
+import classNames from 'classnames';
+import { useRef, useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
+import { useIntl } from 'react-intl';
+import { Icon, Tooltip, EditWorkers } from '@/components';
+import { FC } from '@/interfaces';
+import style from '@/style';
+import { clickEffect } from '@/utils/style';
+import projectApi from '@/apis/project';
+
+interface MemberStatsProps {
+  workers: any;
+  projectId?: string;
+  className?: string;
+  onWorkersUpdate?: (workers: any) => void;
+}
+
+export const MemberStats: FC<MemberStatsProps> = ({
+  workers,
+  projectId,
+  className,
+  onWorkersUpdate,
+}) => {
+  const { formatMessage } = useIntl();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const editButtonRef = useRef<HTMLSpanElement | null>(null);
+
+  const roles = [
+    { key: '翻译', label: '翻译' },
+    { key: '校对', label: '校对' },
+    { key: '嵌字', label: '嵌字' },
+  ];
+
+  const getRoleIcon = (role: string): { icon: any; color: string } => {
+    if (!workers || Array.isArray(workers) || !workers[role]?.length) {
+      return { icon: ['far', 'circle'], color: '#007bff' };
+    }
+    return { icon: 'user-circle', color: '#28a745' };
+  };
+
+  const getRoleTooltip = (role: { key: string; label: string }): string => {
+    if (!workers || Array.isArray(workers) || !workers[role.key]?.length) {
+      return `暂无${role.label}人员`;
+    }
+    return `${role.label}：${workers[role.key].join('、')}`;
+  };
+
+  const handleRefresh = async () => {
+    if (!projectId || isRefreshing) return;
+    setIsRefreshing(true);
+    try {
+      const result = await projectApi.parseProjectWorkers({ id: projectId });
+      const workers = (result.data as any)?.workers;
+      onWorkersUpdate?.(workers);
+    } catch (error) {
+      console.error('解析翻译数据失败:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  const getPopupPosition = useMemo(() => {
+    if (!editButtonRef.current) return { top: 'auto', bottom: 'auto', left: 'auto', right: 'auto' };
+    
+    const rect = editButtonRef.current.getBoundingClientRect();
+    const popupHeight = 320;
+    const popupWidth = 300;
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
+    const spaceBelow = viewportHeight - rect.bottom - 5;
+    const spaceAbove = rect.top - 5;
+    const spaceRight = viewportWidth - rect.right;
+    
+    const vertical = spaceBelow >= popupHeight
+      ? { top: `${rect.bottom + 5}px`, bottom: 'auto' }
+      : spaceAbove >= popupHeight
+      ? { top: 'auto', bottom: `${viewportHeight - rect.top + 5}px` }
+      : spaceBelow >= spaceAbove
+      ? { top: `${rect.bottom + 5}px`, bottom: 'auto' }
+      : { top: 'auto', bottom: `${viewportHeight - rect.top + 5}px` };
+    
+    const horizontal = spaceRight >= popupWidth
+      ? { left: `${rect.right}px`, right: 'auto' }
+      : rect.left >= popupWidth
+      ? { left: 'auto', right: `${viewportWidth - rect.left}px` }
+      : { left: '10px', right: 'auto' };
+    
+    return { ...vertical, ...horizontal };
+  }, [isEditModalOpen]);
+
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditCancel = () => {
+    setIsEditModalOpen(false);
+  };
+
+  const handleEditSave = async (newWorkers: Record<string, string[]>) => {
+    if (!projectId) return;
+    try {
+      await projectApi.updateProjectWorkers({
+        id: projectId,
+        data: { workers: newWorkers },
+      });
+      setIsEditModalOpen(false);
+      onWorkersUpdate?.(newWorkers);
+    } catch (error) {
+      console.error('更新工作人员失败:', error);
+    }
+  };
+
+  const handleClickOutside = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsEditModalOpen(false);
+  };
+
+  return (
+    <div
+      className={classNames('MemberStats', className)}
+      css={css`
+        display: flex;
+        flex-direction: column;
+        margin: 5px 0;
+        font-size: 12px;
+        color: ${style.textColorSecondary};
+        .MemberStats__Row {
+          display: flex;
+          align-items: center;
+          margin-bottom: 5px;
+          &:last-child {
+            margin-bottom: 0;
+          }
+        }
+        .MemberStats__StatusRow {
+          justify-content: flex-start;
+        }
+        .MemberStats__ButtonRow {
+          justify-content: flex-end;
+        }
+        .MemberStats__Item {
+          display: flex;
+          align-items: center;
+          margin-right: 5px;
+          &:last-child {
+            margin-right: 0;
+          }
+        }
+        .MemberStats__ItemLabel {
+          margin-right: 4px;
+        }
+        .MemberStats__ItemIcon {
+          margin-right: 4px;
+          font-size: 13px;
+        }
+        .MemberStats__Button {
+          flex: none;
+          border-radius: ${style.borderRadiusBase};
+          padding: 5px 9px;
+          margin-left: 5px;
+          ${clickEffect()};
+          font-size: 12px;
+          display: flex;
+          align-items: center;
+          color: ${style.textColorSecondaryLighter};
+        }
+        .MemberStats__ButtonIcon {
+          margin-right: 3px;
+        }
+      `}
+    >
+      <div className="MemberStats__Row MemberStats__StatusRow">
+        {roles.map((role) => {
+          const iconData = getRoleIcon(role.key);
+          return (
+            <Tooltip
+              key={role.key}
+              overlay={getRoleTooltip(role)}
+            >
+              <span className="MemberStats__Item">
+                <span className="MemberStats__ItemLabel">{role.label}:</span>
+                <span
+                  style={{ color: iconData.color, marginRight: '4px' }}
+                  className="MemberStats__ItemIcon"
+                >
+                  <Icon icon={iconData.icon} />
+                </span>
+              </span>
+            </Tooltip>
+          );
+        })}
+      </div>
+      <div className="MemberStats__Row MemberStats__ButtonRow">
+        <span
+          className="MemberStats__Button"
+          onClick={handleEditClick}
+          ref={editButtonRef}
+        >
+          <Icon icon="pencil-alt" className="MemberStats__ButtonIcon" />
+        </span>
+        <span
+          className="MemberStats__Button"
+          onClick={handleRefresh}
+          css={css`
+            opacity: ${isRefreshing ? 0.5 : 1};
+            cursor: ${isRefreshing ? 'not-allowed' : 'pointer'};
+            .fa-sync-alt {
+              animation: ${isRefreshing ? 'fa-spin 1s linear infinite' : 'none'};
+            }
+          `}
+        >
+          <Icon icon="sync-alt" className="MemberStats__ButtonIcon" />
+        </span>
+      </div>
+      {isEditModalOpen && createPortal(
+        <div
+          css={css`
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1000;
+          `}
+          onClick={handleClickOutside}
+        >
+          <div
+            css={css`
+              position: absolute;
+              background: white;
+              border-radius: ${style.borderRadiusBase};
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+              z-index: 1001;
+              max-height: calc(100vh - 20px);
+              overflow-y: auto;
+              max-width: calc(100vw - 20px);
+            `}
+            style={{
+              top: getPopupPosition.top,
+              bottom: getPopupPosition.bottom,
+              left: getPopupPosition.left,
+              right: getPopupPosition.right,
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <EditWorkers
+              workers={workers || {}}
+              onSave={handleEditSave}
+              onCancel={handleEditCancel}
+            />
+          </div>
+        </div>,
+        document.body
+      )}
+    </div>
+  );
+};

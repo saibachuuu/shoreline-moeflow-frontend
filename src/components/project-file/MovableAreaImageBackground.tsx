@@ -7,6 +7,7 @@ import classNames from 'classnames';
 interface MovableAreaImageBackgroundProps {
   src: string;
   onLoad?: (size: { width: number; height: number }) => any;
+  onError?: () => any;
   className?: string;
 }
 /**
@@ -15,7 +16,7 @@ interface MovableAreaImageBackgroundProps {
  */
 export const MovableAreaImageBackground: FC<
   MovableAreaImageBackgroundProps
-> = ({ src, onLoad, className: _className }) => {
+> = ({ src, onLoad, onError, className: _className }) => {
   /**
    * required to override tailwindcss's @base
    * see https://tailwindcss.com/docs/preflight#images-are-block-level
@@ -45,6 +46,11 @@ export const MovableAreaImageBackground: FC<
             height: (domRef.current as HTMLImageElement).offsetHeight,
           };
           onLoad(size);
+        }
+      }}
+      onError={(e) => {
+        if (onError) {
+          onError();
         }
       }}
       src={src}

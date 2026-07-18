@@ -21,6 +21,9 @@ imageTranslator.imageViewerZoomPanel.zoomIn:
 imageTranslator.imageViewerZoomPanel.zoomOut:
   zhCn: 缩小
   en: Zoom Out
+imageTranslator.imageViewerZoomPanel.showOriginal:
+  zhCn: 切换显示原图
+  en: Switch to Original Image
 auth.login:
   zhCn: 登录
   en: Log In

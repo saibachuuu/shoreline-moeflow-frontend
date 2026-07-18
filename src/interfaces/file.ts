@@ -1,6 +1,5 @@
 import {
   FileNotExistReasons,
-  FileSafeStatuses,
   FileTypes,
   ParseStatuses,
 } from '../constants';
@@ -20,17 +19,15 @@ export interface File {
   sourceCount: number;
   translatedSourceCount: number;
   checkedSourceCount: number;
-  safeStatus: FileSafeStatuses;
   fileNotExistReason: FileNotExistReasons;
   parseStatus: ParseStatuses;
   parseStatusDetailName: string;
   parseErrorTypeDetailName: string;
   parentID: string | null;
   fileTargetCache?: FileTargetCache;
-  // 图片文件专用
   url?: string;
   coverUrl?: string;
-  safeCheckUrl?: string;
+  resampleUrl?: string;
   nextImage?: File;
   prevImage?: File;
   imageOcrPercent?: number;

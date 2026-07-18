@@ -1,9 +1,10 @@
 import { css } from '@emotion/core';
 import classNames from 'classnames';
+import { useState } from 'react';
 import { useIntl } from 'react-intl';
 import { useDispatch } from 'react-redux';
 import { useHistory, useLocation, useRouteMatch } from 'react-router-dom';
-import { Icon, TranslationProgress } from '@/components';
+import { Icon, TranslationProgress, MemberStats } from '@/components';
 import { PROJECT_PERMISSION, PROJECT_STATUS } from '@/constants';
 import { FC, Project } from '@/interfaces';
 import { resetFilesState } from '@/store/file/slice';
@@ -30,6 +31,7 @@ export const ProjectItem: FC<ProjectItemProps> = ({
   const location = useLocation();
   const history = useHistory();
   const dispatch = useDispatch();
+  const [workers, setWorkers] = useState<any>(project.workers);
 
   // 点击后跳转路径前缀
   let urlPrefix = '';
@@ -160,6 +162,11 @@ export const ProjectItem: FC<ProjectItemProps> = ({
         </div>
       )}
       <div className="ProjectItem__Name">{project.name}</div>
+      <MemberStats
+        workers={workers}
+        projectId={project.id}
+        onWorkersUpdate={setWorkers}
+      />
       <TranslationProgress
         className="ProjectItem__TranslationProgressLine"
         sourceCount={project.sourceCount * project.targetCount}

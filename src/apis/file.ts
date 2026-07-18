@@ -6,7 +6,6 @@ import { AxiosRequestConfig } from 'axios';
 import { toUnderScoreCase } from '@/utils';
 import { PaginationParams } from '.';
 import { File } from '@/interfaces';
-import { FileSafeStatuses } from '@/constants';
 
 /** 获取项目中文件列表的请求数据 */
 interface GetProjectFilesParams {
@@ -56,6 +55,10 @@ const getFile = ({
   });
 };
 
+interface DeleteFileResponse {
+  message: string;
+}
+
 /** 删除文件 */
 const deleteFile = ({
   id,
@@ -64,49 +67,44 @@ const deleteFile = ({
   id: string;
   configs?: AxiosRequestConfig;
 }) => {
-  return request({
+  return request<DeleteFileResponse>({
     method: 'DELETE',
     url: `/v1/files/${id}`,
     ...configs,
   });
 };
 
-/** 获取项目中文件列表的请求数据 */
-interface AdminGetFilesParams {
-  safeStatus?: FileSafeStatuses[];
+interface RegenerateThumbnailsResponse {
+  message: string;
+  count?: number;
 }
-/** 获取项目中文件列表 */
-const adminGetFiles = ({
-  params,
+
+/** 重新生成项目中所有图片的缩略图和采样图 */
+const regenerateThumbnails = ({
+  projectID,
   configs,
 }: {
-  params?: AdminGetFilesParams & PaginationParams;
+  projectID: string;
   configs?: AxiosRequestConfig;
 }) => {
-  return request<File[]>({
-    method: 'GET',
-    url: `/v1/admin/files`,
-    params: toUnderScoreCase(params),
+  return request<RegenerateThumbnailsResponse>({
+    method: 'POST',
+    url: `/v1/projects/${projectID}/thumbnails`,
     ...configs,
   });
 };
 
-const adminSafeCheck = ({
-  safeFileIDs,
-  unsafeFileIDs,
+/** 重新生成单张图片的缩略图和采样图 */
+const regenerateThumbnail = ({
+  fileID,
   configs,
 }: {
-  safeFileIDs: string[];
-  unsafeFileIDs: string[];
+  fileID: string;
   configs?: AxiosRequestConfig;
 }) => {
-  return request({
-    method: 'PUT',
-    url: `/v1/admin/files/safe-status`,
-    data: toUnderScoreCase({
-      safeFiles: safeFileIDs,
-      unsafeFiles: unsafeFileIDs,
-    }),
+  return request<RegenerateThumbnailsResponse>({
+    method: 'POST',
+    url: `/v1/files/${fileID}/thumbnail`,
     ...configs,
   });
 };
@@ -115,6 +113,6 @@ export default {
   getProjectFiles,
   getFile,
   deleteFile,
-  adminGetFiles,
-  adminSafeCheck,
+  regenerateThumbnails,
+  regenerateThumbnail,
 };

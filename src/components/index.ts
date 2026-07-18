@@ -53,6 +53,8 @@ export { TeamSearchList } from './team/TeamSearchList';
 export { TeamSettingBase } from './team/TeamSettingBase';
 export { Tooltip } from './shared/Tooltip';
 export { TranslationProgress } from './shared/TranslationProgress';
+export { MemberStats } from './shared/MemberStats';
+export { EditWorkers } from './shared/EditWorkers';
 export { TypeRadioGroup } from './shared-form/TypeRadioGroup';
 export { UserEmailEditForm } from './shared-form/UserEmailEditForm';
 export { UserInvitationList } from './shared-member/UserInvitationList';

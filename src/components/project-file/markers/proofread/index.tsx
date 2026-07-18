@@ -102,7 +102,7 @@ export const ImageSourceViewerProofreader: FC<
 
   const responsiveHeight = isMobile ? 60 : 250;
 
-  const bottomHeight = focusedSource ? responsiveHeight : 0;
+  const bottomHeight = responsiveHeight;
 
   const isNoTranslationRef = useRef(isNoTranslation);
   isNoTranslationRef.current = isNoTranslation;

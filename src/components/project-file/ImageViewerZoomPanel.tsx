@@ -25,7 +25,11 @@ interface ImageViewerZoomPanelProps {
   restoreImage: (event: React.MouseEvent) => void;
   zoomImageByAreaWidth: (event: React.MouseEvent) => void;
   zoomImageByAreaHeight: (event: React.MouseEvent) => void;
+  showOriginalImage?: boolean;
+  onShowOriginalImage?: (show: boolean) => void;
   className?: string;
+  fileId?: string;
+  onRegenerateThumbnail?: (fileId: string) => void;
 }
 /**
  * 图片浏览器缩放控制面板
@@ -43,7 +47,11 @@ export const ImageViewerZoomPanel: FC<ImageViewerZoomPanelProps> = ({
   restoreImage,
   zoomImageByAreaWidth,
   zoomImageByAreaHeight,
+  showOriginalImage = false,
+  onShowOriginalImage,
   className,
+  fileId,
+  onRegenerateThumbnail,
 }) => {
   const platform = useSelector((state: AppState) => state.site.platform);
   const isMobile = platform === 'mobile';
@@ -62,6 +70,62 @@ export const ImageViewerZoomPanel: FC<ImageViewerZoomPanelProps> = ({
         className="ImageViewerZoomPanel__Buttons"
         onPointerDown={(e) => e.stopPropagation()}
       >
+        {onShowOriginalImage && (
+          <Tooltip
+            title={formatMessage({
+              id: 'imageTranslator.imageViewerZoomPanel.showOriginal',
+            })}
+          >
+            <div
+              className="ImageViewerZoomPanel__Button"
+              onClick={() => onShowOriginalImage(!showOriginalImage)}
+              data-testid="showOriginalButton"
+              style={{
+                backgroundColor: showOriginalImage ? '#eee' : undefined,
+              }}
+            >
+              <div style={{ position: 'relative' }}>
+                <Icon
+                  className="icon"
+                  icon="file-image"
+                  style={{
+                    color: showOriginalImage ? '#000' : '#999',
+                  }}
+                />
+              </div>
+            </div>
+          </Tooltip>
+        )}
+        {fileId && onRegenerateThumbnail && (
+          <Tooltip
+            title={formatMessage({
+              id: 'imageTranslator.imageViewerZoomPanel.regenerateThumbnail',
+            })}
+          >
+            <div
+              className="ImageViewerZoomPanel__Button"
+              onClick={() => onRegenerateThumbnail(fileId)}
+              data-testid="regenerateThumbnailButton"
+            >
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Icon
+                  className="icon"
+                  icon="sync-alt"
+                  style={{ fontSize: '20px' }}
+                />
+                <Icon
+                  className="icon"
+                  icon="file-image"
+                  style={{
+                    position: 'absolute',
+                    fontSize: '8px',
+                    color: '#666',
+                  }}
+                />
+              </div>
+            </div>
+          </Tooltip>
+        )}
         <Tooltip
           title={formatMessage({
             id: 'imageTranslator.imageViewerZoomPanel.zoomIn',
