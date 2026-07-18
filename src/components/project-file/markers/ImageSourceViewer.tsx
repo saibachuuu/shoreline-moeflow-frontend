@@ -39,37 +39,39 @@ export const ImageSourceViewer: FC<ImageSourceViewerProps> = ({
   const { formatMessage } = useIntl();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const isDraggingRef = useRef(false);
   const dragStartY = useRef(0);
   const dragStartHeight = useRef(0);
 
   const handleDragStart = useCallback(
-    (e: React.TouchEvent | React.MouseEvent) => {
+    (e: React.PointerEvent<HTMLDivElement>) => {
       if (!onHeightChange) return;
       e.preventDefault();
+      e.currentTarget.setPointerCapture(e.pointerId);
+      isDraggingRef.current = true;
       setIsDragging(true);
-      const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-      dragStartY.current = clientY;
+      dragStartY.current = e.clientY;
       dragStartHeight.current = containerRef.current?.offsetHeight || 0;
     },
     [onHeightChange],
   );
 
   const handleDragMove = useCallback(
-    (e: TouchEvent | MouseEvent) => {
-      if (!isDragging || !onHeightChange) return;
-      const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-      const deltaY = dragStartY.current - clientY;
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!isDraggingRef.current || !onHeightChange) return;
+      const deltaY = dragStartY.current - e.clientY;
       const newHeight = dragStartHeight.current + deltaY;
       onHeightChange(newHeight);
     },
-    [isDragging, onHeightChange],
+    [onHeightChange],
   );
 
-  const handleDragEnd = useCallback(() => {
-    if (isDragging) {
-      setIsDragging(false);
-    }
-  }, [isDragging]);
+  const handleDragEnd = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
+    setIsDragging(false);
+    e.currentTarget.releasePointerCapture(e.pointerId);
+  }, []);
 
   return (
     <div
@@ -113,15 +115,13 @@ export const ImageSourceViewer: FC<ImageSourceViewerProps> = ({
             <div className="ImageSourceViewer__List">
               <div
                 className="ImageSourceViewer__ModeControl"
-                onMouseDown={isMobile ? undefined : handleDragStart}
-                onTouchStart={isMobile ? handleDragStart : undefined}
-                onMouseMove={isMobile ? undefined : isDragging ? handleDragMove : undefined}
-                onTouchMove={isMobile ? (isDragging ? handleDragMove : undefined) : undefined}
-                onMouseUp={isMobile ? undefined : handleDragEnd}
-                onTouchEnd={isMobile ? handleDragEnd : undefined}
-                onMouseLeave={isMobile ? undefined : isDragging ? handleDragEnd : undefined}
+                onPointerDown={onHeightChange ? handleDragStart : undefined}
+                onPointerMove={onHeightChange ? handleDragMove : undefined}
+                onPointerUp={onHeightChange ? handleDragEnd : undefined}
+                onPointerCancel={onHeightChange ? handleDragEnd : undefined}
                 style={{
-                  cursor: isMobile ? 'ns-resize' : 'ns-resize',
+                  cursor: onHeightChange ? 'ns-resize' : undefined,
+                  touchAction: onHeightChange ? 'none' : undefined,
                   userSelect: isDragging ? 'none' : 'auto',
                 }}
               >

@@ -1,50 +1,57 @@
 import { css } from '@emotion/core';
 import classNames from 'classnames';
-import { useRef, useState, useMemo } from 'react';
+import { useRef, useState } from 'react';
+import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { createPortal } from 'react-dom';
-import { useIntl } from 'react-intl';
 import { Icon, Tooltip, EditWorkers } from '@/components';
 import { FC } from '@/interfaces';
 import style from '@/style';
 import { clickEffect } from '@/utils/style';
-import projectApi from '@/apis/project';
+import projectApi, { ProjectWorkerRole, ProjectWorkers } from '@/apis/project';
 
 interface MemberStatsProps {
-  workers: any;
+  workers: ProjectWorkers;
   projectId?: string;
+  canEdit?: boolean;
   className?: string;
-  onWorkersUpdate?: (workers: any) => void;
+  onWorkersUpdate?: (workers: ProjectWorkers) => void;
 }
 
 export const MemberStats: FC<MemberStatsProps> = ({
   workers,
   projectId,
+  canEdit = false,
   className,
   onWorkersUpdate,
 }) => {
-  const { formatMessage } = useIntl();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const editButtonRef = useRef<HTMLSpanElement | null>(null);
 
-  const roles = [
+  const roles: ReadonlyArray<{ key: ProjectWorkerRole; label: string }> = [
     { key: '翻译', label: '翻译' },
     { key: '校对', label: '校对' },
     { key: '嵌字', label: '嵌字' },
   ];
 
-  const getRoleIcon = (role: string): { icon: any; color: string } => {
-    if (!workers || Array.isArray(workers) || !workers[role]?.length) {
-      return { icon: ['far', 'circle'], color: '#007bff' };
+  const getRoleIcon = (
+    role: ProjectWorkerRole,
+  ): { icon: IconProp; color: string } => {
+    if (!workers[role]?.length) {
+      return { icon: 'user-circle', color: style.textColorSecondaryLighter };
     }
     return { icon: 'user-circle', color: '#28a745' };
   };
 
-  const getRoleTooltip = (role: { key: string; label: string }): string => {
-    if (!workers || Array.isArray(workers) || !workers[role.key]?.length) {
+  const getRoleTooltip = (role: {
+    key: ProjectWorkerRole;
+    label: string;
+  }): string => {
+    const members = workers[role.key];
+    if (!members?.length) {
       return `暂无${role.label}人员`;
     }
-    return `${role.label}：${workers[role.key].join('、')}`;
+    return `${role.label}：${members.join('、')}`;
   };
 
   const handleRefresh = async () => {
@@ -52,8 +59,7 @@ export const MemberStats: FC<MemberStatsProps> = ({
     setIsRefreshing(true);
     try {
       const result = await projectApi.parseProjectWorkers({ id: projectId });
-      const workers = (result.data as any)?.workers;
-      onWorkersUpdate?.(workers);
+      onWorkersUpdate?.(result.data.workers);
     } catch (error) {
       console.error('解析翻译数据失败:', error);
     } finally {
@@ -61,9 +67,10 @@ export const MemberStats: FC<MemberStatsProps> = ({
     }
   };
 
-  const getPopupPosition = useMemo(() => {
-    if (!editButtonRef.current) return { top: 'auto', bottom: 'auto', left: 'auto', right: 'auto' };
-    
+  const getPopupPosition = () => {
+    if (!editButtonRef.current)
+      return { top: 'auto', bottom: 'auto', left: 'auto', right: 'auto' };
+
     const rect = editButtonRef.current.getBoundingClientRect();
     const popupHeight = 320;
     const popupWidth = 300;
@@ -72,23 +79,25 @@ export const MemberStats: FC<MemberStatsProps> = ({
     const spaceBelow = viewportHeight - rect.bottom - 5;
     const spaceAbove = rect.top - 5;
     const spaceRight = viewportWidth - rect.right;
-    
-    const vertical = spaceBelow >= popupHeight
-      ? { top: `${rect.bottom + 5}px`, bottom: 'auto' }
-      : spaceAbove >= popupHeight
-      ? { top: 'auto', bottom: `${viewportHeight - rect.top + 5}px` }
-      : spaceBelow >= spaceAbove
-      ? { top: `${rect.bottom + 5}px`, bottom: 'auto' }
-      : { top: 'auto', bottom: `${viewportHeight - rect.top + 5}px` };
-    
-    const horizontal = spaceRight >= popupWidth
-      ? { left: `${rect.right}px`, right: 'auto' }
-      : rect.left >= popupWidth
-      ? { left: 'auto', right: `${viewportWidth - rect.left}px` }
-      : { left: '10px', right: 'auto' };
-    
+
+    const vertical =
+      spaceBelow >= popupHeight
+        ? { top: `${rect.bottom + 5}px`, bottom: 'auto' }
+        : spaceAbove >= popupHeight
+          ? { top: 'auto', bottom: `${viewportHeight - rect.top + 5}px` }
+          : spaceBelow >= spaceAbove
+            ? { top: `${rect.bottom + 5}px`, bottom: 'auto' }
+            : { top: 'auto', bottom: `${viewportHeight - rect.top + 5}px` };
+
+    const horizontal =
+      spaceRight >= popupWidth
+        ? { left: `${rect.right}px`, right: 'auto' }
+        : rect.left >= popupWidth
+          ? { left: 'auto', right: `${viewportWidth - rect.left}px` }
+          : { left: '10px', right: 'auto' };
+
     return { ...vertical, ...horizontal };
-  }, [isEditModalOpen]);
+  };
 
   const handleEditClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -99,7 +108,7 @@ export const MemberStats: FC<MemberStatsProps> = ({
     setIsEditModalOpen(false);
   };
 
-  const handleEditSave = async (newWorkers: Record<string, string[]>) => {
+  const handleEditSave = async (newWorkers: ProjectWorkers) => {
     if (!projectId) return;
     try {
       await projectApi.updateProjectWorkers({
@@ -176,10 +185,7 @@ export const MemberStats: FC<MemberStatsProps> = ({
         {roles.map((role) => {
           const iconData = getRoleIcon(role.key);
           return (
-            <Tooltip
-              key={role.key}
-              overlay={getRoleTooltip(role)}
-            >
+            <Tooltip key={role.key} overlay={getRoleTooltip(role)}>
               <span className="MemberStats__Item">
                 <span className="MemberStats__ItemLabel">{role.label}:</span>
                 <span
@@ -193,68 +199,70 @@ export const MemberStats: FC<MemberStatsProps> = ({
           );
         })}
       </div>
-      <div className="MemberStats__Row MemberStats__ButtonRow">
-        <span
-          className="MemberStats__Button"
-          onClick={handleEditClick}
-          ref={editButtonRef}
-        >
-          <Icon icon="pencil-alt" className="MemberStats__ButtonIcon" />
-        </span>
-        <span
-          className="MemberStats__Button"
-          onClick={handleRefresh}
-          css={css`
-            opacity: ${isRefreshing ? 0.5 : 1};
-            cursor: ${isRefreshing ? 'not-allowed' : 'pointer'};
-            .fa-sync-alt {
-              animation: ${isRefreshing ? 'fa-spin 1s linear infinite' : 'none'};
-            }
-          `}
-        >
-          <Icon icon="sync-alt" className="MemberStats__ButtonIcon" />
-        </span>
-      </div>
-      {isEditModalOpen && createPortal(
-        <div
-          css={css`
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 1000;
-          `}
-          onClick={handleClickOutside}
-        >
+      {canEdit && (
+        <div className="MemberStats__Row MemberStats__ButtonRow">
+          <span
+            className="MemberStats__Button"
+            onClick={handleEditClick}
+            ref={editButtonRef}
+          >
+            <Icon icon="pencil-alt" className="MemberStats__ButtonIcon" />
+          </span>
+          <span
+            className="MemberStats__Button"
+            onClick={handleRefresh}
+            css={css`
+              opacity: ${isRefreshing ? 0.5 : 1};
+              cursor: ${isRefreshing ? 'not-allowed' : 'pointer'};
+              .fa-sync-alt {
+                animation: ${isRefreshing
+                  ? 'fa-spin 1s linear infinite'
+                  : 'none'};
+              }
+            `}
+          >
+            <Icon icon="sync-alt" className="MemberStats__ButtonIcon" />
+          </span>
+        </div>
+      )}
+      {isEditModalOpen &&
+        createPortal(
           <div
             css={css`
-              position: absolute;
-              background: white;
-              border-radius: ${style.borderRadiusBase};
-              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-              z-index: 1001;
-              max-height: calc(100vh - 20px);
-              overflow-y: auto;
-              max-width: calc(100vw - 20px);
+              position: fixed;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              z-index: 1000;
             `}
-            style={{
-              top: getPopupPosition.top,
-              bottom: getPopupPosition.bottom,
-              left: getPopupPosition.left,
-              right: getPopupPosition.right,
-            }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={handleClickOutside}
           >
-            <EditWorkers
-              workers={workers || {}}
-              onSave={handleEditSave}
-              onCancel={handleEditCancel}
-            />
-          </div>
-        </div>,
-        document.body
-      )}
+            <div
+              css={css`
+                position: absolute;
+                background: white;
+                border-radius: ${style.borderRadiusBase};
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+                z-index: 1001;
+                max-height: calc(100vh - 20px);
+                overflow-y: auto;
+                max-width: calc(100vw - 20px);
+              `}
+              style={{
+                ...getPopupPosition(),
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <EditWorkers
+                workers={workers || {}}
+                onSave={handleEditSave}
+                onCancel={handleEditCancel}
+              />
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 };

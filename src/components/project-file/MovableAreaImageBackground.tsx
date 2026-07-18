@@ -6,8 +6,8 @@ import classNames from 'classnames';
 /** 可移动区域图片背景的属性接口 */
 interface MovableAreaImageBackgroundProps {
   src: string;
-  onLoad?: (size: { width: number; height: number }) => any;
-  onError?: () => any;
+  onLoad?: (size: { width: number; height: number }) => void;
+  onError?: () => void;
   className?: string;
 }
 /**
@@ -39,7 +39,7 @@ export const MovableAreaImageBackground: FC<
       onDragStart={(e) => e.preventDefault()} // 禁止 Firefox 拖拽图片（Firefox 仅 drageable={false} 无效）
       onContextMenu={(e) => e.preventDefault()} // 禁止鼠标右键菜单 和 Android 上 Chrome/Firefox，重按/长按图片弹出菜单
       ref={domRef}
-      onLoad={(e) => {
+      onLoad={() => {
         if (onLoad) {
           const size = {
             width: (domRef.current as HTMLImageElement).offsetWidth,
@@ -48,7 +48,7 @@ export const MovableAreaImageBackground: FC<
           onLoad(size);
         }
       }}
-      onError={(e) => {
+      onError={() => {
         if (onError) {
           onError();
         }

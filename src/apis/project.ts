@@ -38,7 +38,21 @@ export interface APIProject {
   importFromLabelplusPercent: number;
   importFromLabelplusErrorType: IMPORT_FROM_LABELPLUS_ERROR_TYPE;
   importFromLabelplusErrorTypeName: string;
-  workers?: any;
+  workers: ProjectWorkers;
+}
+
+export type ProjectWorkers = Partial<Record<ProjectWorkerRole, string[]>>;
+export type ProjectWorkerRole =
+  | '图源'
+  | '扫图'
+  | '修图'
+  | '翻译'
+  | '校对'
+  | '嵌字';
+
+interface ProjectWorkersResponse {
+  message: string;
+  workers: ProjectWorkers;
 }
 
 /** 获取团队的项目列表的请求数据 */
@@ -258,7 +272,7 @@ const parseProjectWorkers = ({
   id: string;
   configs?: AxiosRequestConfig;
 }) => {
-  return request({
+  return request<ProjectWorkersResponse>({
     method: 'POST',
     url: `/v1/projects/${id}/workers/parse`,
     ...configs,
@@ -267,7 +281,7 @@ const parseProjectWorkers = ({
 
 /** 更新工作人员的请求数据 */
 interface UpdateWorkersData {
-  workers: Record<string, string[]>;
+  workers: ProjectWorkers;
 }
 /** 更新工作人员列表 */
 const updateProjectWorkers = ({
@@ -279,7 +293,7 @@ const updateProjectWorkers = ({
   data: UpdateWorkersData;
   configs?: AxiosRequestConfig;
 }) => {
-  return request({
+  return request<ProjectWorkersResponse>({
     method: 'PUT',
     url: `/v1/projects/${id}/workers`,
     data: toUnderScoreCase(data),

@@ -427,13 +427,17 @@ export const FileList: FC<FileListProps> = ({
             {!isMobile && formatMessage({ id: 'site.upload' })}
           </Button>
         )}
-        {can(project, PROJECT_PERMISSION.ACCESS) && (
+        {can(project, PROJECT_PERMISSION.CHANGE) && (
           <Button
             icon="image"
             onClick={() => {
               Modal.confirm({
-                title: formatMessage({ id: 'fileList.regenerateThumbnails.title' }),
-                content: formatMessage({ id: 'fileList.regenerateThumbnails.content' }),
+                title: formatMessage({
+                  id: 'fileList.regenerateThumbnails.title',
+                }),
+                content: formatMessage({
+                  id: 'fileList.regenerateThumbnails.content',
+                }),
                 onOk: () => {
                   api.file
                     .regenerateThumbnails({
@@ -452,7 +456,8 @@ export const FileList: FC<FileListProps> = ({
               });
             }}
           >
-            {!isMobile && formatMessage({ id: 'fileList.regenerateThumbnails.buttonText' })}
+            {!isMobile &&
+              formatMessage({ id: 'fileList.regenerateThumbnails.buttonText' })}
           </Button>
         )}
       </div>

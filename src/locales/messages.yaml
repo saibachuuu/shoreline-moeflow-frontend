@@ -24,6 +24,24 @@ imageTranslator.imageViewerZoomPanel.zoomOut:
 imageTranslator.imageViewerZoomPanel.showOriginal:
   zhCn: 切换显示原图
   en: Switch to Original Image
+imageTranslator.imageViewerZoomPanel.regenerateThumbnail:
+  zhCn: 重建缩略图
+  en: Regenerate Thumbnail
+imageTranslator.regenerateThumbnail.title:
+  zhCn: 重建缩略图
+  en: Regenerate Thumbnail
+imageTranslator.regenerateThumbnail.content:
+  zhCn: 确定要重建这张图片的缩略图和采样图吗？此操作将在后台异步执行。
+  en: Are you sure you want to regenerate the thumbnail and resample image for this picture? This operation will be executed asynchronously in the background.
+imageTranslator.imageLoadFailed:
+  zhCn: 图片加载失败
+  en: Image Load Failed
+imageTranslator.imageUrl:
+  zhCn: 图片地址
+  en: Image URL
+imageTranslator.imageLoadFailedTip:
+  zhCn: 请使用工具栏的「切换显示原图」或「重新生成缩略图」按钮解决
+  en: Please use the "Switch to Original Image" or "Regenerate Thumbnail" button in the toolbar to resolve
 auth.login:
   zhCn: 登录
   en: Log In
@@ -902,6 +920,16 @@ fileList.aiTranslate:
     success:
       zhCn: 识别并翻译了 {count} 处文字
       en: Recognized and translated {count} text blocks
+fileList.regenerateThumbnails:
+  title:
+    zhCn: 重建缩略图
+    en: Regenerate Thumbnails
+  content:
+    zhCn: 确定要重建项目中所有图片的缩略图和采样图吗？此操作将在后台异步执行。
+    en: Are you sure you want to regenerate thumbnails and resample images for all images in the project? This operation will be executed asynchronously in the background.
+  buttonText:
+    zhCn: 重建缩略图
+    en: Regenerate Thumbnails
 project.startOCR:
   zhCn: 开始自动标记
   en: Start Auto Tagging

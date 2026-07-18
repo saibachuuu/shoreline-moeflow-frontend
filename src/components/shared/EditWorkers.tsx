@@ -3,10 +3,11 @@ import { FC, useState } from 'react';
 import { Icon } from '@/components';
 import style from '@/style';
 import { clickEffect } from '@/utils/style';
+import { ProjectWorkerRole, ProjectWorkers } from '@/apis/project';
 
 interface EditWorkersProps {
-  workers: Record<string, string[]>;
-  onSave: (workers: Record<string, string[]>) => Promise<void>;
+  workers: ProjectWorkers;
+  onSave: (workers: ProjectWorkers) => Promise<void>;
   onCancel: () => void;
 }
 
@@ -15,14 +16,14 @@ export const EditWorkers: FC<EditWorkersProps> = ({
   onSave,
   onCancel,
 }) => {
-  const roles = [
+  const roles: ReadonlyArray<{ key: ProjectWorkerRole; label: string }> = [
     { key: '图源', label: '图源' },
     { key: '扫图', label: '扫图' },
     { key: '修图', label: '修图' },
     { key: '翻译', label: '翻译' },
     { key: '校对', label: '校对' },
     { key: '嵌字', label: '嵌字' },
-  ] as const;
+  ];
 
   const [inputs, setInputs] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};
@@ -41,7 +42,7 @@ export const EditWorkers: FC<EditWorkersProps> = ({
     if (isSaving) return;
     setIsSaving(true);
     try {
-      const newWorkers: Record<string, string[]> = {};
+      const newWorkers: ProjectWorkers = {};
       roles.forEach((role) => {
         const members = inputs[role.key]
           .split(',')
@@ -133,11 +134,17 @@ export const EditWorkers: FC<EditWorkersProps> = ({
         </div>
       ))}
       <div className="EditWorkers__Buttons">
-        <span className="EditWorkers__Button EditWorkers__Button--cancel" onClick={onCancel}>
+        <span
+          className="EditWorkers__Button EditWorkers__Button--cancel"
+          onClick={onCancel}
+        >
           <Icon icon="times" />
           取消
         </span>
-        <span className="EditWorkers__Button EditWorkers__Button--save" onClick={handleSave}>
+        <span
+          className="EditWorkers__Button EditWorkers__Button--save"
+          onClick={handleSave}
+        >
           <Icon icon="check" />
           确认
         </span>

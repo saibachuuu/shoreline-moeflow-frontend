@@ -1,5 +1,5 @@
 import { css } from '@emotion/core';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Redirect,
   Route,

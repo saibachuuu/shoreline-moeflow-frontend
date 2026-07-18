@@ -13,8 +13,6 @@
   "imageTranslator.imageLoadFailed": "Image Load Failed",
   "imageTranslator.imageUrl": "Image URL",
   "imageTranslator.imageLoadFailedTip": "Please use the \"Switch to Original Image\" or \"Regenerate Thumbnail\" button in the toolbar to resolve",
-  "imageTranslator.loadOriginalImage": "Load Original Image",
-  "imageTranslator.retryLoad": "Retry Loading",
   "auth.login": "Log In",
   "auth.toReigsterTip": "Don't have an account? Sign up here.",
   "auth.resetPassword": "Reset Password",

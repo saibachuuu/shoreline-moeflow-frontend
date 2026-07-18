@@ -6,10 +6,7 @@ import { Icon } from '@/components';
 import { FileUploadProgress } from './FileUploadProgress';
 import { TranslationProgress } from '@/components/shared/TranslationProgress';
 import { ImageOCRProgress } from '@/components/unused/ImageOCRProgress';
-import {
-  FILE_NOT_EXIST_REASON,
-  IMAGE_COVER,
-} from '@/constants';
+import { FILE_NOT_EXIST_REASON, IMAGE_COVER } from '@/constants';
 import { FC, File } from '@/interfaces';
 import style from '@/style';
 import { cardClickEffect, clickEffect } from '@/utils/style';

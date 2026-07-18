@@ -11,7 +11,6 @@ import {
   faArrowsAltH,
   faArrowsAltV,
   faImage,
-  faFileImage,
   faCaretUp,
   faCaretDown,
   faChevronLeft,
@@ -33,7 +32,6 @@ import {
   faCaretLeft,
   faCaretRight,
   faCheck,
-  faQuestion,
   faExclamationTriangle,
   faAngleRight,
   faUserCircle,
@@ -64,7 +62,6 @@ import {
   faPaste,
 } from '@fortawesome/free-solid-svg-icons';
 import { faKissWinkHeart as faKissWinkHeartRegular } from '@fortawesome/free-regular-svg-icons';
-import { faCircle as faCircleRegular } from '@fortawesome/free-regular-svg-icons';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 library.add(
   ...[
@@ -75,7 +72,6 @@ library.add(
     faArrowsAltH,
     faArrowsAltV,
     faImage,
-    faFileImage,
     faCaretUp,
     faCaretDown,
     faChevronUp,
@@ -97,7 +93,6 @@ library.add(
     faCaretLeft,
     faCaretRight,
     faCheck,
-    faQuestion,
     faExclamationTriangle,
     faAngleRight,
     faUserCircle,
@@ -128,7 +123,7 @@ library.add(
     faPaste,
   ],
   // Regular icons
-  ...[faKissWinkHeartRegular, faCircleRegular],
+  ...[faKissWinkHeartRegular],
   // Brand icons
   ...[faGithub],
 );

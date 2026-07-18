@@ -1,10 +1,11 @@
 import { css } from '@emotion/core';
 import classNames from 'classnames';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useIntl } from 'react-intl';
 import { useDispatch } from 'react-redux';
 import { useHistory, useLocation, useRouteMatch } from 'react-router-dom';
 import { Icon, TranslationProgress, MemberStats } from '@/components';
+import { ProjectWorkers } from '@/apis/project';
 import { PROJECT_PERMISSION, PROJECT_STATUS } from '@/constants';
 import { FC, Project } from '@/interfaces';
 import { resetFilesState } from '@/store/file/slice';
@@ -31,7 +32,11 @@ export const ProjectItem: FC<ProjectItemProps> = ({
   const location = useLocation();
   const history = useHistory();
   const dispatch = useDispatch();
-  const [workers, setWorkers] = useState<any>(project.workers);
+  const [workers, setWorkers] = useState<ProjectWorkers>(project.workers || {});
+
+  useEffect(() => {
+    setWorkers(project.workers || {});
+  }, [project.workers]);
 
   // 点击后跳转路径前缀
   let urlPrefix = '';
@@ -165,6 +170,7 @@ export const ProjectItem: FC<ProjectItemProps> = ({
       <MemberStats
         workers={workers}
         projectId={project.id}
+        canEdit={can(project, PROJECT_PERMISSION.CHANGE)}
         onWorkersUpdate={setWorkers}
       />
       <TranslationProgress

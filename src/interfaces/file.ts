@@ -1,8 +1,4 @@
-import {
-  FileNotExistReasons,
-  FileTypes,
-  ParseStatuses,
-} from '../constants';
+import { FileNotExistReasons, FileTypes, ParseStatuses } from '../constants';
 
 // 文件目标缓存
 export interface FileTargetCache {

@@ -87,7 +87,7 @@ export const ImageViewerZoomPanel: FC<ImageViewerZoomPanelProps> = ({
               <div style={{ position: 'relative' }}>
                 <Icon
                   className="icon"
-                  icon="file-image"
+                  icon="image"
                   style={{
                     color: showOriginalImage ? '#000' : '#999',
                   }}
@@ -107,7 +107,14 @@ export const ImageViewerZoomPanel: FC<ImageViewerZoomPanelProps> = ({
               onClick={() => onRegenerateThumbnail(fileId)}
               data-testid="regenerateThumbnailButton"
             >
-              <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div
+                style={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
                 <Icon
                   className="icon"
                   icon="sync-alt"
@@ -115,7 +122,7 @@ export const ImageViewerZoomPanel: FC<ImageViewerZoomPanelProps> = ({
                 />
                 <Icon
                   className="icon"
-                  icon="file-image"
+                  icon="image"
                   style={{
                     position: 'absolute',
                     fontSize: '8px',
@@ -267,7 +274,7 @@ export const ImageViewerZoomPanel: FC<ImageViewerZoomPanelProps> = ({
             }
           }
           .ImageViewerZoomPanel__Buttons {
-            height: ${shrunk ? '0' : '200px'};
+            height: ${shrunk ? '0' : '280px'};
             overflow: hidden;
             transition: height ease 100ms;
             will-change: height;

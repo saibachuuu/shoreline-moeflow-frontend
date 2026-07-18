@@ -35,9 +35,6 @@ import { MovableAreaImageBackground } from './MovableAreaImageBackground';
 import { MovableLabel } from './MovableLabel';
 import { Tooltip } from '@/components/shared/Tooltip';
 import { routes } from '@/pages/routes';
-import { createDebugLogger } from '@/utils/debug-logger';
-
-const debugLogger = createDebugLogger('components:project-file:ImageViewer');
 /**
  * 🖥浏览器识别
  */
@@ -126,7 +123,11 @@ export const ImageViewer: FC<ImageViewerProps> = ({
   const [imageScaleStep, setImageScaleStep] = useState(0.15);
   const [labelsVisible, setLabelsVisible] = useState(true); // 用于在缩放时隐藏子元素，防止渲染卡顿
   const [useOriginalImage, setUseOriginalImage] = useState(false);
-  const [imageError, setImageError] = useState<{ url: string; status?: number } | null>(null);
+  const [imageError, setImageError] = useState<{
+    url: string;
+    status?: number;
+  } | null>(null);
+  const [thumbnailRevision, setThumbnailRevision] = useState(0);
 
   // 图片 ref
   const imageRef = useRef() as MovableItemUseRef;
@@ -448,24 +449,34 @@ export const ImageViewer: FC<ImageViewerProps> = ({
     imageSize.height,
   ]);
 
-  // 当 file 变化时打印 File 内容到控制台
-  useEffect(() => {
-    console.log('File Information:', file);
-  }, [file]);
+  const hasResampleImage = Boolean(
+    file.resampleUrl && file.resampleUrl !== 'generating',
+  );
+  const imageBaseUrl =
+    useOriginalImage || !hasResampleImage ? file.url : file.resampleUrl;
+  const currentImageUrl = imageBaseUrl
+    ? thumbnailRevision > 0 && !useOriginalImage
+      ? `${imageBaseUrl}${imageBaseUrl.includes('?') ? '&' : '?'}thumbnail_revision=${thumbnailRevision}`
+      : imageBaseUrl
+    : undefined;
 
-  // 图片
-  const currentImageUrl = useOriginalImage ? file.url : file.resampleUrl;
-  
+  // Reset transient image state when navigating to another file.
+  useEffect(() => {
+    setUseOriginalImage(false);
+    setThumbnailRevision(0);
+    setImageError(null);
+    setImageLoading(true);
+    setImageSize({ width: 0, height: 0 });
+  }, [file.id]);
+
+  useEffect(() => {
+    setImageError(null);
+    setImageLoading(true);
+  }, [currentImageUrl]);
+
   const handleImageError = () => {
     setImageLoading(false);
     setImageError({ url: currentImageUrl || '' });
-    setImageSize({ width: 800, height: 600 });
-    console.error('Failed to load image:', currentImageUrl);
-  };
-
-  const handleRetryLoadImage = () => {
-    setImageLoading(true);
-    setImageError(null);
   };
 
   const backgroundImage = currentImageUrl ? (
@@ -488,7 +499,9 @@ export const ImageViewer: FC<ImageViewerProps> = ({
           icon="exclamation-triangle"
           style={{ fontSize: '48px', color: '#ff9800', marginBottom: '16px' }}
         />
-        <p style={{ marginBottom: '8px', fontSize: '14px', fontWeight: 'bold' }}>
+        <p
+          style={{ marginBottom: '8px', fontSize: '14px', fontWeight: 'bold' }}
+        >
           {formatMessage({ id: 'imageTranslator.imageLoadFailed' })}
         </p>
         <p style={{ marginBottom: '4px', fontSize: '12px', color: '#999' }}>
@@ -523,18 +536,29 @@ export const ImageViewer: FC<ImageViewerProps> = ({
   const handleRegenerateThumbnail = (fileId: string) => {
     Modal.confirm({
       title: formatMessage({ id: 'imageTranslator.regenerateThumbnail.title' }),
-      content: formatMessage({ id: 'imageTranslator.regenerateThumbnail.content' }),
-      onOk: () => {
-        api.file
-          .regenerateThumbnail({
+      content: formatMessage({
+        id: 'imageTranslator.regenerateThumbnail.content',
+      }),
+      onOk: async () => {
+        try {
+          const result = await api.file.regenerateThumbnail({
             fileID: fileId,
-          })
-          .then((result) => {
-            message.success(result.data.message);
-          })
-          .catch((error) => {
-            error.default();
           });
+          setUseOriginalImage(false);
+          setImageError(null);
+          setImageLoading(true);
+          setThumbnailRevision(Date.now());
+          message.success(result.data.message);
+        } catch (error) {
+          if (
+            typeof error === 'object' &&
+            error !== null &&
+            'default' in error &&
+            typeof error.default === 'function'
+          ) {
+            error.default();
+          }
+        }
       },
       onCancel: () => {},
       okText: formatMessage({ id: 'form.ok' }),
@@ -767,14 +791,24 @@ export const ImageViewer: FC<ImageViewerProps> = ({
 
       {file.prevImage && (
         <img
-          src={file.prevImage.resampleUrl}
+          src={
+            file.prevImage.resampleUrl &&
+            file.prevImage.resampleUrl !== 'generating'
+              ? file.prevImage.resampleUrl
+              : file.prevImage.url
+          }
           style={{ display: 'none' }}
           alt="prev img cache"
         />
       )}
       {file.nextImage && (
         <img
-          src={file.nextImage.resampleUrl}
+          src={
+            file.nextImage.resampleUrl &&
+            file.nextImage.resampleUrl !== 'generating'
+              ? file.nextImage.resampleUrl
+              : file.nextImage.url
+          }
           style={{ display: 'none' }}
           alt="next img cache"
         />

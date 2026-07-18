@@ -13,8 +13,6 @@
   "imageTranslator.imageLoadFailed": "图片加载失败",
   "imageTranslator.imageUrl": "图片地址",
   "imageTranslator.imageLoadFailedTip": "请使用工具栏的「切换显示原图」或「重新生成缩略图」按钮解决",
-  "imageTranslator.loadOriginalImage": "加载原图",
-  "imageTranslator.retryLoad": "重试加载",
   "auth.login": "登录",
   "auth.toReigsterTip": "还没有帐号？前往注册",
   "auth.resetPassword": "重置密码",
