@@ -26,7 +26,6 @@ export const MemberStats: FC<MemberStatsProps> = ({
   onWorkersUpdate,
 }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const editButtonRef = useRef<HTMLSpanElement | null>(null);
 
   const roles: ReadonlyArray<{ key: ProjectWorkerRole; label: string }> = [
@@ -53,19 +52,6 @@ export const MemberStats: FC<MemberStatsProps> = ({
       return `暂无${role.label}人员`;
     }
     return `${role.label}：${members.join('、')}`;
-  };
-
-  const handleRefresh = async () => {
-    if (!projectId || isRefreshing) return;
-    setIsRefreshing(true);
-    try {
-      const result = await projectApi.parseProjectWorkers({ id: projectId });
-      onWorkersUpdate?.(result.data.workers);
-    } catch (error) {
-      console.error('解析翻译数据失败:', error);
-    } finally {
-      setIsRefreshing(false);
-    }
   };
 
   const getPopupPosition = () => {
@@ -208,21 +194,6 @@ export const MemberStats: FC<MemberStatsProps> = ({
             ref={editButtonRef}
           >
             <Icon icon="pencil-alt" className="MemberStats__ButtonIcon" />
-          </span>
-          <span
-            className="MemberStats__Button"
-            onClick={handleRefresh}
-            css={css`
-              opacity: ${isRefreshing ? 0.5 : 1};
-              cursor: ${isRefreshing ? 'not-allowed' : 'pointer'};
-              .fa-sync-alt {
-                animation: ${isRefreshing
-                  ? 'fa-spin 1s linear infinite'
-                  : 'none'};
-              }
-            `}
-          >
-            <Icon icon="sync-alt" className="MemberStats__ButtonIcon" />
           </span>
         </div>
       )}
