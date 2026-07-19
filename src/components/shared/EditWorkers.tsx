@@ -4,6 +4,7 @@ import { Icon } from '@/components';
 import style from '@/style';
 import { clickEffect } from '@/utils/style';
 import { ProjectWorkerRole, ProjectWorkers } from '@/apis/project';
+import { parseProjectWorkerInput } from './projectWorkers';
 
 interface EditWorkersProps {
   workers: ProjectWorkers;
@@ -44,10 +45,7 @@ export const EditWorkers: FC<EditWorkersProps> = ({
     try {
       const newWorkers: ProjectWorkers = {};
       roles.forEach((role) => {
-        const members = inputs[role.key]
-          .split(',')
-          .map((m) => m.trim())
-          .filter((m) => m.length > 0);
+        const members = parseProjectWorkerInput(inputs[role.key]);
         if (members.length > 0) {
           newWorkers[role.key] = members;
         }

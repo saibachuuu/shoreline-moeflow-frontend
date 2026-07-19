@@ -64,6 +64,22 @@
     "typecheck:watch": "tsc --noEmit --watch"
   },
   "jest": {
+    "testEnvironment": "node",
+    "transform": {
+      "^.+\\.(ts|tsx)$": [
+        "ts-jest",
+        {
+          "tsconfig": {
+            "module": "commonjs"
+          },
+          "diagnostics": false
+        }
+      ]
+    },
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/src/$1",
+      "^lodash-es$": "lodash"
+    },
     "setupFilesAfterEnv": [
       "./src/test/setup.ts"
     ]

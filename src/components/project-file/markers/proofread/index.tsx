@@ -2,7 +2,7 @@ import { css } from '@emotion/core';
 import { Button, Popconfirm } from 'antd';
 import TextArea, { TextAreaRef } from 'antd/lib/input/TextArea';
 import classNames from 'classnames';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
 import { DebounceStatus } from '@/components';
@@ -20,6 +20,8 @@ import style from '@/style';
 import { getBestTranslation } from '@/utils/source';
 import { hover } from '@/utils/style';
 import { Source } from './Source';
+import { QuickCharacterButtons } from '../QuickCharacterButtons';
+import { insertCharacterAtSelection } from '../quickCharacters';
 
 /** 校对模式的属性接口 */
 interface ImageSourceViewerProofreaderProps {
@@ -41,6 +43,9 @@ export const ImageSourceViewerProofreader: FC<
   const domRefs = useRef<(HTMLDivElement | null)[]>([]);
   const translationTextAreaRef = useRef<TextAreaRef>(null);
   const proofreadTextAreaRef = useRef<TextAreaRef>(null);
+  const [activeInput, setActiveInput] = useState<'translation' | 'proofread'>(
+    'proofread',
+  );
   const currentUser = useSelector((state: AppState) => state.user);
   const batchSelecting = useSelector(
     (state: AppState) => state.source.batchSelecting,
@@ -100,7 +105,7 @@ export const ImageSourceViewerProofreader: FC<
     mergedStatus = undefined;
   }
 
-  const responsiveHeight = isMobile ? 60 : 250;
+  const responsiveHeight = isMobile ? 100 : 290;
 
   const bottomHeight = responsiveHeight;
 
@@ -166,6 +171,37 @@ export const ImageSourceViewerProofreader: FC<
         },
       } as any as React.ChangeEvent<HTMLTextAreaElement>);
     }
+  };
+
+  const insertQuickCharacter = (character: string) => {
+    const useTranslationInput =
+      isNoTranslation || (activeInput === 'translation' && isMyTranslation);
+    const textAreaRef = useTranslationInput
+      ? translationTextAreaRef
+      : proofreadTextAreaRef;
+    const textArea = textAreaRef.current?.resizableTextArea?.textArea;
+    const result = insertCharacterAtSelection(
+      useTranslationInput
+        ? focusedTranslation?.content || ''
+        : focusedTranslation?.proofreadContent || '',
+      textArea?.selectionStart ?? null,
+      textArea?.selectionEnd ?? null,
+      character,
+    );
+
+    if (useTranslationInput) {
+      handleTranslationContentChange({
+        target: { value: result.value },
+      } as React.ChangeEvent<HTMLTextAreaElement>);
+    } else {
+      handleProofreadContentChange({
+        target: { value: result.value },
+      } as React.ChangeEvent<HTMLTextAreaElement>);
+    }
+    requestAnimationFrame(() => {
+      textArea?.focus();
+      textArea?.setSelectionRange(result.cursor, result.cursor);
+    });
   };
 
   const batchSelectTranslation = () => {
@@ -395,6 +431,15 @@ export const ImageSourceViewerProofreader: FC<
               status={mergedStatus}
             />
           </div>
+          <QuickCharacterButtons
+            disabled={
+              focusedSourceCreating ||
+              focusedSourceDeleting ||
+              focusedSource.myTranslationContentStatus === 'saving' ||
+              focusedSource.myTranslationContentStatus === 'debouncing'
+            }
+            onInsert={insertQuickCharacter}
+          />
           <div className="ImageSourceViewerProofreader__TranslationArea">
             <TranslationUser
               className="ImageSourceViewerProofreader__TranslationUser"
@@ -412,6 +457,7 @@ export const ImageSourceViewerProofreader: FC<
                   },
                 )}
                 onChange={handleTranslationContentChange}
+                onFocus={() => setActiveInput('translation')}
                 value={focusedTranslation?.content}
                 placeholder={
                   focusedSourceCreating
@@ -463,6 +509,7 @@ export const ImageSourceViewerProofreader: FC<
                   focusedTranslation?.proofreader?.avatar,
               })}
               onChange={handleProofreadContentChange}
+              onFocus={() => setActiveInput('proofread')}
               value={focusedTranslation?.proofreadContent}
               placeholder={
                 focusedSourceCreating

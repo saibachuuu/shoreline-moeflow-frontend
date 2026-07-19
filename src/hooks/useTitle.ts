@@ -1,5 +1,7 @@
 import { DependencyList, useEffect } from 'react';
 import { useIntl } from 'react-intl';
+import { useSelector } from 'react-redux';
+import { AppState } from '@/store';
 
 interface UseTitleParams {
   prefix?: string;
@@ -21,13 +23,17 @@ export const useTitle: UseTitle = (
   deps = [],
 ): void => {
   const { formatMessage } = useIntl();
+  const customSiteTitle = useSelector(
+    (state: AppState) => state.site.customSiteTitle,
+  );
   if (prefix !== '') prefix = prefix + hyphen;
   if (suffix !== '') suffix = hyphen + suffix;
   useEffect(() => {
-    document.title = prefix + formatMessage({ id: 'site.name' }) + suffix;
+    const siteTitle = customSiteTitle || formatMessage({ id: 'site.name' });
+    document.title = prefix + siteTitle + suffix;
     return () => {
-      document.title = formatMessage({ id: 'site.name' });
+      document.title = siteTitle;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps);
+  }, [...deps, customSiteTitle]);
 };

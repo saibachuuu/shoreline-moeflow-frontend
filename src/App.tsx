@@ -1,6 +1,6 @@
 import { css, Global } from '@emotion/core';
-import React from 'react';
-import { useSelector } from 'react-redux';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Redirect, Route, Switch, useLocation } from 'react-router-dom';
 import Admin from './pages/Admin';
 import Dashboard from './pages/Dashboard';
@@ -13,6 +13,9 @@ import { NotFoundPage } from './pages/404';
 import { AppState } from './store';
 import style from './style';
 import { routes } from './pages/routes';
+import { api } from './apis';
+import { setCustomSiteTitle } from './store/site/slice';
+import { toLowerCamelCase } from './utils';
 
 // 公共的页面
 const publicPaths = [
@@ -24,10 +27,22 @@ const publicPaths = [
 
 const App: React.FC = () => {
   const location = useLocation();
+  const dispatch = useDispatch();
   const token = useSelector((state: AppState) => state.user.token);
   const platform = useSelector((state: AppState) => state.site.platform);
   const userIsAdmin = useSelector((state: AppState) => state.user.admin);
   const isMobile = platform === 'mobile';
+
+  useEffect(() => {
+    api.siteSetting
+      .getHomepage({})
+      .then((res) =>
+        dispatch(
+          setCustomSiteTitle(toLowerCamelCase(res.data).customSiteTitle),
+        ),
+      )
+      .catch(() => dispatch(setCustomSiteTitle('')));
+  }, [dispatch]);
 
   return (
     <>

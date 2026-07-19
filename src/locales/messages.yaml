@@ -184,9 +184,24 @@ site.setting.autoJoinTeamIDsError:
 site.setting.homepageHtml:
   zhCn: 主页 HTML
   en: Home HTML
+site.setting.homepageHtmlTip:
+  zhCn: 填写后将完全替换默认主页，主页欢迎语不会显示
+  en: When set, this completely replaces the default home page and hides the homepage welcome message.
 site.setting.homepageCss:
   zhCn: 主页 CSS
   en: Home CSS
+site.setting.customSiteTitle:
+  zhCn: 自定义站点标题
+  en: Custom Site Title
+site.setting.customSiteTitleTip:
+  zhCn: 留空时使用默认站点标题；填写后用于所有页面的浏览器标题
+  en: Leave blank to use the default site title. When set, it is used in browser titles on every page.
+site.setting.homepageWelcome:
+  zhCn: 主页欢迎语
+  en: Homepage Welcome Message
+site.setting.homepageWelcomeTip:
+  zhCn: 仅在未填写主页 HTML 时显示，支持换行，不解析 HTML
+  en: Shown only when Home HTML is empty. Newlines are supported; HTML is not interpreted.
 site.setting.onlyAllowAdminCreateTeam:
   zhCn: 仅允许管理员创建团队
   en: Only allow administrators to create teams

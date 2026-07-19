@@ -4,12 +4,14 @@ import TextArea from 'antd/lib/input/TextArea';
 import classNames from 'classnames';
 import React, { useEffect, useState } from 'react';
 import { useIntl } from 'react-intl';
+import { useDispatch } from 'react-redux';
 import { api } from '@/apis';
 import { APISiteSetting } from '@/apis/siteSetting';
 import { FC } from '@/interfaces';
 import { toLowerCamelCase } from '@/utils';
 import { Form } from '@/components/shared-form/Form';
 import { FormItem } from '@/components/shared-form/FormItem';
+import { setCustomSiteTitle } from '@/store/site/slice';
 
 function textareaToArray(textarea: string): string[] {
   return textarea.trim() === ''
@@ -37,6 +39,7 @@ interface AdminSiteSettingProps {
  */
 export const AdminSiteSetting: FC<AdminSiteSettingProps> = ({ className }) => {
   const { formatMessage } = useIntl();
+  const dispatch = useDispatch();
 
   const [form] = AntdForm.useForm();
   const [loading, setLoading] = useState(true);
@@ -59,10 +62,14 @@ export const AdminSiteSetting: FC<AdminSiteSettingProps> = ({ className }) => {
         },
       })
       .then((result) => {
-        const data = toLowerCamelCase(result.data);
-        data.whitelistEmails = data.whitelistEmails.join('\n');
-        data.autoJoinTeamIDs = data.autoJoinTeamIDs.join('\n');
-        form.setFieldsValue(data);
+        const data = toLowerCamelCase(result.data) as APISiteSetting;
+        const formData: APISiteSettingFormData = {
+          ...data,
+          whitelistEmails: arrayToTextarea(data.whitelistEmails),
+          autoJoinTeamIDs: arrayToTextarea(data.autoJoinTeamIDs),
+        };
+        form.setFieldsValue(formData);
+        dispatch(setCustomSiteTitle(data.customSiteTitle));
         // 弹出提示
         message.success(formatMessage({ id: 'site.setting.editSuccess' }));
       })
@@ -102,16 +109,19 @@ export const AdminSiteSetting: FC<AdminSiteSettingProps> = ({ className }) => {
     api.siteSetting
       .getSiteSetting({})
       .then((result) => {
-        const data = toLowerCamelCase(result.data);
-        data.whitelistEmails = arrayToTextarea(data.whitelistEmails);
-        data.autoJoinTeamIDs = arrayToTextarea(data.autoJoinTeamIDs);
+        const data = toLowerCamelCase(result.data) as APISiteSetting;
+        const formData: APISiteSettingFormData = {
+          ...data,
+          whitelistEmails: arrayToTextarea(data.whitelistEmails),
+          autoJoinTeamIDs: arrayToTextarea(data.autoJoinTeamIDs),
+        };
         setSiteSetting(data);
-        form.setFieldsValue(data);
+        form.setFieldsValue(formData);
       })
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [form]);
 
   return loading ? (
     <Spin />
@@ -150,8 +160,23 @@ export const AdminSiteSetting: FC<AdminSiteSettingProps> = ({ className }) => {
           <TextArea rows={10} />
         </FormItem>
         <FormItem
+          label={formatMessage({ id: 'site.setting.customSiteTitle' })}
+          name="customSiteTitle"
+          tooltip={formatMessage({ id: 'site.setting.customSiteTitleTip' })}
+        >
+          <TextArea rows={2} />
+        </FormItem>
+        <FormItem
+          label={formatMessage({ id: 'site.setting.homepageWelcome' })}
+          name="homepageWelcome"
+          tooltip={formatMessage({ id: 'site.setting.homepageWelcomeTip' })}
+        >
+          <TextArea rows={4} />
+        </FormItem>
+        <FormItem
           label={formatMessage({ id: 'site.setting.homepageHtml' })}
           name="homepageHtml"
+          tooltip={formatMessage({ id: 'site.setting.homepageHtmlTip' })}
         >
           <TextArea rows={10} />
         </FormItem>

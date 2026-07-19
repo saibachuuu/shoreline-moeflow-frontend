@@ -8,6 +8,7 @@ export interface SiteState {
   newInvitationsCount: number;
   relatedApplicationsCount: number;
   runtimeConfig: RuntimeConfig;
+  customSiteTitle: string;
 }
 
 const initialState: SiteState = {
@@ -16,6 +17,7 @@ const initialState: SiteState = {
   relatedApplicationsCount: 0,
   newInvitationsCount: 0,
   runtimeConfig: null!,
+  customSiteTitle: '',
 };
 const slice = createSlice({
   name: 'site',
@@ -36,6 +38,9 @@ const slice = createSlice({
     setRuntimeConfig(state, action: PayloadAction<RuntimeConfig>) {
       state.runtimeConfig = action.payload;
     },
+    setCustomSiteTitle(state, action: PayloadAction<string>) {
+      state.customSiteTitle = action.payload;
+    },
   },
 });
 
@@ -45,5 +50,6 @@ export const {
   setRelatedApplicationsCount,
   setNewInvitationsCount,
   setRuntimeConfig,
+  setCustomSiteTitle,
 } = slice.actions;
 export default slice.reducer;

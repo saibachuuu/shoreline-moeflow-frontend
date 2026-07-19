@@ -35,6 +35,7 @@ import { MovableAreaImageBackground } from './MovableAreaImageBackground';
 import { MovableLabel } from './MovableLabel';
 import { Tooltip } from '@/components/shared/Tooltip';
 import { routes } from '@/pages/routes';
+import { addThumbnailRevision, getPreferredImageUrl } from './imageUrl';
 /**
  * 🖥浏览器识别
  */
@@ -449,16 +450,11 @@ export const ImageViewer: FC<ImageViewerProps> = ({
     imageSize.height,
   ]);
 
-  const hasResampleImage = Boolean(
-    file.resampleUrl && file.resampleUrl !== 'generating',
-  );
-  const imageBaseUrl =
-    useOriginalImage || !hasResampleImage ? file.url : file.resampleUrl;
-  const currentImageUrl = imageBaseUrl
-    ? thumbnailRevision > 0 && !useOriginalImage
-      ? `${imageBaseUrl}${imageBaseUrl.includes('?') ? '&' : '?'}thumbnail_revision=${thumbnailRevision}`
-      : imageBaseUrl
-    : undefined;
+  const imageBaseUrl = getPreferredImageUrl(file, useOriginalImage);
+  const currentImageUrl =
+    thumbnailRevision > 0 && !useOriginalImage
+      ? addThumbnailRevision(imageBaseUrl, thumbnailRevision)
+      : imageBaseUrl;
 
   // Reset transient image state when navigating to another file.
   useEffect(() => {
@@ -791,24 +787,14 @@ export const ImageViewer: FC<ImageViewerProps> = ({
 
       {file.prevImage && (
         <img
-          src={
-            file.prevImage.resampleUrl &&
-            file.prevImage.resampleUrl !== 'generating'
-              ? file.prevImage.resampleUrl
-              : file.prevImage.url
-          }
+          src={getPreferredImageUrl(file.prevImage)}
           style={{ display: 'none' }}
           alt="prev img cache"
         />
       )}
       {file.nextImage && (
         <img
-          src={
-            file.nextImage.resampleUrl &&
-            file.nextImage.resampleUrl !== 'generating'
-              ? file.nextImage.resampleUrl
-              : file.nextImage.url
-          }
+          src={getPreferredImageUrl(file.nextImage)}
           style={{ display: 'none' }}
           alt="next img cache"
         />

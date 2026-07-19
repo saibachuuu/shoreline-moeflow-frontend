@@ -15,6 +15,8 @@ import style from '@/style';
 import { getBestTranslation } from '@/utils/source';
 import { clickEffect, hover } from '@/utils/style';
 import { can } from '@/utils/user';
+import { QuickCharacterButtons } from '../QuickCharacterButtons';
+import { insertCharacterAtSelection } from '../quickCharacters';
 
 /** 翻译模式的属性接口 */
 interface ImageSourceViewerTranslatorProps {
@@ -64,7 +66,7 @@ export const ImageSourceViewerTranslator: FC<
   const focusedSourceCreating = focusedSource?.labelStatus === 'creating';
   const focusedSourceDeleting = focusedSource?.labelStatus === 'deleting';
 
-  const responsiveHeight = isMobile ? 60 : 200;
+  const responsiveHeight = isMobile ? 100 : 240;
   const bottomHeight = focusedSource ? responsiveHeight : 0;
 
   useEffect(() => {
@@ -95,6 +97,27 @@ export const ImageSourceViewerTranslator: FC<
         content: e.target.value,
       }),
     );
+  };
+
+  const insertQuickCharacter = (character: string) => {
+    const textArea = textAreaRef.current?.resizableTextArea?.textArea;
+    const result = insertCharacterAtSelection(
+      focusedSource?.myTranslation?.content || '',
+      textArea?.selectionStart ?? null,
+      textArea?.selectionEnd ?? null,
+      character,
+    );
+    dispatch(
+      editMyTranslationSaga({
+        sourceID: focusedSourceID,
+        targetID,
+        content: result.value,
+      }),
+    );
+    requestAnimationFrame(() => {
+      textArea?.focus();
+      textArea?.setSelectionRange(result.cursor, result.cursor);
+    });
   };
 
   return (
@@ -352,6 +375,14 @@ export const ImageSourceViewerTranslator: FC<
             }
             ref={textAreaRef}
           ></TextArea>
+          <QuickCharacterButtons
+            disabled={
+              !can(currentProject, PROJECT_PERMISSION.ADD_TRA) ||
+              focusedSourceCreating ||
+              focusedSourceDeleting
+            }
+            onInsert={insertQuickCharacter}
+          />
           <div className="ImageSourceViewerTranslator__StatusBar">
             <DebounceStatus
               className="ImageSourceViewerTranslator__DebounceStatus"

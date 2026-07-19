@@ -7,6 +7,8 @@ export interface APISiteSetting {
   whitelistEmails: string[];
   onlyAllowAdminCreateTeam: boolean;
   autoJoinTeamIDs: string[];
+  customSiteTitle: string;
+  homepageWelcome: string;
 }
 
 const getSiteSetting = ({ configs }: { configs?: AxiosRequestConfig }) => {
@@ -35,6 +37,8 @@ const editSiteSetting = ({
 export interface APIHomepage {
   html: string;
   css: string;
+  customSiteTitle: string;
+  homepageWelcome: string;
 }
 const getHomepage = ({ configs }: { configs?: AxiosRequestConfig }) => {
   return request<APIHomepage>({

@@ -8,6 +8,7 @@ import { FC } from '@/interfaces';
 import style from '@/style';
 import { clickEffect } from '@/utils/style';
 import projectApi, { ProjectWorkerRole, ProjectWorkers } from '@/apis/project';
+import { getProjectWorkerIconColor } from './projectWorkers';
 
 interface MemberStatsProps {
   workers: ProjectWorkers;
@@ -37,10 +38,10 @@ export const MemberStats: FC<MemberStatsProps> = ({
   const getRoleIcon = (
     role: ProjectWorkerRole,
   ): { icon: IconProp; color: string } => {
-    if (!workers[role]?.length) {
-      return { icon: 'user-circle', color: style.textColorSecondaryLighter };
-    }
-    return { icon: 'user-circle', color: '#28a745' };
+    return {
+      icon: 'user-circle',
+      color: getProjectWorkerIconColor(workers, role),
+    };
   };
 
   const getRoleTooltip = (role: {
