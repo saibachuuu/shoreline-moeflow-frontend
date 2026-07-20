@@ -2,12 +2,13 @@ import { css } from '@emotion/core';
 import classNames from 'classnames';
 import { useEffect, useState } from 'react';
 import { useIntl } from 'react-intl';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useHistory, useLocation, useRouteMatch } from 'react-router-dom';
 import { Icon, TranslationProgress, MemberStats } from '@/components';
 import { ProjectWorkers } from '@/apis/project';
 import { PROJECT_PERMISSION, PROJECT_STATUS } from '@/constants';
 import { FC, Project } from '@/interfaces';
+import { AppState } from '@/store';
 import { resetFilesState } from '@/store/file/slice';
 import style from '@/style';
 import { cardActiveEffect, cardClickEffect, clickEffect } from '@/utils/style';
@@ -32,6 +33,9 @@ export const ProjectItem: FC<ProjectItemProps> = ({
   const location = useLocation();
   const history = useHistory();
   const dispatch = useDispatch();
+  const currentProjectSet = useSelector(
+    (state: AppState) => state.projectSet.currentProjectSet,
+  );
   const [workers, setWorkers] = useState<ProjectWorkers>(project.workers || {});
 
   useEffect(() => {
@@ -121,6 +125,13 @@ export const ProjectItem: FC<ProjectItemProps> = ({
           box-sizing: content-box;
           margin: 5px 0;
         }
+        .ProjectItem__ProjectSetTag {
+          flex: none;
+          font-size: 13px;
+          font-weight: bold;
+          color: ${style.primaryColor};
+          margin-right: 8px;
+        }
         .ProjectItem__Bottom {
           display: flex;
           align-items: center;
@@ -166,7 +177,16 @@ export const ProjectItem: FC<ProjectItemProps> = ({
           </div>
         </div>
       )}
-      <div className="ProjectItem__Name">{project.name}</div>
+      <div className="ProjectItem__Name">
+        {from === 'team' && currentProjectSet && project.projectSet.id !== currentProjectSet.id && (
+          <span className="ProjectItem__ProjectSetTag">
+            {project.projectSet.default
+              ? formatMessage({ id: 'projectSet.default' })
+              : project.projectSet.name}
+          </span>
+        )}
+        {project.name}
+      </div>
       <MemberStats
         workers={workers}
         projectId={project.id}

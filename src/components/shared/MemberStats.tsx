@@ -7,7 +7,7 @@ import { Icon, Tooltip, EditWorkers } from '@/components';
 import { FC } from '@/interfaces';
 import style from '@/style';
 import { clickEffect } from '@/utils/style';
-import projectApi, { ProjectWorkerRole, ProjectWorkers } from '@/apis/project';
+import projectApi, { PROJECT_WORKER_DISPLAY_ROLES, ProjectWorkerRole, ProjectWorkers } from '@/apis/project';
 import { getProjectWorkerIconColor } from './projectWorkers';
 
 interface MemberStatsProps {
@@ -28,18 +28,14 @@ export const MemberStats: FC<MemberStatsProps> = ({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const editButtonRef = useRef<HTMLSpanElement | null>(null);
 
-  const roles: ReadonlyArray<{ key: ProjectWorkerRole; label: string }> = [
-    { key: '翻译', label: '翻译' },
-    { key: '校对', label: '校对' },
-    { key: '嵌字', label: '嵌字' },
-  ];
+  const roles = PROJECT_WORKER_DISPLAY_ROLES;
 
   const getRoleIcon = (
-    role: ProjectWorkerRole,
+    roleKey: ProjectWorkerRole,
   ): { icon: IconProp; color: string } => {
     return {
       icon: 'user-circle',
-      color: getProjectWorkerIconColor(workers, role),
+      color: getProjectWorkerIconColor(workers, roleKey),
     };
   };
 

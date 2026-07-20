@@ -30,6 +30,7 @@ interface ListProps<T> {
     cancelToken,
   }: ListPageSpec) => Promise<any> | void;
   loading: boolean;
+  onSearchLeftButtonClick?: (e: React.MouseEvent) => void;
   onSearchRightButtonClick?: (e: React.MouseEvent) => void;
   total: number;
   items: T[];
@@ -42,6 +43,7 @@ interface ListProps<T> {
     word: string,
   ) => React.ReactNode | React.ReactElement | undefined;
   searchRightButton?: React.ReactNode | React.ReactElement;
+  searchLeftButton?: React.ReactNode | React.ReactElement;
   searchInputVisible?: boolean;
   searchInputProps?: ListSearchInputProps;
   searchInputHeight?: number;
@@ -96,6 +98,7 @@ interface ListProps<T> {
 export function List<T>({
   id,
   onChange,
+  onSearchLeftButtonClick,
   onSearchRightButtonClick,
   loading,
   total,
@@ -107,6 +110,7 @@ export function List<T>({
   emptyTipCreater,
   searchEmptyTipCreater,
   searchRightButton,
+  searchLeftButton,
   searchInputVisible = true,
   searchInputProps,
   searchInputHeight = 45,
@@ -330,6 +334,8 @@ export function List<T>({
             <ListSearchInput
               className="List__SearchInputWrapper"
               onSearch={handleWordChange}
+              leftButton={searchLeftButton}
+              onLeftButtonClick={onSearchLeftButtonClick}
               rightButton={searchRightButton}
               onRightButtonClick={onSearchRightButtonClick}
               value={tempWord}

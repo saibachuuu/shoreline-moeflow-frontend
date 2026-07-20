@@ -43,12 +43,31 @@ export interface APIProject {
 
 export type ProjectWorkers = Partial<Record<ProjectWorkerRole, string[]>>;
 export type ProjectWorkerRole =
-  | '图源'
-  | '扫图'
-  | '修图'
-  | '翻译'
-  | '校对'
-  | '嵌字';
+  | 'provider'
+  | 'scan'
+  | 'scan_retoucher'
+  | 'translator'
+  | 'proofreader'
+  | 'picture_editor';
+
+export const PROJECT_WORKER_ROLES: ReadonlyArray<{
+  key: ProjectWorkerRole;
+  label: string;
+}> = [
+  { key: 'provider', label: '图源' },
+  { key: 'scan', label: '扫图' },
+  { key: 'scan_retoucher', label: '修图' },
+  { key: 'translator', label: '翻译' },
+  { key: 'proofreader', label: '校对' },
+  { key: 'picture_editor', label: '嵌字' },
+];
+
+export const PROJECT_WORKER_DISPLAY_ROLES = PROJECT_WORKER_ROLES.filter(
+  (r) =>
+    r.key === 'translator' ||
+    r.key === 'proofreader' ||
+    r.key === 'picture_editor',
+);
 
 interface ProjectWorkersResponse {
   message: string;
@@ -59,6 +78,10 @@ interface ProjectWorkersResponse {
 interface GetTeamProjectsParams {
   word?: string;
   status?: PROJECT_STATUS;
+  mode?: string;
+  scope?: string;
+  role?: ProjectWorkerRole;
+  worker_name?: string;
 }
 /** 获取团队的项目列表 */
 const getTeamProjects = ({

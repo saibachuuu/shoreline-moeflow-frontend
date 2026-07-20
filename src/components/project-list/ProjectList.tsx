@@ -2,11 +2,11 @@ import { css } from '@emotion/core';
 import { Button } from 'antd';
 import { CancelToken } from 'axios';
 import classNames from 'classnames';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory, useRouteMatch } from 'react-router-dom';
-import { EmptyTip, List } from '@/components';
+import { EmptyTip, Icon, List } from '@/components';
 import { ProjectItem } from './ProjectItem';
 import api, { resultTypes } from '@/apis';
 import { PROJECT_STATUS } from '@/constants';
@@ -21,6 +21,10 @@ import {
 import style from '@/style';
 import { toLowerCamelCase } from '@/utils';
 import { clickEffect } from '@/utils/style';
+import {
+  PROJECT_WORKER_ROLES,
+  ProjectWorkerRole,
+} from '@/apis/project';
 
 /** 项目列表的属性接口 */
 interface ProjectListProps {
@@ -70,6 +74,13 @@ export const ProjectList: FC<ProjectListProps> = ({
     (state: AppState) => state.project.projectsState.status,
   );
 
+  const [showWorkerSearch, setShowWorkerSearch] = useState(false);
+  const [searchMode, setSearchMode] = useState<string>('search-project-name');
+  const [searchScope, setSearchScope] = useState<string>('project-set');
+  const [searchRole, setSearchRole] = useState<ProjectWorkerRole | ''>('');
+  const [activeWorkerSearch, setActiveWorkerSearch] = useState(false);
+  const workerSearchRef = useRef<HTMLDivElement>(null);
+
   /** 获取元素 */
   const handleChange = ({
     page,
@@ -113,16 +124,31 @@ export const ProjectList: FC<ProjectListProps> = ({
           error.default();
         });
     } else if (from === 'team') {
+      // 项目名搜索且搜索框为空时无视范围，仅查项目集内
+      const effectiveScope =
+        searchMode === 'search-project-name' && !word
+          ? 'project-set'
+          : searchScope;
+      const params: any = {
+        page,
+        limit: pageSize,
+        status,
+        mode: searchMode,
+        scope: effectiveScope,
+      };
+      if (searchMode === 'search-worker') {
+        if (searchRole) {
+          params.role = searchRole;
+        }
+        params.worker_name = word;
+      } else {
+        params.word = word;
+      }
       return api
         .getTeamProjects({
           teamID: currentTeam!.id,
           projectSetID: currentProjectSet!.id,
-          params: {
-            page,
-            limit: pageSize,
-            word,
-            status,
-          },
+          params,
           configs: {
             cancelToken,
           },
@@ -132,7 +158,10 @@ export const ProjectList: FC<ProjectListProps> = ({
           setTotal(result.headers['x-pagination-count']);
           setLoading(false);
           for (const project of result.data) {
-            dispatch(createProject({ project: toLowerCamelCase(project) }));
+            const originalWorkers = project.workers;
+            const camelProject = toLowerCamelCase(project);
+            camelProject.workers = originalWorkers;
+            dispatch(createProject({ project: camelProject }));
           }
         })
         .catch((error) => {
@@ -145,12 +174,29 @@ export const ProjectList: FC<ProjectListProps> = ({
     }
   };
 
+  const handleWorkerSearchToggle = () => {
+    setShowWorkerSearch((v) => !v);
+  };
+
+  const handleWorkerSearchClear = () => {
+    setActiveWorkerSearch(false);
+    setSearchRole('');
+    setSearchMode('search-project-name');
+    setSearchScope('project-set');
+    dispatch(clearProjects());
+    dispatch(setProjectsState({ word: '', page: 1 }));
+    setLoading(true);
+  };
+
   // 用于刷新 List 的唯一 ID
   let listID = '';
   if (from === 'user') {
     listID = currentUser.id;
   } else if (from === 'team') {
-    listID = currentTeam!.id + currentProjectSet!.id;
+    listID = currentTeam!.id + currentProjectSet!.id + '-scope-' + searchScope;
+    if (activeWorkerSearch) {
+      listID += '-ws-' + searchMode + '-' + (searchRole || 'any');
+    }
   }
 
   return (
@@ -245,6 +291,20 @@ export const ProjectList: FC<ProjectListProps> = ({
       }}
       searchRightButton={searchRightButton}
       onSearchRightButtonClick={onSearchRightButtonClick}
+      searchLeftButton={
+        from === 'team' ? (
+          <Icon
+            icon="user-check"
+            css={
+              activeWorkerSearch &&
+              css`
+                color: ${style.primaryColor} !important;
+              `
+            }
+          />
+        ) : undefined
+      }
+      onSearchLeftButtonClick={from === 'team' ? handleWorkerSearchToggle : undefined}
       defaultPage={defaultPage}
       onPageChange={(page) => {
         dispatch(setProjectsState({ page }));
@@ -259,6 +319,182 @@ export const ProjectList: FC<ProjectListProps> = ({
       }}
       header={
         <>
+          {from === 'team' && showWorkerSearch && (
+            <div
+              ref={workerSearchRef}
+              css={css`
+                margin: 0 ${style.paddingBase}px 10px;
+                padding: 10px;
+                background: ${style.backgroundColorLight};
+                border-radius: ${style.borderRadiusBase};
+                border: 1px solid ${style.borderColorLight};
+                .WorkerSearch__Row {
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                  margin-bottom: 8px;
+                  &:last-child {
+                    margin-bottom: 0;
+                  }
+                }
+                .WorkerSearch__Label {
+                  flex: none;
+                  width: 56px;
+                  font-size: 12px;
+                  color: ${style.textColorSecondary};
+                }
+                .WorkerSearch__Select {
+                  flex: 1;
+                  min-width: 0;
+                  padding: 4px 8px;
+                  border: 1px solid ${style.borderColorLight};
+                  border-radius: ${style.borderRadiusBase};
+                  font-size: 13px;
+                  background: white;
+                  outline: none;
+                  &:focus {
+                    border-color: ${style.primaryColor};
+                  }
+                }
+                .WorkerSearch__Input {
+                  flex: 1;
+                  min-width: 0;
+                  padding: 4px 8px;
+                  border: 1px solid ${style.borderColorLight};
+                  border-radius: ${style.borderRadiusBase};
+                  font-size: 13px;
+                  outline: none;
+                  &:focus {
+                    border-color: ${style.primaryColor};
+                  }
+                }
+                .WorkerSearch__Buttons {
+                  display: flex;
+                  justify-content: flex-end;
+                  gap: 8px;
+                }
+                .WorkerSearch__Button {
+                  display: flex;
+                  align-items: center;
+                  gap: 4px;
+                  padding: 4px 12px;
+                  border-radius: ${style.borderRadiusBase};
+                  font-size: 12px;
+                  cursor: pointer;
+                  ${clickEffect()};
+                }
+                .WorkerSearch__Button--primary {
+                  background: ${style.primaryColor};
+                  color: white;
+                }
+                .WorkerSearch__Button--ghost {
+                  background: white;
+                  color: ${style.textColorSecondary};
+                  border: 1px solid ${style.borderColorLight};
+                }
+              `}
+            >
+              <div className="WorkerSearch__Row">
+                <span className="WorkerSearch__Label">查询模式</span>
+                <select
+                  className="WorkerSearch__Select"
+                  value={searchMode}
+                  onChange={(e) => {
+                    const newMode = e.target.value;
+                    setSearchMode(newMode);
+                    if (newMode === 'search-project-name') {
+                      setActiveWorkerSearch(false);
+                    } else if (!activeWorkerSearch) {
+                      setActiveWorkerSearch(true);
+                    }
+                  }}
+                >
+                  <option value="search-project-name">项目名搜索</option>
+                  <option value="search-worker">成员搜索</option>
+                </select>
+              </div>
+              <div className="WorkerSearch__Row">
+                <span className="WorkerSearch__Label">范围</span>
+                <select
+                  className="WorkerSearch__Select"
+                  value={searchScope}
+                  onChange={(e) => setSearchScope(e.target.value)}
+                >
+                  <option value="project-set">项目集内</option>
+                  <option value="team">全团队</option>
+                </select>
+              </div>
+              {searchMode === 'search-worker' && (
+                <div className="WorkerSearch__Row">
+                  <span className="WorkerSearch__Label">限定职位</span>
+                  <select
+                    className="WorkerSearch__Select"
+                    value={searchRole}
+                    onChange={(e) =>
+                      setSearchRole(e.target.value as ProjectWorkerRole | '')
+                    }
+                  >
+                    <option value="">任何职位</option>
+                    {PROJECT_WORKER_ROLES.map((r) => (
+                      <option key={r.key} value={r.key}>
+                        {r.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              {activeWorkerSearch && (
+                <div className="WorkerSearch__Buttons">
+                  <span
+                    className="WorkerSearch__Button WorkerSearch__Button--ghost"
+                    onClick={handleWorkerSearchClear}
+                  >
+                    <Icon icon="times" />
+                    清除搜索
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+          {activeWorkerSearch && (
+            <div
+              css={css`
+                margin: 0 ${style.paddingBase}px 10px;
+                padding: 6px 10px;
+                background: ${style.primaryColor}10;
+                border-radius: ${style.borderRadiusBase};
+                border: 1px solid ${style.primaryColor}30;
+                font-size: 12px;
+                color: ${style.textColorSecondary};
+                display: flex;
+                align-items: center;
+                gap: 8px;
+              `}
+            >
+              <Icon icon="user-check" style={{ color: style.primaryColor }} />
+              <span>
+                正按人员搜索{searchRole
+                  ? PROJECT_WORKER_ROLES.find((r) => r.key === searchRole)
+                      ?.label
+                  : '任何职位'}
+                （
+                {searchScope === 'project-set'
+                  ? '本集内'
+                  : '全团队'}
+                ）
+              </span>
+              <span
+                css={css`
+                  margin-left: auto;
+                  cursor: pointer;
+                  ${clickEffect()};
+                `}
+                onClick={handleWorkerSearchClear}
+              >
+                <Icon icon="times" />
+              </span>
+            </div>
+          )}
           <div className="ProjectList__Statuses">
             <div
               className={classNames('ProjectList__Status', {

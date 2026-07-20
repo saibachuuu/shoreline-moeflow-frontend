@@ -30,7 +30,7 @@ describe('migrated image and worker APIs', () => {
   });
 
   test('uses worker endpoints and preserves worker payloads', async () => {
-    const workers = { 翻译: ['Alice'], 校对: ['Bob'] };
+    const workers = { translator: ['Alice'], proofreader: ['Bob'] };
 
     await projectApi.parseProjectWorkers({ id: 'project-1' });
     expect(mockRequest).toHaveBeenLastCalledWith({

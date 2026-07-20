@@ -7,13 +7,13 @@ import {
 
 describe('project worker helpers', () => {
   test('uses gray for empty roles and green for populated roles', () => {
-    expect(getProjectWorkerIconColor({}, '翻译')).toBe(
+    expect(getProjectWorkerIconColor({}, 'translator')).toBe(
       style.textColorSecondaryLighter,
     );
-    expect(getProjectWorkerIconColor({ 翻译: ['Alice'] }, '翻译')).toBe(
+    expect(getProjectWorkerIconColor({ translator: ['Alice'] }, 'translator')).toBe(
       PROJECT_WORKER_ACTIVE_COLOR,
     );
-    expect(getProjectWorkerIconColor({ 翻译: [] }, '翻译')).toBe(
+    expect(getProjectWorkerIconColor({ translator: [] }, 'translator')).toBe(
       style.textColorSecondaryLighter,
     );
   });

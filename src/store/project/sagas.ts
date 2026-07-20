@@ -33,7 +33,10 @@ function* setCurrentProjectWorker(
         id: action.payload.id,
         configs: { cancelToken },
       });
-      yield put(setCurrentProject(toLowerCamelCase(result.data)));
+      const originalWorkers = result.data.workers;
+      const camelProject = toLowerCamelCase(result.data);
+      camelProject.workers = originalWorkers;
+      yield put(setCurrentProject(camelProject));
     } catch (error: any) {
       error.default();
     } finally {

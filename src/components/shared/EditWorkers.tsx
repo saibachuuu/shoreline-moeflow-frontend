@@ -3,7 +3,7 @@ import { FC, useState } from 'react';
 import { Icon } from '@/components';
 import style from '@/style';
 import { clickEffect } from '@/utils/style';
-import { ProjectWorkerRole, ProjectWorkers } from '@/apis/project';
+import { ProjectWorkers, PROJECT_WORKER_ROLES } from '@/apis/project';
 import { parseProjectWorkerInput } from './projectWorkers';
 
 interface EditWorkersProps {
@@ -17,14 +17,7 @@ export const EditWorkers: FC<EditWorkersProps> = ({
   onSave,
   onCancel,
 }) => {
-  const roles: ReadonlyArray<{ key: ProjectWorkerRole; label: string }> = [
-    { key: '图源', label: '图源' },
-    { key: '扫图', label: '扫图' },
-    { key: '修图', label: '修图' },
-    { key: '翻译', label: '翻译' },
-    { key: '校对', label: '校对' },
-    { key: '嵌字', label: '嵌字' },
-  ];
+  const roles = PROJECT_WORKER_ROLES;
 
   const [inputs, setInputs] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};

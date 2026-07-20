@@ -9,6 +9,8 @@ import { clickEffect } from '@/utils/style';
 
 /** 列表搜索框的属性接口 */
 export interface ListSearchInputProps extends SearchProps {
+  leftButton?: React.ReactNode | React.ReactElement;
+  onLeftButtonClick?: (e: React.MouseEvent) => void;
   rightButton?: React.ReactNode | React.ReactElement;
   onRightButtonClick?: (e: React.MouseEvent) => void;
   className?: string;
@@ -19,6 +21,8 @@ export interface ListSearchInputProps extends SearchProps {
 export const ListSearchInput: FC<ListSearchInputProps> = ({
   value,
   onChange,
+  leftButton,
+  onLeftButtonClick,
   rightButton,
   onRightButtonClick,
   className,
@@ -71,6 +75,16 @@ export const ListSearchInput: FC<ListSearchInputProps> = ({
             color: ${style.primaryColor};
           }
         }
+        .left-button {
+          width: 45px;
+          height: 45px;
+          flex: none;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          color: ${style.textColorSecondary};
+          ${onLeftButtonClick && clickEffect()};
+        }
         .right-button {
           width: 45px;
           height: 45px;
@@ -81,12 +95,21 @@ export const ListSearchInput: FC<ListSearchInputProps> = ({
           color: ${style.textColorSecondary};
           ${onRightButtonClick && clickEffect()};
         }
+        ${leftButton &&
+        css`
+          padding-left: 0;
+        `};
         ${rightButton &&
         css`
           padding-right: 0;
         `};
       `}
     >
+      {leftButton && (
+        <div className="left-button" onClick={onLeftButtonClick}>
+          {leftButton}
+        </div>
+      )}
       <Input.Search
         className={classNames([
           'ListSearchInput',
