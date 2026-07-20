@@ -196,12 +196,20 @@ site.setting.customSiteTitle:
 site.setting.customSiteTitleTip:
   zhCn: 留空时使用默认站点标题；填写后用于所有页面的浏览器标题
   en: Leave blank to use the default site title. When set, it is used in browser titles on every page.
+site.setting.homepageImageUrl:
+  zhCn: 主页图片链接
+  en: Homepage Image URL
+site.setting.homepageImageUrlTip:
+  zhCn: 留空时使用默认图片。仅支持 http/https 图片链接，图片会锚定在浏览器窗口中央。
+  en: Leave blank to use the default image. Only http/https image URLs are supported; the image is anchored at the center of the browser window.
 site.setting.homepageWelcome:
   zhCn: 主页欢迎语
   en: Homepage Welcome Message
 site.setting.homepageWelcomeTip:
-  zhCn: 仅在未填写主页 HTML 时显示，支持换行，不解析 HTML
-  en: Shown only when Home HTML is empty. Newlines are supported; HTML is not interpreted.
+  zhCn: >-
+    仅在未填写主页 HTML 时显示，支持换行和安全 BBCode（[b]粗体[/b]、[i]斜体[/i]、[u]下划线[/u]、[s]删除线[/s]、[color=#e91e63]颜色[/color]、[size=20]字号[/size]、[url=https://example.com]链接[/url]、[img width=320 height=180 alt="说明" align=center]https://example.com/image.png[/img]）。图片仅支持 http/https 地址；可通过 width、height、alt、title、align（left/right/center）自定义。
+  en: >-
+    Shown only when Home HTML is empty. Newlines and safe BBCode are supported: [b]bold[/b], [i]italic[/i], [u]underline[/u], [s]strike[/s], [color=#e91e63]color[/color], [size=20]size[/size], [url=https://example.com]link[/url], and [img width=320 height=180 alt="description" align=center]https://example.com/image.png[/img]. Images only allow http/https URLs and accept width, height, alt, title, and align (left/right/center).
 site.setting.onlyAllowAdminCreateTeam:
   zhCn: 仅允许管理员创建团队
   en: Only allow administrators to create teams

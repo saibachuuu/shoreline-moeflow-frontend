@@ -64,7 +64,7 @@ import {
 import { faKissWinkHeart as faKissWinkHeartRegular } from '@fortawesome/free-regular-svg-icons';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 library.add(
-  ...[
+  ...([
     faSyncAlt,
     faBars,
     faSearchMinus,
@@ -121,9 +121,8 @@ library.add(
     faLink,
     faSave,
     faPaste,
-  ],
-  // Regular icons
-  ...[faKissWinkHeartRegular],
-  // Brand icons
-  ...[faGithub],
+    // Regular and brand icons
+    faKissWinkHeartRegular,
+    faGithub,
+  ] as any),
 );

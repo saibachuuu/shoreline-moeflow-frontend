@@ -178,13 +178,15 @@ export const ProjectItem: FC<ProjectItemProps> = ({
         </div>
       )}
       <div className="ProjectItem__Name">
-        {from === 'team' && currentProjectSet && project.projectSet.id !== currentProjectSet.id && (
-          <span className="ProjectItem__ProjectSetTag">
-            {project.projectSet.default
-              ? formatMessage({ id: 'projectSet.default' })
-              : project.projectSet.name}
-          </span>
-        )}
+        {from === 'team' &&
+          currentProjectSet &&
+          project.projectSet.id !== currentProjectSet.id && (
+            <span className="ProjectItem__ProjectSetTag">
+              {project.projectSet.default
+                ? formatMessage({ id: 'projectSet.default' })
+                : project.projectSet.name}
+            </span>
+          )}
         {project.name}
       </div>
       <MemberStats

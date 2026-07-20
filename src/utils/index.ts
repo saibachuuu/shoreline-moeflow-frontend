@@ -124,7 +124,7 @@ interface ToFormErrors {
  * 将 API 返回的字段验证错误（下划线），转换为 Form 使用的错误列表（小驼峰）
  */
 const toFormErrors: ToFormErrors = (value) => {
-  const newValue = [];
+  const newValue: FormError[] = [];
   for (const key in value) {
     newValue.push({
       name: stringToLowerCamelCase(key),

@@ -161,7 +161,9 @@ const App: React.FC = () => {
             exact
             strict
             render={({ match }) => (
-              <Redirect to={`/${match.params.url.replace(/\/\/+/, '/')}`} />
+              <Redirect
+                to={`/${(match.params as { url: string }).url.replace(/\/\/+/, '/')}`}
+              />
             )}
           />
           <Route exact path={routes.index}>

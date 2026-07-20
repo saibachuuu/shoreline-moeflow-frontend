@@ -95,7 +95,7 @@ export const resultTypes = {
 } as const;
 
 /** 成功的响应 */
-export interface BasicSuccessResult<T = unknown> {
+export interface BasicSuccessResult<T = any> {
   type: typeof resultTypes.SUCCESS;
   data: T;
   headers: Partial<AxiosHeaders>;
@@ -161,7 +161,7 @@ export type FailureResults =
   | CancelFailureResult
   | OtherFailureResult;
 
-export async function request<T = unknown>(
+export async function request<T = any>(
   axiosConfig: AxiosRequestConfig,
 ): Promise<BasicSuccessResult<T>> {
   const instance = await instanceP;
@@ -186,23 +186,28 @@ export async function request<T = unknown>(
         error.response.status >= 400 &&
         error.response.status < 500
       ) {
-        if (error.response.data.code === 2) {
+        const errorData = error.response.data as
+          | BasicFailureResultData
+          | ValidationFailureResultData;
+        if (errorData.code === 2) {
           // 将 message 中的字段名转为小驼峰
-          error.response.data.message = toLowerCamelCase(
-            error.response.data.message,
-          );
+          errorData.message = toLowerCamelCase(
+            errorData.message,
+          ) as ValidationFailureResultData['message'];
           // 验证错误
           const result: ValidationFailureResult = {
             type: resultTypes.VALIDATION_FAILURE,
-            data: error.response.data,
-            default: validateBasicFailure(error.response.data),
+            data: errorData as ValidationFailureResultData,
+            default: validateBasicFailure(
+              errorData as ValidationFailureResultData,
+            ),
           };
           throw result;
         } else if (error.response.status === 401) {
           // token 错误
           const result: BasicFailureResult = {
             type: resultTypes.BASIC_FAILURE,
-            data: error.response.data,
+            data: errorData as BasicFailureResultData,
             default: () => {
               // 清理 token
               store.dispatch(setUserToken({ token: '' }));
@@ -213,8 +218,8 @@ export async function request<T = unknown>(
           // 基础错误
           const result: BasicFailureResult = {
             type: resultTypes.BASIC_FAILURE,
-            data: error.response.data,
-            default: defaultBasicFailure(error.response.data),
+            data: errorData as BasicFailureResultData,
+            default: defaultBasicFailure(errorData as BasicFailureResultData),
           };
           throw result;
         }

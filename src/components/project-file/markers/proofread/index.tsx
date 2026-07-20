@@ -205,7 +205,10 @@ export const ImageSourceViewerProofreader: FC<
   };
 
   const batchSelectTranslation = () => {
-    const sourceTranslationIDMap = [];
+    const sourceTranslationIDMap: Array<{
+      sourceID: string;
+      translationID: string;
+    }> = [];
     for (const source of sources) {
       const bestTranslation = getBestTranslation(source);
       if (bestTranslation && !bestTranslation.selected) {

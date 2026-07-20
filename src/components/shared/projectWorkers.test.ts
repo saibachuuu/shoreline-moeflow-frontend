@@ -10,9 +10,9 @@ describe('project worker helpers', () => {
     expect(getProjectWorkerIconColor({}, 'translator')).toBe(
       style.textColorSecondaryLighter,
     );
-    expect(getProjectWorkerIconColor({ translator: ['Alice'] }, 'translator')).toBe(
-      PROJECT_WORKER_ACTIVE_COLOR,
-    );
+    expect(
+      getProjectWorkerIconColor({ translator: ['Alice'] }, 'translator'),
+    ).toBe(PROJECT_WORKER_ACTIVE_COLOR);
     expect(getProjectWorkerIconColor({ translator: [] }, 'translator')).toBe(
       style.textColorSecondaryLighter,
     );

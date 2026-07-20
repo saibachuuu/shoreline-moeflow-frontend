@@ -7,7 +7,11 @@ import { Icon, Tooltip, EditWorkers } from '@/components';
 import { FC } from '@/interfaces';
 import style from '@/style';
 import { clickEffect } from '@/utils/style';
-import projectApi, { PROJECT_WORKER_DISPLAY_ROLES, ProjectWorkerRole, ProjectWorkers } from '@/apis/project';
+import projectApi, {
+  PROJECT_WORKER_DISPLAY_ROLES,
+  ProjectWorkerRole,
+  ProjectWorkers,
+} from '@/apis/project';
 import { getProjectWorkerIconColor } from './projectWorkers';
 
 interface MemberStatsProps {

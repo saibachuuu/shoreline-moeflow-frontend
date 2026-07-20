@@ -5,7 +5,7 @@
 export function parseTransform(transform: string, name: string): number | null {
   const re = new RegExp(name + `\\((.+)\\)`);
   const result = transform.match(re);
-  let value = null;
+  let value: number | null = null;
   if (result && result.length > 1) {
     value = parseFloat(result[1]);
   }

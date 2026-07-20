@@ -9,6 +9,9 @@ export interface APISiteSetting {
   autoJoinTeamIDs: string[];
   customSiteTitle: string;
   homepageWelcome: string;
+  homepageImageUrl: string;
+  homepageHtml: string;
+  homepageCss: string;
 }
 
 const getSiteSetting = ({ configs }: { configs?: AxiosRequestConfig }) => {
@@ -39,6 +42,7 @@ export interface APIHomepage {
   css: string;
   customSiteTitle: string;
   homepageWelcome: string;
+  homepageImageUrl: string;
 }
 const getHomepage = ({ configs }: { configs?: AxiosRequestConfig }) => {
   return request<APIHomepage>({

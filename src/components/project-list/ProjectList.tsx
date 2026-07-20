@@ -21,10 +21,7 @@ import {
 import style from '@/style';
 import { toLowerCamelCase } from '@/utils';
 import { clickEffect } from '@/utils/style';
-import {
-  PROJECT_WORKER_ROLES,
-  ProjectWorkerRole,
-} from '@/apis/project';
+import { PROJECT_WORKER_ROLES, ProjectWorkerRole } from '@/apis/project';
 
 /** 项目列表的属性接口 */
 interface ProjectListProps {
@@ -304,7 +301,9 @@ export const ProjectList: FC<ProjectListProps> = ({
           />
         ) : undefined
       }
-      onSearchLeftButtonClick={from === 'team' ? handleWorkerSearchToggle : undefined}
+      onSearchLeftButtonClick={
+        from === 'team' ? handleWorkerSearchToggle : undefined
+      }
       defaultPage={defaultPage}
       onPageChange={(page) => {
         dispatch(setProjectsState({ page }));
@@ -473,15 +472,12 @@ export const ProjectList: FC<ProjectListProps> = ({
             >
               <Icon icon="user-check" style={{ color: style.primaryColor }} />
               <span>
-                正按人员搜索{searchRole
+                正按人员搜索
+                {searchRole
                   ? PROJECT_WORKER_ROLES.find((r) => r.key === searchRole)
                       ?.label
                   : '任何职位'}
-                （
-                {searchScope === 'project-set'
-                  ? '本集内'
-                  : '全团队'}
-                ）
+                （{searchScope === 'project-set' ? '本集内' : '全团队'}）
               </span>
               <span
                 css={css`

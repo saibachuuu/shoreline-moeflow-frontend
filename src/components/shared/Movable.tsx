@@ -909,7 +909,7 @@ const MovableItemWithoutRef: React.ForwardRefRenderFunction<
     centerClientY: number;
   } {
     // 将光标位置放入数组
-    const pointers = [];
+    const pointers: Array<{ clientX: number; clientY: number }> = [];
     for (const key in pointersRef.current) {
       pointers.push(pointersRef.current[key]);
     }

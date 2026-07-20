@@ -48,4 +48,33 @@ describe('migrated image and worker APIs', () => {
       data: { workers },
     });
   });
+
+  test('sends global worker/role search parameters unchanged', async () => {
+    await projectApi.getTeamProjects({
+      teamID: 'team-1',
+      projectSetID: 'set-1',
+      params: {
+        page: 2,
+        limit: 30,
+        mode: 'search-worker',
+        scope: 'team',
+        role: 'translator',
+        worker_name: 'Alice',
+      },
+    });
+
+    expect(mockRequest).toHaveBeenLastCalledWith({
+      method: 'GET',
+      url: '/v1/teams/team-1/projects',
+      params: {
+        project_set: 'set-1',
+        page: 2,
+        limit: 30,
+        mode: 'search-worker',
+        scope: 'team',
+        role: 'translator',
+        worker_name: 'Alice',
+      },
+    });
+  });
 });

@@ -1,5 +1,5 @@
 import { css } from '@emotion/core';
-import { Button, Form as AntdForm, message, Spin, Switch } from 'antd';
+import { Button, Form as AntdForm, Input, message, Spin, Switch } from 'antd';
 import TextArea from 'antd/lib/input/TextArea';
 import classNames from 'classnames';
 import React, { useEffect, useState } from 'react';
@@ -167,11 +167,18 @@ export const AdminSiteSetting: FC<AdminSiteSettingProps> = ({ className }) => {
           <TextArea rows={2} />
         </FormItem>
         <FormItem
+          label={formatMessage({ id: 'site.setting.homepageImageUrl' })}
+          name="homepageImageUrl"
+          tooltip={formatMessage({ id: 'site.setting.homepageImageUrlTip' })}
+        >
+          <Input placeholder="https://example.com/homepage-image.png" />
+        </FormItem>
+        <FormItem
           label={formatMessage({ id: 'site.setting.homepageWelcome' })}
           name="homepageWelcome"
           tooltip={formatMessage({ id: 'site.setting.homepageWelcomeTip' })}
         >
-          <TextArea rows={4} />
+          <TextArea rows={7} />
         </FormItem>
         <FormItem
           label={formatMessage({ id: 'site.setting.homepageHtml' })}
