@@ -2,7 +2,7 @@ import { css } from '@emotion/core';
 import { Button } from 'antd';
 import { CancelToken } from 'axios';
 import classNames from 'classnames';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory, useRouteMatch } from 'react-router-dom';
@@ -10,7 +10,7 @@ import { EmptyTip, Icon, List } from '@/components';
 import { ProjectItem } from './ProjectItem';
 import api, { resultTypes } from '@/apis';
 import { PROJECT_STATUS } from '@/constants';
-import { FC } from '@/interfaces';
+import { FC, UserProjectSet } from '@/interfaces';
 import { AppState } from '@/store';
 import {
   clearProjects,
@@ -73,10 +73,32 @@ export const ProjectList: FC<ProjectListProps> = ({
 
   const [showWorkerSearch, setShowWorkerSearch] = useState(false);
   const [searchMode, setSearchMode] = useState<string>('search-project-name');
-  const [searchScope, setSearchScope] = useState<string>('project-set');
+  const [selectedProjectSetIDs, setSelectedProjectSetIDs] = useState<string[]>(
+    () => (currentProjectSet ? [currentProjectSet.id] : []),
+  );
+  const [availableProjectSets, setAvailableProjectSets] = useState<
+    UserProjectSet[]
+  >([]);
   const [searchRole, setSearchRole] = useState<ProjectWorkerRole | ''>('');
   const [activeWorkerSearch, setActiveWorkerSearch] = useState(false);
   const workerSearchRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!currentProjectSet) {
+      return;
+    }
+    setSelectedProjectSetIDs([currentProjectSet.id]);
+  }, [currentProjectSet]);
+
+  useEffect(() => {
+    if (!currentTeam) {
+      return;
+    }
+    api
+      .getTeamProjectSets({ teamID: currentTeam.id, params: { limit: 1000 } })
+      .then((result) => setAvailableProjectSets(toLowerCamelCase(result.data)))
+      .catch((error) => error.default());
+  }, [currentTeam]);
 
   /** 获取元素 */
   const handleChange = ({
@@ -121,19 +143,19 @@ export const ProjectList: FC<ProjectListProps> = ({
           error.default();
         });
     } else if (from === 'team') {
-      // 项目名搜索且搜索框为空时无视范围，仅查项目集内
-      const effectiveScope =
-        searchMode === 'search-project-name' && !word
-          ? 'project-set'
-          : searchScope;
+      const isBrowsingCurrentProjectSet = !word;
       const params: any = {
         page,
         limit: pageSize,
         status,
-        mode: searchMode,
-        scope: effectiveScope,
+        mode: isBrowsingCurrentProjectSet
+          ? 'search-project-name'
+          : searchMode,
+        projectSets: isBrowsingCurrentProjectSet
+          ? [currentProjectSet!.id]
+          : selectedProjectSetIDs,
       };
-      if (searchMode === 'search-worker') {
+      if (!isBrowsingCurrentProjectSet && searchMode === 'search-worker') {
         if (searchRole) {
           params.role = searchRole;
         }
@@ -179,7 +201,7 @@ export const ProjectList: FC<ProjectListProps> = ({
     setActiveWorkerSearch(false);
     setSearchRole('');
     setSearchMode('search-project-name');
-    setSearchScope('project-set');
+    setSelectedProjectSetIDs(currentProjectSet ? [currentProjectSet.id] : []);
     dispatch(clearProjects());
     dispatch(setProjectsState({ word: '', page: 1 }));
     setLoading(true);
@@ -190,7 +212,11 @@ export const ProjectList: FC<ProjectListProps> = ({
   if (from === 'user') {
     listID = currentUser.id;
   } else if (from === 'team') {
-    listID = currentTeam!.id + currentProjectSet!.id + '-scope-' + searchScope;
+    listID =
+      currentTeam!.id +
+      currentProjectSet!.id +
+      '-project-sets-' +
+      selectedProjectSetIDs.join('-');
     if (activeWorkerSearch) {
       listID += '-ws-' + searchMode + '-' + (searchRole || 'any');
     }
@@ -367,6 +393,41 @@ export const ProjectList: FC<ProjectListProps> = ({
                     border-color: ${style.primaryColor};
                   }
                 }
+                .WorkerSearch__ProjectSetDropdown {
+                  position: relative;
+                  flex: 1;
+                  min-width: 0;
+                }
+                .WorkerSearch__ProjectSetSummary {
+                  padding: 4px 8px;
+                  border: 1px solid ${style.borderColorLight};
+                  border-radius: ${style.borderRadiusBase};
+                  font-size: 13px;
+                  background: white;
+                  cursor: pointer;
+                }
+                .WorkerSearch__ProjectSetOptions {
+                  position: absolute;
+                  z-index: 1;
+                  top: calc(100% + 4px);
+                  left: 0;
+                  right: 0;
+                  max-height: 220px;
+                  overflow-y: auto;
+                  padding: 4px 0;
+                  border: 1px solid ${style.borderColorLight};
+                  border-radius: ${style.borderRadiusBase};
+                  background: white;
+                  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+                }
+                .WorkerSearch__ProjectSetOption {
+                  display: flex;
+                  align-items: center;
+                  gap: 6px;
+                  padding: 5px 8px;
+                  font-size: 13px;
+                  cursor: pointer;
+                }
                 .WorkerSearch__Buttons {
                   display: flex;
                   justify-content: flex-end;
@@ -414,14 +475,39 @@ export const ProjectList: FC<ProjectListProps> = ({
               </div>
               <div className="WorkerSearch__Row">
                 <span className="WorkerSearch__Label">范围</span>
-                <select
-                  className="WorkerSearch__Select"
-                  value={searchScope}
-                  onChange={(e) => setSearchScope(e.target.value)}
-                >
-                  <option value="project-set">项目集内</option>
-                  <option value="team">全团队</option>
-                </select>
+                <details className="WorkerSearch__ProjectSetDropdown">
+                  <summary className="WorkerSearch__ProjectSetSummary">
+                    已选 {selectedProjectSetIDs.length} 个项目集
+                  </summary>
+                  <div className="WorkerSearch__ProjectSetOptions">
+                    {[currentProjectSet!, ...availableProjectSets.filter(
+                      (projectSet) => projectSet.id !== currentProjectSet!.id,
+                    )].map((projectSet) => {
+                      const isCurrent = projectSet.id === currentProjectSet!.id;
+                      return (
+                        <label
+                          className="WorkerSearch__ProjectSetOption"
+                          key={projectSet.id}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedProjectSetIDs.includes(projectSet.id)}
+                            disabled={isCurrent}
+                            onChange={() => {
+                              setSelectedProjectSetIDs((ids) =>
+                                ids.includes(projectSet.id)
+                                  ? ids.filter((id) => id !== projectSet.id)
+                                  : [...ids, projectSet.id],
+                              );
+                            }}
+                          />
+                          {projectSet.name}
+                          {isCurrent && '（当前）'}
+                        </label>
+                      );
+                    })}
+                  </div>
+                </details>
               </div>
               {searchMode === 'search-worker' && (
                 <div className="WorkerSearch__Row">
@@ -477,7 +563,7 @@ export const ProjectList: FC<ProjectListProps> = ({
                   ? PROJECT_WORKER_ROLES.find((r) => r.key === searchRole)
                       ?.label
                   : '任何职位'}
-                （{searchScope === 'project-set' ? '本集内' : '全团队'}）
+                （已选 {selectedProjectSetIDs.length} 个项目集）
               </span>
               <span
                 css={css`

@@ -79,7 +79,7 @@ interface GetTeamProjectsParams {
   word?: string;
   status?: PROJECT_STATUS;
   mode?: string;
-  scope?: string;
+  projectSets?: string[];
   role?: ProjectWorkerRole;
   worker_name?: string;
 }
@@ -98,7 +98,11 @@ const getTeamProjects = ({
   return request<Project[]>({
     method: 'GET',
     url: `/v1/teams/${teamID}/projects`,
-    params: { project_set: projectSetID, ...toUnderScoreCase(params) },
+    params: {
+      project_set: projectSetID,
+      project_sets: params?.projectSets,
+      ...toUnderScoreCase(params),
+    },
     ...configs,
   });
 };

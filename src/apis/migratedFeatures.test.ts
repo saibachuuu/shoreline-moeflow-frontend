@@ -49,7 +49,7 @@ describe('migrated image and worker APIs', () => {
     });
   });
 
-  test('sends global worker/role search parameters unchanged', async () => {
+  test('sends selected project sets for worker/role searches', async () => {
     await projectApi.getTeamProjects({
       teamID: 'team-1',
       projectSetID: 'set-1',
@@ -57,7 +57,7 @@ describe('migrated image and worker APIs', () => {
         page: 2,
         limit: 30,
         mode: 'search-worker',
-        scope: 'team',
+        projectSets: ['set-1', 'set-2'],
         role: 'translator',
         worker_name: 'Alice',
       },
@@ -71,7 +71,7 @@ describe('migrated image and worker APIs', () => {
         page: 2,
         limit: 30,
         mode: 'search-worker',
-        scope: 'team',
+        project_sets: ['set-1', 'set-2'],
         role: 'translator',
         worker_name: 'Alice',
       },
