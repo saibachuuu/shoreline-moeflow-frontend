@@ -2,7 +2,7 @@ import { css } from '@emotion/core';
 import TextArea, { TextAreaRef } from 'antd/lib/input/TextArea';
 import classNames from 'classnames';
 import { darken } from 'polished';
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
 import { DebounceStatus, Icon, Tooltip } from '@/components';
@@ -67,7 +67,49 @@ export const ImageSourceViewerTranslator: FC<
   const focusedSourceDeleting = focusedSource?.labelStatus === 'deleting';
 
   const responsiveHeight = isMobile ? 100 : 240;
-  const bottomHeight = focusedSource ? responsiveHeight : 0;
+  const minBottomHeight = 80;
+  const maxBottomHeight = 500;
+  const [adjustedBottomHeight, setAdjustedBottomHeight] = useState<number | null>(null);
+  const effectiveResponsiveHeight = adjustedBottomHeight ?? responsiveHeight;
+  const bottomHeight = focusedSource ? effectiveResponsiveHeight : 0;
+  const bottomHeightRef = useRef(bottomHeight);
+  bottomHeightRef.current = bottomHeight;
+  const isDraggingHeight = useRef(false);
+  const dragStartYHeight = useRef(0);
+  const dragStartHeightValue = useRef(0);
+
+  const handleHeightDragStart = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      e.currentTarget.setPointerCapture(e.pointerId);
+      isDraggingHeight.current = true;
+      dragStartYHeight.current = e.clientY;
+      dragStartHeightValue.current = bottomHeightRef.current;
+    },
+    [],
+  );
+
+  const handleHeightDragMove = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!isDraggingHeight.current) return;
+      const deltaY = dragStartYHeight.current - e.clientY;
+      const newHeight = Math.min(
+        Math.max(dragStartHeightValue.current + deltaY, minBottomHeight),
+        maxBottomHeight,
+      );
+      setAdjustedBottomHeight(newHeight);
+    },
+    [],
+  );
+
+  const handleHeightDragEnd = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!isDraggingHeight.current) return;
+      isDraggingHeight.current = false;
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    },
+    [],
+  );
 
   useEffect(() => {
     if (focusedSourceEffects.includes('focusInput')) {
@@ -216,7 +258,25 @@ export const ImageSourceViewerTranslator: FC<
           display: flex;
           flex-direction: column;
           height: ${bottomHeight}px;
+        }
+        .ImageSourceViewerTranslator__DragHandle {
+          flex: none;
+          height: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: ns-resize;
+          touch-action: none;
+          user-select: none;
+          background-color: ${style.backgroundColorLight};
           border-top: 3px solid ${style.borderColorBase};
+          border-bottom: 1px solid ${style.borderColorBase};
+        }
+        .ImageSourceViewerTranslator__DragHandleBar {
+          width: 30px;
+          height: 4px;
+          border-radius: 2px;
+          background-color: ${style.borderColorBase};
         }
         .ImageSourceViewerTranslator__TextArea {
           flex: auto;
@@ -349,6 +409,23 @@ export const ImageSourceViewerTranslator: FC<
       </div>
       {focusedSourceIndex > -1 && (
         <div className="ImageSourceViewerTranslator__Bottom">
+          <div
+            className="ImageSourceViewerTranslator__DragHandle"
+            onPointerDown={handleHeightDragStart}
+            onPointerMove={handleHeightDragMove}
+            onPointerUp={handleHeightDragEnd}
+            onPointerCancel={handleHeightDragEnd}
+          >
+            <div className="ImageSourceViewerTranslator__DragHandleBar" />
+          </div>
+          <QuickCharacterButtons
+            disabled={
+              !can(currentProject, PROJECT_PERMISSION.ADD_TRA) ||
+              focusedSourceCreating ||
+              focusedSourceDeleting
+            }
+            onInsert={insertQuickCharacter}
+          />
           <TextArea
             className="ImageSourceViewerTranslator__TextArea"
             onChange={handleTranslationContentChange}
@@ -375,14 +452,6 @@ export const ImageSourceViewerTranslator: FC<
             }
             ref={textAreaRef}
           ></TextArea>
-          <QuickCharacterButtons
-            disabled={
-              !can(currentProject, PROJECT_PERMISSION.ADD_TRA) ||
-              focusedSourceCreating ||
-              focusedSourceDeleting
-            }
-            onInsert={insertQuickCharacter}
-          />
           <div className="ImageSourceViewerTranslator__StatusBar">
             <DebounceStatus
               className="ImageSourceViewerTranslator__DebounceStatus"
