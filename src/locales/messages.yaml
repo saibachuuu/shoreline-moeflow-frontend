@@ -991,6 +991,9 @@ imageTranslator.settingTitle:
 imageTranslator.imageDarkness:
   zhCn: 图片减亮
   en: Darken Image
+imageTranslator.autoFocusInput:
+  zhCn: 切换标签时自动激活输入框
+  en: Focus input when switching labels
 hotKeyRecorder.tip:
   zhCn: 请按下按键
   en: Press the button

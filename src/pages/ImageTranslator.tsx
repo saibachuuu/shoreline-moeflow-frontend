@@ -10,11 +10,15 @@ import { ImageViewer, ImageSourceViewer } from '@/components/project-file';
 import { FC, Source } from '@/interfaces';
 import { AppState } from '@/store';
 import { setCurrentProjectSaga } from '@/store/project/slice';
-import { setThemeMode } from '@/store/site/slice';
+import {
+  setImageTranslatorAutoFocusInput,
+  setThemeMode,
+} from '@/store/site/slice';
 import { fetchSourcesSaga, focusSource } from '@/store/source/slice';
 import style from '../style';
 import { toLowerCamelCase } from '@/utils';
 import { getCancelToken } from '@/utils/api';
+import { imageTranslatorSettingsStorage } from '@/utils/storage';
 import { useTitle } from '@/hooks';
 import { ImageTranslatorSettingMouse } from '@/components/project-file';
 import { ImageTranslatorSettingHotKey } from '@/components/project-file';
@@ -37,6 +41,9 @@ const ImageTranslator: FC = () => {
   );
   const platform = useSelector((state: AppState) => state.site.platform);
   const themeMode = useSelector((state: AppState) => state.site.themeMode);
+  const autoFocusInput = useSelector(
+    (state: AppState) => state.site.imageTranslatorAutoFocusInput,
+  );
   const isMobile = platform === 'mobile';
   const [file, setFile] = useState<GetFileReturn>();
   const sourceListWidth = 400;
@@ -47,14 +54,21 @@ const ImageTranslator: FC = () => {
     sourceListHeightMobileDefault,
   );
   const [settingModalVisible, setSettingModalVisible] = useState(false);
-  const [imageDarkness, setImageDarkness] = useState(0);
+  const [imageDarkness, setImageDarkness] = useState(
+    () => imageTranslatorSettingsStorage.load().imageDarkness,
+  );
   const currentProject = useSelector(
     (state: AppState) => state.project.currentProject,
   );
 
   useTitle({ prefix: file?.name }, [file?.name]); // 设置标题
 
-  useImageTranslatorHotkeys(file, sources, focusedSourceID);
+  useImageTranslatorHotkeys(
+    file,
+    sources,
+    focusedSourceID,
+    autoFocusInput,
+  );
   // 翻译器尺寸
   const [imageTranslatorSize, setImageTranslatorSize] = useState({
     width: 0,
@@ -222,6 +236,27 @@ const ImageTranslator: FC = () => {
           css={css`
             display: flex;
             align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            color: ${style.textColor};
+          `}
+        >
+          <span>{formatMessage({ id: 'imageTranslator.autoFocusInput' })}</span>
+          <Switch
+            checked={autoFocusInput}
+            onChange={(checked) => {
+              dispatch(setImageTranslatorAutoFocusInput(checked));
+              imageTranslatorSettingsStorage.save({
+                autoFocusInput: checked,
+                imageDarkness,
+              });
+            }}
+          />
+        </div>
+        <div
+          css={css`
+            display: flex;
+            align-items: center;
             gap: 12px;
             margin-bottom: 20px;
             color: ${style.textColor};
@@ -233,7 +268,12 @@ const ImageTranslator: FC = () => {
             max={99}
             value={imageDarkness}
             onChange={(value) => {
-              setImageDarkness(typeof value === 'number' ? value : value[0]);
+              const darkness = typeof value === 'number' ? value : value[0];
+              setImageDarkness(darkness);
+              imageTranslatorSettingsStorage.save({
+                autoFocusInput,
+                imageDarkness: darkness,
+              });
             }}
             tooltip={{ formatter: (value) => `${value ?? 0}%` }}
             css={css`
@@ -259,6 +299,7 @@ function useImageTranslatorHotkeys(
   file: GetFileReturn | undefined,
   sources: Source[],
   focusedSourceID: string | null,
+  autoFocusInput: boolean,
 ) {
   const dispatch = useDispatch();
   const focusNextSource = () => {
@@ -280,8 +321,12 @@ function useImageTranslatorHotkeys(
     dispatch(
       focusSource({
         id: nextFocusedSourceID,
-        effects: ['focusInput', 'focusLabel', 'scrollIntoView'],
-        noises: ['focusInput', 'focusLabel'],
+        effects: [
+          ...(autoFocusInput ? ['focusInput'] : []),
+          'focusLabel',
+          'scrollIntoView',
+        ],
+        noises: [...(autoFocusInput ? ['focusInput'] : []), 'focusLabel'],
       }),
     );
   };
@@ -304,8 +349,12 @@ function useImageTranslatorHotkeys(
     dispatch(
       focusSource({
         id: prevFocusedSourceID,
-        effects: ['focusInput', 'focusLabel', 'scrollIntoView'],
-        noises: ['focusInput', 'focusLabel'],
+        effects: [
+          ...(autoFocusInput ? ['focusInput'] : []),
+          'focusLabel',
+          'scrollIntoView',
+        ],
+        noises: [...(autoFocusInput ? ['focusInput'] : []), 'focusLabel'],
       }),
     );
   };
@@ -320,7 +369,7 @@ function useImageTranslatorHotkeys(
       ...focusNextSourceHotKeyOptions[0],
     },
     focusNextSource,
-    [focusedSourceID, sources.length],
+    [focusedSourceID, sources.length, autoFocusInput],
   );
   useHotKey(
     {
@@ -328,7 +377,7 @@ function useImageTranslatorHotkeys(
       ...focusNextSourceHotKeyOptions[1],
     },
     focusNextSource,
-    [focusedSourceID, sources.length],
+    [focusedSourceID, sources.length, autoFocusInput],
   );
 
   // 快捷键 - 上一个输入框
@@ -341,7 +390,7 @@ function useImageTranslatorHotkeys(
       ...focusPrevSourceHotKeyOptions[0],
     },
     focusPrevSource,
-    [focusedSourceID, sources.length],
+    [focusedSourceID, sources.length, autoFocusInput],
   );
   useHotKey(
     {
@@ -349,7 +398,7 @@ function useImageTranslatorHotkeys(
       ...focusPrevSourceHotKeyOptions[1],
     },
     focusPrevSource,
-    [focusedSourceID, sources.length],
+    [focusedSourceID, sources.length, autoFocusInput],
   );
 
   // 快捷键 - 当 ImageViewer 未加载完成是，忽略所有快捷键

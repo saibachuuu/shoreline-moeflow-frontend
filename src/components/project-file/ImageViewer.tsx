@@ -13,6 +13,7 @@ import {
   MovableItem,
   MovableItemMargins,
   MovableItemUseRef,
+  OnLongPress,
   OnMoveEnd,
   OnTap,
   OnZoomEnd,
@@ -94,6 +95,9 @@ export const ImageViewer: FC<ImageViewerProps> = ({
   const { formatMessage } = useIntl();
   const platform = useSelector((state: AppState) => state.site.platform);
   const isMobile = platform === 'mobile';
+  const autoFocusInput = useSelector(
+    (state: AppState) => state.site.imageTranslatorAutoFocusInput,
+  );
   const savingStatus = useSelector(
     (state: AppState) => state.source.savingStatus,
   );
@@ -402,15 +406,30 @@ export const ImageViewer: FC<ImageViewerProps> = ({
     }
   };
 
+  // 移动端长按图片空白处，直接创建框外标签
+  const handleImageLongPress: OnLongPress = ({ x, y }) => {
+    if (!isMobile) {
+      return;
+    }
+    dispatch(
+      createSourceSaga({
+        fileID: file.id,
+        x,
+        y,
+        positionType: SOURCE_POSITION_TYPE.OUT,
+      }),
+    );
+  };
+
   const handleFocusIndexChange = (index: number): void => {
     setFocusLabelIndex(index);
     dispatch(
       focusSource({
         id: labels[index]?.id,
-        effects: isMobile
-          ? ['scrollIntoView']
-          : ['focusInput', 'scrollIntoView'],
-        noises: isMobile ? [] : ['focusInput'],
+        effects: autoFocusInput
+          ? ['focusInput', 'scrollIntoView']
+          : ['scrollIntoView'],
+        noises: autoFocusInput ? ['focusInput'] : [],
       }),
     );
   };
@@ -695,8 +714,7 @@ export const ImageViewer: FC<ImageViewerProps> = ({
             maxScale={imageMaxScale}
             scaleStep={imageScaleStep}
             onTap={handleImageTap}
-            // TODO: 看看手机版长按添加标记到底适不适合
-            // onLongPress={isMobile ? handleImageLongPress : undefined}
+            onLongPress={isMobile ? handleImageLongPress : undefined}
             onZoomStart={handleImageZoomStart}
             onZooming={handleImageZooming}
             onZoomEnd={handleImageZoomEnd}

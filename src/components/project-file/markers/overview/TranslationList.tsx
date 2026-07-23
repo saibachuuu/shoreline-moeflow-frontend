@@ -44,19 +44,22 @@ export const TranslationList: FC<TranslationListProps> = ({
   const focusedSourceNoiseFocusInput = useSelector(
     (state: AppState) => state.source.focusedSource.noises.focusInput,
   );
+  const autoFocusInput = useSelector(
+    (state: AppState) => state.site.imageTranslatorAutoFocusInput,
+  );
   const otherValidTranslations = filterValidTranslations(otherTranslations);
 
   useEffect(() => {
     if (
       focusedSourceID === source.id &&
-      focusedSourceEffects.includes('focusInput')
+      autoFocusInput && focusedSourceEffects.includes('focusInput')
     ) {
       setTimeout(() => {
         textAreasRef.current?.focus({ cursor: 'end' });
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [focusedSourceID, focusedSourceNoiseFocusInput]);
+  }, [focusedSourceID, focusedSourceNoiseFocusInput, autoFocusInput]);
 
   return (
     <div

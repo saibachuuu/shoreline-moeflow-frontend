@@ -1,12 +1,14 @@
 import { css } from '@emotion/core';
 import { TabBar } from 'antd-mobile';
+import { Switch } from 'antd';
 import { useIntl } from 'react-intl';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { matchPath, useHistory, useLocation } from 'react-router-dom';
 import { Icon } from '@/components';
 import { FC } from '@/interfaces';
 import { AppState } from '@/store';
 import style from '@/style';
+import { setThemeMode } from '@/store/site/slice';
 
 /** 手机版首页底部 TabBar 的属性接口 */
 interface TabBarProps {
@@ -19,6 +21,8 @@ export const TabBarM: FC<TabBarProps> = ({ className }) => {
   const { formatMessage } = useIntl(); // i18n
   const history = useHistory(); // 路由
   const location = useLocation();
+  const dispatch = useDispatch();
+  const themeMode = useSelector((state: AppState) => state.site.themeMode);
   const newInvitationsCount = useSelector(
     (state: AppState) => state.site.newInvitationsCount,
   );
@@ -51,7 +55,7 @@ export const TabBarM: FC<TabBarProps> = ({ className }) => {
         position: fixed;
         width: 100%;
         bottom: 0;
-        background-color: #ffffff;
+         background-color: ${style.backgroundColorLight};
         padding-bottom: constant(safe-area-inset-bottom); /* iOS 11.0 */
         padding-bottom: env(safe-area-inset-bottom); /* iOS 11.2 */
         .tab-icon {
@@ -63,7 +67,7 @@ export const TabBarM: FC<TabBarProps> = ({ className }) => {
       <TabBar
         unselectedTintColor={style.textColorSecondary}
         tintColor={style.primaryColor}
-        barTintColor="white"
+        barTintColor={style.backgroundColorLight}
         noRenderContent
       >
         <TabBar.Item
@@ -96,6 +100,34 @@ export const TabBarM: FC<TabBarProps> = ({ className }) => {
             history.replace('/dashboard/me');
           }}
           dot={newInvitationsCount > 0 || relatedApplicationsCount > 0}
+        ></TabBar.Item>
+        <TabBar.Item
+          icon={
+            <Switch
+              size="small"
+              checked={themeMode === 'dark'}
+              style={{ pointerEvents: 'none' }}
+            />
+          }
+          selectedIcon={
+            <Switch
+              size="small"
+              checked={themeMode === 'dark'}
+              style={{ pointerEvents: 'none' }}
+            />
+          }
+          title={
+            themeMode === 'dark'
+              ? formatMessage({ id: 'site.lightMode' })
+              : formatMessage({ id: 'site.darkMode' })
+          }
+          key="theme"
+          selected={false}
+          onPress={() => {
+            const newTheme = themeMode === 'dark' ? 'light' : 'dark';
+            dispatch(setThemeMode(newTheme));
+            localStorage.setItem('themeMode', newTheme);
+          }}
         ></TabBar.Item>
       </TabBar>
     </div>

@@ -321,6 +321,7 @@
   "site.imageUnit": "\"Sheet\"",
   "imageTranslator.settingTitle": "Translator Settings",
   "imageTranslator.imageDarkness": "Darken Image",
+  "imageTranslator.autoFocusInput": "Focus input when switching labels",
   "hotKeyRecorder.tip": "Press the button",
   "hotKeyRecorder.null": "None",
   "hotKeyRecorder.unbind": "Delete",

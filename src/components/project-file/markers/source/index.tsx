@@ -34,6 +34,9 @@ export const ImageSourceViewerSource: FC<ImageSourceViewerSourceProps> = ({
   const dispatch = useDispatch();
   const platform = useSelector((state: AppState) => state.site.platform);
   const isMobile = platform === 'mobile';
+  const autoFocusInput = useSelector(
+    (state: AppState) => state.site.imageTranslatorAutoFocusInput,
+  );
   const domRefs = useRef<(HTMLDivElement | null)[]>([]);
   const textAreaRef = useRef<TextAreaRef>(null);
   const currentProject = useSelector(
@@ -70,13 +73,13 @@ export const ImageSourceViewerSource: FC<ImageSourceViewerSourceProps> = ({
   const bottomHeight = focusedSource ? responsiveHeight : 0;
 
   useEffect(() => {
-    if (focusedSourceEffects.includes('focusInput')) {
+    if (autoFocusInput && focusedSourceEffects.includes('focusInput')) {
       setTimeout(() => {
         textAreaRef.current?.focus({ cursor: 'end' });
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [focusedSourceID, focusedSourceNoiseFocusInput]);
+  }, [focusedSourceID, focusedSourceNoiseFocusInput, autoFocusInput]);
 
   useEffect(() => {
     if (focusedSourceEffects.includes('scrollIntoView')) {
@@ -298,8 +301,10 @@ export const ImageSourceViewerSource: FC<ImageSourceViewerSourceProps> = ({
                 dispatch(
                   focusSource({
                     id: source.id,
-                    effects: ['focusLabel', 'focusInput'],
-                    noises: ['focusInput'],
+                      effects: autoFocusInput
+                        ? ['focusLabel', 'focusInput']
+                        : ['focusLabel'],
+                      noises: autoFocusInput ? ['focusInput'] : [],
                   }),
                 );
               }}

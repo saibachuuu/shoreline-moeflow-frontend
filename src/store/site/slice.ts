@@ -12,6 +12,7 @@ export interface SiteState {
   runtimeConfig: RuntimeConfig;
   customSiteTitle: string;
   themeMode: ThemeMode;
+  imageTranslatorAutoFocusInput: boolean;
 }
 
 const initialState: SiteState = {
@@ -22,6 +23,7 @@ const initialState: SiteState = {
   runtimeConfig: null!,
   customSiteTitle: '',
   themeMode: 'light',
+  imageTranslatorAutoFocusInput: false,
 };
 const slice = createSlice({
   name: 'site',
@@ -48,6 +50,9 @@ const slice = createSlice({
     setThemeMode(state, action: PayloadAction<ThemeMode>) {
       state.themeMode = action.payload;
     },
+    setImageTranslatorAutoFocusInput(state, action: PayloadAction<boolean>) {
+      state.imageTranslatorAutoFocusInput = action.payload;
+    },
   },
 });
 
@@ -59,5 +64,6 @@ export const {
   setRuntimeConfig,
   setCustomSiteTitle,
   setThemeMode,
+  setImageTranslatorAutoFocusInput,
 } = slice.actions;
 export default slice.reducer;

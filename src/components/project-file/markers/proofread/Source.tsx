@@ -41,6 +41,9 @@ const SourceWithoutRef: React.ForwardRefRenderFunction<
   const batchSelecting = useSelector(
     (state: AppState) => state.source.batchSelecting,
   );
+  const autoFocusInput = useSelector(
+    (state: AppState) => state.site.imageTranslatorAutoFocusInput,
+  );
   const translations = getSortedTranslations(source);
   const hasSelectedTranslation =
     translations.findIndex((translation) => translation.selected) > -1;
@@ -72,8 +75,10 @@ const SourceWithoutRef: React.ForwardRefRenderFunction<
     dispatch(
       focusSource({
         id: source.id,
-        effects: ['focusLabel', 'focusInput'],
-        noises: ['focusInput'],
+        effects: autoFocusInput
+          ? ['focusLabel', 'focusInput']
+          : ['focusLabel'],
+        noises: autoFocusInput ? ['focusInput'] : [],
       }),
     );
   };

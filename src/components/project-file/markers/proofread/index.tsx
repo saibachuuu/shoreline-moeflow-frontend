@@ -40,6 +40,9 @@ export const ImageSourceViewerProofreader: FC<
   const { formatMessage } = useIntl();
   const platform = useSelector((state: AppState) => state.site.platform);
   const isMobile = platform === 'mobile';
+  const autoFocusInput = useSelector(
+    (state: AppState) => state.site.imageTranslatorAutoFocusInput,
+  );
   const domRefs = useRef<(HTMLDivElement | null)[]>([]);
   const translationTextAreaRef = useRef<TextAreaRef>(null);
   const proofreadTextAreaRef = useRef<TextAreaRef>(null);
@@ -112,7 +115,7 @@ export const ImageSourceViewerProofreader: FC<
   const isNoTranslationRef = useRef(isNoTranslation);
   isNoTranslationRef.current = isNoTranslation;
   useEffect(() => {
-    if (focusedSourceEffects.includes('focusInput')) {
+    if (autoFocusInput && focusedSourceEffects.includes('focusInput')) {
       setTimeout(() => {
         if (isNoTranslationRef.current) {
           translationTextAreaRef.current?.focus({ cursor: 'end' });
@@ -122,7 +125,7 @@ export const ImageSourceViewerProofreader: FC<
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [focusedSourceID, focusedSourceNoiseFocusInput]);
+  }, [focusedSourceID, focusedSourceNoiseFocusInput, autoFocusInput]);
 
   useEffect(() => {
     if (focusedSourceEffects.includes('scrollIntoView')) {
@@ -263,7 +266,7 @@ export const ImageSourceViewerProofreader: FC<
           }
           .ImageSourceViewerProofreader__FunctionBar,
           .ImageSourceViewerProofreader__TranslationArea {
-            background-color: #fff;
+            background-color: ${style.backgroundColorLight};
           }
           .ImageSourceViewerProofreader__AreaLine,
           .ImageSourceViewerProofreader__ProofreaderArea {
@@ -272,17 +275,17 @@ export const ImageSourceViewerProofreader: FC<
         }
         .ImageSourceViewerProofreader__Bottom--disabled {
           cursor: not-allowed;
-          background-color: #f7f7f7;
+          background-color: ${style.backgroundColorLight};
         }
         .ImageSourceViewerProofreader__Bottom--myTranslation {
           .ImageSourceViewerProofreader__FunctionBar,
           .ImageSourceViewerProofreader__TranslationArea {
-            background-color: #fff;
+            background-color: ${style.backgroundColorLight};
           }
         }
         .ImageSourceViewerProofreader__FunctionBar {
           padding: 5px 5px 0;
-          background-color: ${isMobile ? '#fff' : '#f7f7f7'};
+          background-color: ${style.backgroundColorLight};
           display: flex;
           justify-content: space-between;
         }
@@ -290,13 +293,13 @@ export const ImageSourceViewerProofreader: FC<
           margin-right: 6px;
           &,
           button {
-            background-color: #fff;
-            color: ${style.textColorSecondaryLight};
+            background-color: ${style.backgroundColorLight};
+            color: ${style.textColorSecondary};
             border: 1px solid ${style.borderColorBase};
             border-radius: ${style.borderRadiusSm};
             cursor: pointer;
             ${hover(css`
-              background-color: #f7f7f7;
+              background-color: ${style.hoverColor};
             `)};
           }
           &.ant-popover-disabled-compatible-wrapper {
@@ -308,7 +311,7 @@ export const ImageSourceViewerProofreader: FC<
           display: ${isMobile ? 'none' : 'block'};
           max-height: 78px;
           overflow-y: auto;
-          background-color: #f7f7f7;
+          background-color: ${style.backgroundColorLight};
         }
         .ImageSourceViewerProofreader__AreaLine {
           display: ${isMobile ? 'none' : 'block'};

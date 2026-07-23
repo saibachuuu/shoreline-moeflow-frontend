@@ -13,7 +13,7 @@ export const QuickCharacterButtons: FC<QuickCharacterButtonsProps> = ({
   disabled = false,
   onInsert,
 }) => {
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(false);
 
   if (!visible) {
     return (
@@ -41,7 +41,7 @@ export const QuickCharacterButtons: FC<QuickCharacterButtonsProps> = ({
         `}
       >
         <button type="button" onClick={() => setVisible(true)}>
-          显示工具
+           显示符号工具
         </button>
       </div>
     );
@@ -99,7 +99,7 @@ export const QuickCharacterButtons: FC<QuickCharacterButtonsProps> = ({
           margin-left: auto;
         `}
       >
-        隐藏工具
+         隐藏符号工具
       </button>
     </div>
   );

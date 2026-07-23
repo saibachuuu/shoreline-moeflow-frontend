@@ -89,3 +89,27 @@ export const llmConfStorage = {
     }
   },
 } as const;
+
+export interface ImageTranslatorSettings {
+  autoFocusInput: boolean;
+  imageDarkness: number;
+}
+
+export const imageTranslatorSettingsStorage = {
+  load(): ImageTranslatorSettings {
+    const settings = store.get<Partial<ImageTranslatorSettings>>(
+      'imageTranslatorSettings',
+      {},
+    );
+    return {
+      autoFocusInput: settings.autoFocusInput === true,
+      imageDarkness:
+        typeof settings.imageDarkness === 'number'
+          ? Math.min(99, Math.max(0, settings.imageDarkness))
+          : 0,
+    };
+  },
+  save(settings: ImageTranslatorSettings): void {
+    store.set('imageTranslatorSettings', settings);
+  },
+} as const;

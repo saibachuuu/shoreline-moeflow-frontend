@@ -11,7 +11,14 @@ import App from './App';
 import './fontAwesome'; // Font Awesome
 import './index.css';
 import store from './store';
-import { setOSName, setPlatform, setRuntimeConfig, setThemeMode, ThemeMode } from './store/site/slice';
+import {
+  setOSName,
+  setPlatform,
+  setRuntimeConfig,
+  setThemeMode,
+  setImageTranslatorAutoFocusInput,
+  ThemeMode,
+} from './store/site/slice';
 import { setUserToken } from './store/user/slice';
 import { getToken } from './utils/cookie';
 import { OSName, Platform } from './interfaces';
@@ -22,7 +29,7 @@ import {
   HotKeyState,
   setHotKey,
 } from './store/hotKey/slice';
-import { loadHotKey } from './utils/storage';
+import { imageTranslatorSettingsStorage, loadHotKey } from './utils/storage';
 import { createDebugLogger } from './utils/debug-logger';
 const debugLogger = createDebugLogger('app');
 
@@ -53,6 +60,11 @@ function initThemeMode(): ThemeMode {
 }
 const initialTheme = initThemeMode();
 store.dispatch(setThemeMode(initialTheme));
+store.dispatch(
+  setImageTranslatorAutoFocusInput(
+    imageTranslatorSettingsStorage.load().autoFocusInput,
+  ),
+);
 document.documentElement.setAttribute('data-theme', initialTheme);
 // 监听系统主题变化
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
