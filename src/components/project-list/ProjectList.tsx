@@ -132,7 +132,10 @@ export const ProjectList: FC<ProjectListProps> = ({
           setTotal(result.headers['x-pagination-count']);
           setLoading(false);
           for (const project of result.data) {
-            dispatch(createProject({ project: toLowerCamelCase(project) }));
+            const originalWorkers = project.workers;
+            const camelProject = toLowerCamelCase(project);
+            camelProject.workers = originalWorkers;
+            dispatch(createProject({ project: camelProject }));
           }
         })
         .catch((error) => {
