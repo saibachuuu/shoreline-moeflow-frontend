@@ -147,7 +147,7 @@ export const darkThemeVars: Record<string, string> = {
   'box-shadow-base':
     '0 3px 6px -4px rgba(255, 255, 255, 0.12), 0 6px 16px 0 rgba(255, 255, 255, 0.08),0 9px 28px 8px rgba(255, 255, 255, 0.05)',
   'translator-color-background': '#666',
-  'background-color-light': '#141414',
+  'background-color-light': '#1b1b20',
   'background-focus': '#2a1a1a',
   'text-color-light': 'rgba(255, 255, 255, 0.75)',
   'text-color-lighter': 'rgba(255, 255, 255, 0.65)',

@@ -97,10 +97,9 @@ export interface ImageTranslatorSettings {
 
 export const imageTranslatorSettingsStorage = {
   load(): ImageTranslatorSettings {
-    const settings = store.get<Partial<ImageTranslatorSettings>>(
-      'imageTranslatorSettings',
-      {},
-    );
+    const settings = store.get('imageTranslatorSettings', {}) as Partial<
+      ImageTranslatorSettings
+    >;
     return {
       autoFocusInput: settings.autoFocusInput === true,
       imageDarkness:

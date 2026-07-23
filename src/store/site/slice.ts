@@ -13,6 +13,7 @@ export interface SiteState {
   customSiteTitle: string;
   themeMode: ThemeMode;
   imageTranslatorAutoFocusInput: boolean;
+  imageTranslatorImageDarkness: number;
 }
 
 const initialState: SiteState = {
@@ -24,6 +25,7 @@ const initialState: SiteState = {
   customSiteTitle: '',
   themeMode: 'light',
   imageTranslatorAutoFocusInput: false,
+  imageTranslatorImageDarkness: 0,
 };
 const slice = createSlice({
   name: 'site',
@@ -53,6 +55,12 @@ const slice = createSlice({
     setImageTranslatorAutoFocusInput(state, action: PayloadAction<boolean>) {
       state.imageTranslatorAutoFocusInput = action.payload;
     },
+    setImageTranslatorImageDarkness(state, action: PayloadAction<number>) {
+      state.imageTranslatorImageDarkness = Math.min(
+        99,
+        Math.max(0, action.payload),
+      );
+    },
   },
 });
 
@@ -65,5 +73,6 @@ export const {
   setCustomSiteTitle,
   setThemeMode,
   setImageTranslatorAutoFocusInput,
+  setImageTranslatorImageDarkness,
 } = slice.actions;
 export default slice.reducer;

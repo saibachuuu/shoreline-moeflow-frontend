@@ -12,9 +12,14 @@ import { AppState } from '@/store';
 import { setCurrentProjectSaga } from '@/store/project/slice';
 import {
   setImageTranslatorAutoFocusInput,
+  setImageTranslatorImageDarkness,
   setThemeMode,
 } from '@/store/site/slice';
-import { fetchSourcesSaga, focusSource } from '@/store/source/slice';
+import {
+  fetchSourcesSaga,
+  focusSource,
+  FocusEffect,
+} from '@/store/source/slice';
 import style from '../style';
 import { toLowerCamelCase } from '@/utils';
 import { getCancelToken } from '@/utils/api';
@@ -54,8 +59,8 @@ const ImageTranslator: FC = () => {
     sourceListHeightMobileDefault,
   );
   const [settingModalVisible, setSettingModalVisible] = useState(false);
-  const [imageDarkness, setImageDarkness] = useState(
-    () => imageTranslatorSettingsStorage.load().imageDarkness,
+  const imageDarkness = useSelector(
+    (state: AppState) => state.site.imageTranslatorImageDarkness,
   );
   const currentProject = useSelector(
     (state: AppState) => state.project.currentProject,
@@ -269,7 +274,7 @@ const ImageTranslator: FC = () => {
             value={imageDarkness}
             onChange={(value) => {
               const darkness = typeof value === 'number' ? value : value[0];
-              setImageDarkness(darkness);
+              dispatch(setImageTranslatorImageDarkness(darkness));
               imageTranslatorSettingsStorage.save({
                 autoFocusInput,
                 imageDarkness: darkness,
@@ -325,8 +330,11 @@ function useImageTranslatorHotkeys(
           ...(autoFocusInput ? ['focusInput'] : []),
           'focusLabel',
           'scrollIntoView',
-        ],
-        noises: [...(autoFocusInput ? ['focusInput'] : []), 'focusLabel'],
+        ] as FocusEffect[],
+        noises: [
+          ...(autoFocusInput ? ['focusInput'] : []),
+          'focusLabel',
+        ] as FocusEffect[],
       }),
     );
   };
@@ -353,8 +361,11 @@ function useImageTranslatorHotkeys(
           ...(autoFocusInput ? ['focusInput'] : []),
           'focusLabel',
           'scrollIntoView',
-        ],
-        noises: [...(autoFocusInput ? ['focusInput'] : []), 'focusLabel'],
+        ] as FocusEffect[],
+        noises: [
+          ...(autoFocusInput ? ['focusInput'] : []),
+          'focusLabel',
+        ] as FocusEffect[],
       }),
     );
   };

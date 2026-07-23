@@ -35,6 +35,9 @@ const ProjectPreview: FC<ProjectPreviewProps> = ({
   const history = useHistory();
   const dispatch = useDispatch();
   const platform = useSelector((state: AppState) => state.site.platform);
+  const imageDarkness = useSelector(
+    (state: AppState) => state.site.imageTranslatorImageDarkness,
+  );
   const { projectID } = useParams<{ projectID: string }>();
   const isMobile = platform === 'mobile';
   const coverWidth = isMobile ? IMAGE_COVER.WIDTH / 2 : IMAGE_COVER.WIDTH;
@@ -261,6 +264,7 @@ const ProjectPreview: FC<ProjectPreviewProps> = ({
           {currentImage && (
             <img
               className="ProjectPreview__PreviewImage"
+              style={{ filter: `brightness(${1 - imageDarkness / 100})` }}
               src={currentImage.url}
               alt={currentImage.name}
               draggable={false} // 禁止浏览器拖拽图片
@@ -355,6 +359,7 @@ const ProjectPreview: FC<ProjectPreviewProps> = ({
               >
                 <img
                   className="ProjectPreview__PreviewListImage"
+                  style={{ filter: `brightness(${1 - imageDarkness / 100})` }}
                   src={item.coverUrl}
                   alt={item.name}
                   draggable={false} // 禁止浏览器拖拽图片

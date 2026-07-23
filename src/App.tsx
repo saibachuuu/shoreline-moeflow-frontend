@@ -34,6 +34,9 @@ const App: React.FC = () => {
   const isMobile = platform === 'mobile';
 
   const themeMode = useSelector((state: AppState) => state.site.themeMode);
+  const imageDarkness = useSelector(
+    (state: AppState) => state.site.imageTranslatorImageDarkness,
+  );
 
   useEffect(() => {
     api.siteSetting
@@ -49,6 +52,13 @@ const App: React.FC = () => {
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', themeMode);
   }, [themeMode]);
+
+  useEffect(() => {
+    document.documentElement.style.setProperty(
+      '--image-darkness',
+      String(imageDarkness / 100),
+    );
+  }, [imageDarkness]);
 
   return (
     <>
@@ -74,7 +84,7 @@ const App: React.FC = () => {
           [data-theme='dark'] .Dashboard,
           [data-theme='dark'] .Dashboard__Content,
           [data-theme='dark'] .DashboardBox__Content {
-            background-color: #141414;
+            background-color: #1b1b20;
             color: rgba(255, 255, 255, 0.85);
           }
           [data-theme='dark'] a {
@@ -86,11 +96,11 @@ const App: React.FC = () => {
 
           /* 左侧边栏 & 列表区域 */
           [data-theme='dark'] .Dashboard__CollapsibleMenu {
-            background-color: #1a1a1c !important;
+            background-color: #202025 !important;
             border-right-color: #2e2e34 !important;
           }
           [data-theme='dark'] .MyProject__List {
-            background-color: #1a1a1c !important;
+            background-color: #202025 !important;
             border-right-color: #2e2e34 !important;
           }
           [data-theme='dark'] .Dashboard__ListItem .ListItem__Top .ListItem__TopLeft .ListItem__Logo {
@@ -240,6 +250,13 @@ const App: React.FC = () => {
           }
           [data-theme='dark'] .ant-radio-button-wrapper-checked:not(:first-child)::before {
             background-color: var(--primary-color);
+          }
+
+          /* 全局图片减亮 */
+          .FileItem__Image,
+          .ProjectPreview__PreviewImage,
+          .ProjectPreview__PreviewListImage {
+            filter: brightness(calc(1 - var(--image-darkness, 0)));
           }
           [data-theme='dark'] .ant-table {
             background-color: #1f1f24;

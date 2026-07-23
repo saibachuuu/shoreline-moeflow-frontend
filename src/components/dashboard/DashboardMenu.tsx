@@ -1,5 +1,5 @@
 import { css } from '@emotion/core';
-import { Badge, MenuProps } from 'antd';
+import { Badge, MenuProps, Slider } from 'antd';
 import classNames from 'classnames';
 import React from 'react';
 import { useIntl } from 'react-intl';
@@ -10,10 +10,12 @@ import { FC } from '@/interfaces';
 import { AppState } from '@/store';
 import { resetProjectsState } from '@/store/project/slice';
 import { setThemeMode } from '@/store/site/slice';
+import { setImageTranslatorImageDarkness } from '@/store/site/slice';
 import { setUserToken, UserState } from '@/store/user/slice';
 import style from '../../style';
 import { clickEffect } from '@/utils/style';
 import { routes } from '@/pages/routes';
+import { imageTranslatorSettingsStorage } from '@/utils/storage';
 
 export const MENU_COLLAPSED_WIDTH = 63;
 export const MENU_UNCOLLAPSED_WIDTH = 231;
@@ -53,6 +55,12 @@ export const DashboardMenu: FC<
   );
   const isMobile = platform === 'mobile';
   const themeMode = useSelector((state: AppState) => state.site.themeMode);
+  const imageDarkness = useSelector(
+    (state: AppState) => state.site.imageTranslatorImageDarkness,
+  );
+  const autoFocusInput = useSelector(
+    (state: AppState) => state.site.imageTranslatorAutoFocusInput,
+  );
   const dispatch = useDispatch();
   const history = useHistory();
   // 收缩大小
@@ -286,18 +294,65 @@ export const DashboardMenu: FC<
             logo={<Icon className="ListItem__LogoIcon" icon="bars"></Icon>}
             name={formatMessage({ id: 'site.dashboard' })}
           />
-          <ListItem
-            onClick={() => {
-              const newTheme = themeMode === 'dark' ? 'light' : 'dark';
-              dispatch(setThemeMode(newTheme));
-              localStorage.setItem('themeMode', newTheme);
-            }}
-            className="Dashboard__ListItem Dashboard__MenuOption Dashboard__MenuOption--system"
-            logo={<Icon className="ListItem__LogoIcon" icon={themeMode === 'dark' ? 'sun' : 'moon'}></Icon>}
-            name={themeMode === 'dark'
-              ? formatMessage({ id: 'site.lightMode' })
-              : formatMessage({ id: 'site.darkMode' })}
-          />
+          <div
+            className="Dashboard__ThemeControl"
+            css={css`
+              width: 100%;
+              overflow: hidden;
+              .Dashboard__ThemeSlider {
+                max-height: 0;
+                padding: 0 15px;
+                opacity: 0;
+                overflow: hidden;
+                transition:
+                  max-height 150ms,
+                  padding 150ms,
+                  opacity 150ms;
+              }
+              &:hover .Dashboard__ThemeSlider {
+                max-height: 48px;
+                padding: 0 15px 8px;
+                opacity: 1;
+              }
+            `}
+          >
+            <ListItem
+              onClick={() => {
+                const newTheme = themeMode === 'dark' ? 'light' : 'dark';
+                dispatch(setThemeMode(newTheme));
+                localStorage.setItem('themeMode', newTheme);
+              }}
+              className="Dashboard__ListItem Dashboard__MenuOption Dashboard__MenuOption--system"
+              logo={
+                <Icon
+                  className="ListItem__LogoIcon"
+                  icon={themeMode === 'dark' ? 'sun' : 'moon'}
+                ></Icon>
+              }
+              name={
+                themeMode === 'dark'
+                  ? formatMessage({ id: 'site.lightMode' })
+                  : formatMessage({ id: 'site.darkMode' })
+              }
+            />
+            <div className="Dashboard__ThemeSlider">
+              <Slider
+                min={0}
+                max={99}
+                value={imageDarkness}
+                tooltip={{ formatter: (value) => `${value ?? 0}%` }}
+                onChange={(value) => {
+                  const darkness =
+                    typeof value === 'number' ? value : value[0];
+                  dispatch(setImageTranslatorImageDarkness(darkness));
+                  imageTranslatorSettingsStorage.save({
+                    autoFocusInput,
+                    imageDarkness: darkness,
+                  });
+                }}
+              />
+            </div>
+          </div>
           <ListItem
             onClick={() => {
               dispatch(resetProjectsState());

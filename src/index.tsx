@@ -17,6 +17,7 @@ import {
   setRuntimeConfig,
   setThemeMode,
   setImageTranslatorAutoFocusInput,
+  setImageTranslatorImageDarkness,
   ThemeMode,
 } from './store/site/slice';
 import { setUserToken } from './store/user/slice';
@@ -63,6 +64,11 @@ store.dispatch(setThemeMode(initialTheme));
 store.dispatch(
   setImageTranslatorAutoFocusInput(
     imageTranslatorSettingsStorage.load().autoFocusInput,
+  ),
+);
+store.dispatch(
+  setImageTranslatorImageDarkness(
+    imageTranslatorSettingsStorage.load().imageDarkness,
   ),
 );
 document.documentElement.setAttribute('data-theme', initialTheme);
