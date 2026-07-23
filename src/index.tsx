@@ -11,7 +11,7 @@ import App from './App';
 import './fontAwesome'; // Font Awesome
 import './index.css';
 import store from './store';
-import { setOSName, setPlatform, setRuntimeConfig } from './store/site/slice';
+import { setOSName, setPlatform, setRuntimeConfig, setThemeMode, ThemeMode } from './store/site/slice';
 import { setUserToken } from './store/user/slice';
 import { getToken } from './utils/cookie';
 import { OSName, Platform } from './interfaces';
@@ -40,6 +40,28 @@ const platform = browser.getPlatformType() as Platform;
 const osName = browser.getOSName(true) as OSName;
 store.dispatch(setPlatform(platform));
 store.dispatch(setOSName(osName));
+// 初始化暗黑模式
+function initThemeMode(): ThemeMode {
+  const saved = localStorage.getItem('themeMode');
+  if (saved === 'light' || saved === 'dark') {
+    return saved;
+  }
+  if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    return 'dark';
+  }
+  return 'light';
+}
+const initialTheme = initThemeMode();
+store.dispatch(setThemeMode(initialTheme));
+document.documentElement.setAttribute('data-theme', initialTheme);
+// 监听系统主题变化
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+  const theme: ThemeMode = e.matches ? 'dark' : 'light';
+  if (!localStorage.getItem('themeMode')) {
+    store.dispatch(setThemeMode(theme));
+    document.documentElement.setAttribute('data-theme', theme);
+  }
+});
 // 恢复自定义快捷键
 for (const hotKeyName in hotKeyInitialState) {
   const name = hotKeyName as keyof HotKeyState;

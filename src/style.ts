@@ -1,8 +1,3 @@
-/**
- * 这个文件会在 npm run build 时
- * 供 vite.config.ts 引用，来覆盖 antd 默认值
- */
-/** 转换格式（不引用 utils 中的，防止也被 ts 编译） */
 function toHyphenCase(value: string | { [propNames: string]: any }) {
   function stringToHyphenCase(value: string) {
     return value.replace(/([A-Z])/g, '-$1').toLowerCase();
@@ -19,10 +14,7 @@ function toHyphenCase(value: string | { [propNames: string]: any }) {
   }
 }
 
-// antd 中同名的样式变量
-// see also: https://github.com/ant-design/ant-design/blob/master/components/style/themes/default.less
-const antdVars = {
-  // 颜色表
+const antdVarsSource = {
   primaryColor: '#FF657C',
   infoColor: '#62a4ca',
   successColor: '#52c41a',
@@ -31,74 +23,192 @@ const antdVars = {
   highlightColor: '#f5222d',
   warningColor: '#faad14',
   normalColor: '#d9d9d9',
-  // 文字颜色
-  textColor: 'rgba(0, 0, 0, 0.85)', // 基本色
-  textColorSecondary: 'rgba(0, 0, 0, 0.45)', // 辅助色
-  textColorInverse: '#fff', // 基本色 - 反色
-  // 边框阴影
+  textColor: 'rgba(0, 0, 0, 0.85)',
+  textColorSecondary: 'rgba(0, 0, 0, 0.45)',
+  textColorInverse: '#fff',
   borderRadiusBase: '8px',
   borderRadiusSm: '4px',
   borderColorBase: '#dbdbdb',
   boxShadowBase:
     '0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 6px 16px 0 rgba(0, 0, 0, 0.08),0 9px 28px 8px rgba(0, 0, 0, 0.05)',
 };
-// 其他公用样式变量
+
 const otherVars = {
   labelFontFamily: "'Label Number', sans-serif",
-  // 编辑器颜色
   translatorColorBackground: '#4f4f4f',
-  // 背景颜色
   backgroundColorLight: '#fafafa',
   backgroundFocus: '#fffbe3',
-  // 文字颜色
   textColorLight: 'rgba(0, 0, 0, 0.75)',
   textColorLighter: 'rgba(0, 0, 0, 0.65)',
   textColorLightest: 'rgba(0, 0, 0, 0.55)',
   textColorSecondaryLight: 'rgba(0, 0, 0, 0.35)',
   textColorSecondaryLighter: 'rgba(0, 0, 0, 0.25)',
   textColorSecondaryLightest: 'rgba(0, 0, 0, 0.15)',
-  // 主颜色
   primaryColorDarker: '#d94c66',
   primaryColorLighter: '#ff8f9c',
   primaryColorLightest: '#ffbdc5',
-  // 警告颜色
   warningColorLighter: '#ffd583',
   warningColorLightest: '#ffe0a4',
-  // 按下动效颜色
-  hoverColor: '#eee', // hover 悬停颜色
-  activeColor: '#d9d9d9', // active 按下颜色
-  selectedColor: '#e3e3e3', // 选中后激活的颜色
-  // 图片翻译器按钮颜色
-  widgetButtonHoverBackgroundColor: 'rgba(182, 182, 182, 0.6)', // hover 悬停背景颜色
-  widgetButtonActiveBackgroundColor: 'rgba(202, 202, 202, 0.6)', // active 选中背景颜色
-  widgetButtonActiveColor: '#999', // active 按下文字颜色
-  // 导航条
+  hoverColor: '#eee',
+  activeColor: '#d9d9d9',
+  selectedColor: '#e3e3e3',
+  widgetButtonHoverBackgroundColor: 'rgba(182, 182, 182, 0.6)',
+  widgetButtonActiveBackgroundColor: 'rgba(202, 202, 202, 0.6)',
+  widgetButtonActiveColor: '#999',
   navHeight: 40,
   navHeightM: 45,
   tabBarHeightM: 50,
-  // 边框
   borderColorLight: '#eeeeee',
   borderColorLighter: '#f7f7f7;',
   contentMaxWidth: 520,
-  // 其他
   headerHeight: 60,
   avatarBorderColor: '#eeeeee',
   paddingBase: 15,
 };
-// antd mobile 中同名的样式变量（不导出到 style）
-const antdVarsM = {
-  fillBody: '#fff', // 背景色
+
+const antdVarsMSource = {
+  fillBody: '#fff',
   fillTap: otherVars.activeColor,
-  brandPrimary: antdVars.primaryColor, // 主颜色
-  colorTextBase: antdVars.textColor, // 基本色
-  colorTextBaseInverse: antdVars.textColorInverse, // 基本色 - 反色
-  colorTextSecondary: antdVars.textColorSecondary, // 辅助色
+  brandPrimary: antdVarsSource.primaryColor,
+  colorTextBase: antdVarsSource.textColor,
+  colorTextBaseInverse: antdVarsSource.textColorInverse,
+  colorTextSecondary: antdVarsSource.textColorSecondary,
 };
-// 供项目中直接引用
+
+const cssVar = (name: string) => `var(--${name})`;
+
+function toCssVarName(key: string) {
+  return key.replace(/([A-Z])/g, '-$1').toLowerCase();
+}
+
+const antdVarsRuntime: Record<string, string> = {};
+for (const key of Object.keys(antdVarsSource)) {
+  antdVarsRuntime[key] = cssVar(toCssVarName(key));
+}
+
+const themedKeys = new Set([
+  'translatorColorBackground',
+  'backgroundColorLight',
+  'backgroundFocus',
+  'textColorLight',
+  'textColorLighter',
+  'textColorLightest',
+  'textColorSecondaryLight',
+  'textColorSecondaryLighter',
+  'textColorSecondaryLightest',
+  'primaryColorDarker',
+  'primaryColorLighter',
+  'primaryColorLightest',
+  'warningColorLighter',
+  'warningColorLightest',
+  'hoverColor',
+  'activeColor',
+  'selectedColor',
+  'widgetButtonHoverBackgroundColor',
+  'widgetButtonActiveBackgroundColor',
+  'widgetButtonActiveColor',
+  'borderColorLight',
+  'borderColorLighter',
+  'avatarBorderColor',
+]);
+
+const runtimeStyle: Record<string, any> = {};
+for (const key of Object.keys(otherVars)) {
+  if (themedKeys.has(key)) {
+    runtimeStyle[key] = cssVar(toCssVarName(key));
+  } else {
+    runtimeStyle[key] = otherVars[key as keyof typeof otherVars];
+  }
+}
+
 export default {
-  ...antdVars,
-  ...otherVars,
+  ...antdVarsRuntime,
+  ...runtimeStyle,
 } as const;
-// 供 config-overrides.js 引用，转换成 antd Less 连字符格式，用于覆盖其 Less 配置
-export const antdLessVars = toHyphenCase(antdVars) as Record<string, string>;
-export const antdLessVarsM = toHyphenCase(antdVarsM) as Record<string, string>;
+
+export const antdLessVars = toHyphenCase(antdVarsSource) as Record<string, string>;
+export const antdLessVarsM = toHyphenCase(antdVarsMSource) as Record<string, string>;
+
+export const darkThemeVars: Record<string, string> = {
+  'primary-color': '#FF657C',
+  'info-color': '#62a4ca',
+  'success-color': '#52c41a',
+  'processing-color': '#1890ff',
+  'error-color': '#f5222d',
+  'highlight-color': '#f5222d',
+  'warning-color': '#faad14',
+  'normal-color': '#d9d9d9',
+  'text-color': 'rgba(255, 255, 255, 0.85)',
+  'text-color-secondary': 'rgba(255, 255, 255, 0.45)',
+  'text-color-inverse': '#000',
+  'border-radius-base': '8px',
+  'border-radius-sm': '4px',
+  'border-color-base': '#434343',
+  'box-shadow-base':
+    '0 3px 6px -4px rgba(255, 255, 255, 0.12), 0 6px 16px 0 rgba(255, 255, 255, 0.08),0 9px 28px 8px rgba(255, 255, 255, 0.05)',
+  'translator-color-background': '#666',
+  'background-color-light': '#141414',
+  'background-focus': '#2a1a1a',
+  'text-color-light': 'rgba(255, 255, 255, 0.75)',
+  'text-color-lighter': 'rgba(255, 255, 255, 0.65)',
+  'text-color-lightest': 'rgba(255, 255, 255, 0.55)',
+  'text-color-secondary-light': 'rgba(255, 255, 255, 0.35)',
+  'text-color-secondary-lighter': 'rgba(255, 255, 255, 0.25)',
+  'text-color-secondary-lightest': 'rgba(255, 255, 255, 0.15)',
+  'primary-color-darker': '#d94c66',
+  'primary-color-lighter': '#ff8f9c',
+  'primary-color-lightest': '#ffbdc5',
+  'warning-color-lighter': '#ffd583',
+  'warning-color-lightest': '#ffe0a4',
+  'hover-color': 'rgba(255, 255, 255, 0.08)',
+  'active-color': 'rgba(255, 255, 255, 0.12)',
+  'selected-color': 'rgba(255, 255, 255, 0.16)',
+  'widget-button-hover-background-color': 'rgba(80, 80, 80, 0.6)',
+  'widget-button-active-background-color': 'rgba(100, 100, 100, 0.6)',
+  'widget-button-active-color': '#aaa',
+  'border-color-light': '#303030',
+  'border-color-lighter': '#282828',
+  'avatar-border-color': '#303030',
+};
+
+export const lightThemeVars: Record<string, string> = {
+  'primary-color': '#FF657C',
+  'info-color': '#62a4ca',
+  'success-color': '#52c41a',
+  'processing-color': '#1890ff',
+  'error-color': '#f5222d',
+  'highlight-color': '#f5222d',
+  'warning-color': '#faad14',
+  'normal-color': '#d9d9d9',
+  'text-color': 'rgba(0, 0, 0, 0.85)',
+  'text-color-secondary': 'rgba(0, 0, 0, 0.45)',
+  'text-color-inverse': '#fff',
+  'border-radius-base': '8px',
+  'border-radius-sm': '4px',
+  'border-color-base': '#dbdbdb',
+  'box-shadow-base':
+    '0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 6px 16px 0 rgba(0, 0, 0, 0.08),0 9px 28px 8px rgba(0, 0, 0, 0.05)',
+  'translator-color-background': '#4f4f4f',
+  'background-color-light': '#fafafa',
+  'background-focus': '#fffbe3',
+  'text-color-light': 'rgba(0, 0, 0, 0.75)',
+  'text-color-lighter': 'rgba(0, 0, 0, 0.65)',
+  'text-color-lightest': 'rgba(0, 0, 0, 0.55)',
+  'text-color-secondary-light': 'rgba(0, 0, 0, 0.35)',
+  'text-color-secondary-lighter': 'rgba(0, 0, 0, 0.25)',
+  'text-color-secondary-lightest': 'rgba(0, 0, 0, 0.15)',
+  'primary-color-darker': '#d94c66',
+  'primary-color-lighter': '#ff8f9c',
+  'primary-color-lightest': '#ffbdc5',
+  'warning-color-lighter': '#ffd583',
+  'warning-color-lightest': '#ffe0a4',
+  'hover-color': '#eee',
+  'active-color': '#d9d9d9',
+  'selected-color': '#e3e3e3',
+  'widget-button-hover-background-color': 'rgba(182, 182, 182, 0.6)',
+  'widget-button-active-background-color': 'rgba(202, 202, 202, 0.6)',
+  'widget-button-active-color': '#999',
+  'border-color-light': '#eeeeee',
+  'border-color-lighter': '#f7f7f7',
+  'avatar-border-color': '#eeeeee',
+};

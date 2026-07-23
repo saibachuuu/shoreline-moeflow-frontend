@@ -378,7 +378,8 @@ export const ProjectList: FC<ProjectListProps> = ({
                   border: 1px solid ${style.borderColorLight};
                   border-radius: ${style.borderRadiusBase};
                   font-size: 13px;
-                  background: white;
+                  background: ${style.backgroundColorLight};
+                  color: ${style.textColor};
                   outline: none;
                   &:focus {
                     border-color: ${style.primaryColor};
@@ -391,6 +392,8 @@ export const ProjectList: FC<ProjectListProps> = ({
                   border: 1px solid ${style.borderColorLight};
                   border-radius: ${style.borderRadiusBase};
                   font-size: 13px;
+                  background: ${style.backgroundColorLight};
+                  color: ${style.textColor};
                   outline: none;
                   &:focus {
                     border-color: ${style.primaryColor};
@@ -406,7 +409,8 @@ export const ProjectList: FC<ProjectListProps> = ({
                   border: 1px solid ${style.borderColorLight};
                   border-radius: ${style.borderRadiusBase};
                   font-size: 13px;
-                  background: white;
+                  background: ${style.backgroundColorLight};
+                  color: ${style.textColor};
                   cursor: pointer;
                 }
                 .WorkerSearch__ProjectSetOptions {
@@ -420,8 +424,8 @@ export const ProjectList: FC<ProjectListProps> = ({
                   padding: 4px 0;
                   border: 1px solid ${style.borderColorLight};
                   border-radius: ${style.borderRadiusBase};
-                  background: white;
-                  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+                  background: ${style.backgroundColorLight};
+                  box-shadow: ${style.boxShadowBase};
                 }
                 .WorkerSearch__ProjectSetOption {
                   display: flex;
@@ -451,7 +455,7 @@ export const ProjectList: FC<ProjectListProps> = ({
                   color: white;
                 }
                 .WorkerSearch__Button--ghost {
-                  background: white;
+                  background: ${style.backgroundColorLight};
                   color: ${style.textColorSecondary};
                   border: 1px solid ${style.borderColorLight};
                 }

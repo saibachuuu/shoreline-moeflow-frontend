@@ -36,11 +36,12 @@ export const ImageSourceViewerModeControl: FC<
         justify-content: space-evenly;
         align-items: center;
         border-bottom: 1px solid ${style.borderColorBase};
-        background: #fff;
+        background: ${style.backgroundColorLight};
 
         .ImageSourceViewerModeControl__Button {
           text-align: center;
-          background: #eee;
+          background: ${style.hoverColor};
+          color: ${style.textColorSecondary};
           width: 50%;
           border: none; // remove UA style
           border-right: 1px solid ${style.borderColorBase};
@@ -51,13 +52,14 @@ export const ImageSourceViewerModeControl: FC<
           }
 
           ${clickEffect(
-            `background-color: #f7f7f7;`,
-            `background-color: #fff`,
+            `background-color: ${style.activeColor};`,
+            `background-color: ${style.backgroundColorLight}`,
           )};
         }
 
         .ImageSourceViewerModeControl__Button--active {
-          background: #fff;
+          background: ${style.backgroundColorLight};
+          color: ${style.textColor};
           ${clearClickEffect()};
         }
       `}

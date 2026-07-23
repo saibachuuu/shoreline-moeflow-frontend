@@ -48,7 +48,7 @@ export const TranslationProgress: FC<TranslationProgressProps> = ({
           position: relative;
           width: 100%;
           height: 10px;
-          background: #efefef;
+          background: ${style.borderColorLight};
           border-radius: ${style.borderRadiusBase};
           overflow: hidden;
         }
@@ -99,10 +99,10 @@ export const TranslationProgress: FC<TranslationProgressProps> = ({
           .TranslationProgress__LineBase {
             background: repeating-linear-gradient(
               45deg,
-              #e0e0e0,
-              #e0e0e0 15px,
-              #efefef 0,
-              #efefef 30px
+              ${style.borderColorBase},
+              ${style.borderColorBase} 15px,
+              ${style.borderColorLight} 0,
+              ${style.borderColorLight} 30px
             );
           }
         }

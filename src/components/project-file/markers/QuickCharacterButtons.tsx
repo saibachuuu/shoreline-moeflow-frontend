@@ -30,7 +30,7 @@ export const QuickCharacterButtons: FC<QuickCharacterButtonsProps> = ({
             padding: 0 5px;
             border: 1px solid ${style.borderColorBase};
             border-radius: ${style.borderRadiusSm};
-            background: #fff;
+            background: ${style.backgroundColorLight};
             color: ${style.textColor};
             cursor: pointer;
           }
@@ -62,10 +62,10 @@ export const QuickCharacterButtons: FC<QuickCharacterButtonsProps> = ({
           min-width: 26px;
           height: 24px;
           padding: 0 5px;
-          border: 1px solid ${style.borderColorBase};
-          border-radius: ${style.borderRadiusSm};
-          background: #fff;
-          color: ${style.textColor};
+           border: 1px solid ${style.borderColorBase};
+           border-radius: ${style.borderRadiusSm};
+           background: ${style.backgroundColorLight};
+           color: ${style.textColor};
           cursor: pointer;
         }
 

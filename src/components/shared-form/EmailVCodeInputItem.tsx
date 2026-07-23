@@ -343,21 +343,21 @@ export const EmailVCodeInputItem: FC<EmailVCodeInputItemProps> = (
         <div
           css={css`
             border: 0;
-            background-color: #f5f5f5;
+            background-color: ${style.backgroundColorLight};
             border-radius: ${`0 0 ${style.borderRadiusBase} ${style.borderRadiusBase}`};
-            color: #5f5f5f;
+            color: ${style.textColorSecondary};
             text-align: center;
             height: 30px;
             line-height: 30px;
             ${clickEffect()}
             &.disabled {
               cursor: not-allowed;
-              color: #aaa;
+              color: ${style.textColorSecondaryLighter};
               &:hover {
-                background-color: #f5f5f5;
+                background-color: ${style.backgroundColorLight};
               }
               &:active {
-                background-color: #f5f5f5;
+                background-color: ${style.backgroundColorLight};
               }
             }
           `}

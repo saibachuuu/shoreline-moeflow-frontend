@@ -192,7 +192,7 @@ const Dashboard: FC<DashboardProps> = () => {
             height: 100%;
             box-sizing: content-box;
             border-right: 1px solid ${style.borderColorLight};
-            background: #fff;
+            background: ${style.backgroundColorLight};
             z-index: 100;
             transition: box-shadow 150ms;
           }

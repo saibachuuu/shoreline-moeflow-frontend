@@ -271,6 +271,12 @@ auth.loginFirst:
 site.myProjects:
   zhCn: 我参与的项目
   en: My Projects
+site.darkMode:
+  zhCn: 暗黑模式
+  en: Dark Mode
+site.lightMode:
+  zhCn: 亮色模式
+  en: Light Mode
 site.team:
   zhCn: 团队
   en: Team
@@ -982,6 +988,9 @@ site.imageUnit:
 imageTranslator.settingTitle:
   zhCn: 翻译器设置
   en: Translator Settings
+imageTranslator.imageDarkness:
+  zhCn: 图片减亮
+  en: Darken Image
 hotKeyRecorder.tip:
   zhCn: 请按下按键
   en: Press the button

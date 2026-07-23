@@ -9,6 +9,7 @@ import { Avatar, Dropdown, Icon, ListItem, TeamList, Tooltip } from '..';
 import { FC } from '@/interfaces';
 import { AppState } from '@/store';
 import { resetProjectsState } from '@/store/project/slice';
+import { setThemeMode } from '@/store/site/slice';
 import { setUserToken, UserState } from '@/store/user/slice';
 import style from '../../style';
 import { clickEffect } from '@/utils/style';
@@ -51,6 +52,7 @@ export const DashboardMenu: FC<
     (state: AppState) => state.site.relatedApplicationsCount,
   );
   const isMobile = platform === 'mobile';
+  const themeMode = useSelector((state: AppState) => state.site.themeMode);
   const dispatch = useDispatch();
   const history = useHistory();
   // 收缩大小
@@ -90,7 +92,7 @@ export const DashboardMenu: FC<
                   color: ${style.textColorLightest};
                   border: 1px solid ${style.borderColorLight};
                   border-radius: ${style.borderRadiusBase};
-                  background-color: #fff;
+                  background-color: ${style.backgroundColorLight};
                 }
               }
             }
@@ -283,6 +285,18 @@ export const DashboardMenu: FC<
             className="Dashboard__ListItem Dashboard__ListItemTitle Dashboard__ListItemTitle-top"
             logo={<Icon className="ListItem__LogoIcon" icon="bars"></Icon>}
             name={formatMessage({ id: 'site.dashboard' })}
+          />
+          <ListItem
+            onClick={() => {
+              const newTheme = themeMode === 'dark' ? 'light' : 'dark';
+              dispatch(setThemeMode(newTheme));
+              localStorage.setItem('themeMode', newTheme);
+            }}
+            className="Dashboard__ListItem Dashboard__MenuOption Dashboard__MenuOption--system"
+            logo={<Icon className="ListItem__LogoIcon" icon={themeMode === 'dark' ? 'sun' : 'moon'}></Icon>}
+            name={themeMode === 'dark'
+              ? formatMessage({ id: 'site.lightMode' })
+              : formatMessage({ id: 'site.darkMode' })}
           />
           <ListItem
             onClick={() => {

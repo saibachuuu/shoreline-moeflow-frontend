@@ -69,6 +69,7 @@ interface ImageViewerProps {
   height: number;
   labels: Label[];
   loading: boolean;
+  darkness?: number;
   onSettingButtonClick?: () => void;
   className?: string;
 }
@@ -83,6 +84,7 @@ export const ImageViewer: FC<ImageViewerProps> = ({
   height: imageAreaHeight,
   labels,
   loading,
+  darkness = 0,
   onSettingButtonClick,
   className,
 }) => {
@@ -485,25 +487,25 @@ export const ImageViewer: FC<ImageViewerProps> = ({
           flex-direction: column;
           justify-content: center;
           align-items: center;
-          background-color: #f5f5f5;
-          color: #666;
+          background-color: ${style.backgroundColorLight};
+          color: ${style.textColorSecondary};
           padding: 20px;
           text-align: center;
         `}
       >
         <Icon
           icon="exclamation-triangle"
-          style={{ fontSize: '48px', color: '#ff9800', marginBottom: '16px' }}
+          style={{ fontSize: '48px', color: style.warningColor, marginBottom: '16px' }}
         />
         <p
           style={{ marginBottom: '8px', fontSize: '14px', fontWeight: 'bold' }}
         >
           {formatMessage({ id: 'imageTranslator.imageLoadFailed' })}
         </p>
-        <p style={{ marginBottom: '4px', fontSize: '12px', color: '#999' }}>
+        <p style={{ marginBottom: '4px', fontSize: '12px', color: style.textColorSecondaryLighter }}>
           {formatMessage({ id: 'imageTranslator.imageUrl' })}: {imageError.url}
         </p>
-        <p style={{ fontSize: '12px', color: '#999' }}>
+        <p style={{ fontSize: '12px', color: style.textColorSecondaryLighter }}>
           {formatMessage({ id: 'imageTranslator.imageLoadFailedTip' })}
         </p>
       </div>
@@ -511,6 +513,7 @@ export const ImageViewer: FC<ImageViewerProps> = ({
       <MovableAreaImageBackground
         onLoad={handleImageLoad}
         onError={handleImageError}
+        darkness={darkness}
         src={currentImageUrl}
       ></MovableAreaImageBackground>
     )
@@ -603,7 +606,8 @@ export const ImageViewer: FC<ImageViewerProps> = ({
           align-items: center;
           width: 40px;
           height: 40px;
-          background-color: rgba(255, 255, 255, ${widgetOpacity});
+          opacity: ${widgetOpacity};
+          background-color: ${style.backgroundColorLight};
           ${clickEffect(
             css`
               background-color: ${style.widgetButtonHoverBackgroundColor};
@@ -626,14 +630,16 @@ export const ImageViewer: FC<ImageViewerProps> = ({
           top: ${isMobile ? '5px' : '10px'};
           left: ${isMobile ? '45px' : '50px'};
           z-index: 4;
-          background-color: rgba(255, 255, 255, ${widgetOpacity});
+          opacity: ${widgetOpacity};
+          background-color: ${style.backgroundColorLight};
         }
         .ImageViewer__ImageViewerPagingPanel {
           position: absolute;
           top: ${isMobile ? '5px' : '10px'};
           right: ${isMobile ? '55px' : '10px'};
           z-index: 5;
-          background-color: rgba(255, 255, 255, ${widgetOpacity});
+          opacity: ${widgetOpacity};
+          background-color: ${style.backgroundColorLight};
         }
       `}
     >

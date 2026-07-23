@@ -89,7 +89,7 @@ export const ImageViewerZoomPanel: FC<ImageViewerZoomPanelProps> = ({
                   className="icon"
                   icon="image"
                   style={{
-                    color: showOriginalImage ? '#000' : '#999',
+                    color: showOriginalImage ? style.textColor : style.textColorSecondary,
                   }}
                 />
               </div>
@@ -126,7 +126,7 @@ export const ImageViewerZoomPanel: FC<ImageViewerZoomPanelProps> = ({
                   style={{
                     position: 'absolute',
                     fontSize: '8px',
-                    color: '#666',
+                    color: style.textColorSecondary,
                   }}
                 />
               </div>
@@ -242,7 +242,7 @@ export const ImageViewerZoomPanel: FC<ImageViewerZoomPanelProps> = ({
           flex-direction: column;
           align-items: center;
           width: 40px;
-          background-color: #fff;
+          background-color: ${style.backgroundColorLight};
           border-radius: ${style.borderRadiusBase};
           pointer-events: auto;
           box-shadow: ${style.boxShadowBase};
@@ -262,13 +262,13 @@ export const ImageViewerZoomPanel: FC<ImageViewerZoomPanelProps> = ({
             )}
             &.ImageViewerZoomPanel__ShrinkButton {
               height: 30px;
-              background-color: ${shrunk ? '#fff' : '#eee'};
+              background-color: ${shrunk ? style.backgroundColorLight : style.hoverColor};
               border-radius: ${`${style.borderRadiusBase} ${style.borderRadiusBase} 0 0`};
               overflow: hidden;
             }
             &.ImageViewerZoomPanel__ShrinkArrow {
               height: 10px;
-              background-color: ${shrunk ? '#fff' : '#eee'};
+              background-color: ${shrunk ? style.backgroundColorLight : style.hoverColor};
               border-radius: ${`0 0 ${style.borderRadiusBase} ${style.borderRadiusBase}`};
               overflow: hidden;
             }
@@ -289,31 +289,31 @@ export const ImageViewerZoomPanel: FC<ImageViewerZoomPanelProps> = ({
                 margin: 0;
                 padding: 0 22px 0 18px;
                 .ant-slider-rail {
-                  background-color: #e1e1e1;
+                  background-color: ${style.borderColorLight};
                 }
                 &:hover {
                   .ant-slider-rail {
-                    background-color: #e1e1e1;
+                    background-color: ${style.borderColorLight};
                   }
                 }
               }
               .ant-slider-track {
-                background-color: #666666;
+                background-color: ${style.textColorSecondary};
               }
               .ant-slider-handle {
                 margin-bottom: 0;
-                border: 2px solid #666666;
+                border: 2px solid ${style.textColorSecondary};
                 &:focus {
                   box-shadow: none;
                 }
               }
               .ant-slider-handle-click-focused {
-                border: 2px solid #666666;
+                border: 2px solid ${style.textColorSecondary};
                 box-shadow: none;
               }
               .ant-slider-step {
                 .ant-slider-dot-active {
-                  border: 2px solid #666666;
+                  border: 2px solid ${style.textColorSecondary};
                 }
               }
             }
@@ -333,7 +333,7 @@ export const ImageViewerZoomPanel: FC<ImageViewerZoomPanelProps> = ({
           flex-direction: row;
           align-items: center;
           height: 40px;
-          background-color: #fff;
+          background-color: ${style.backgroundColorLight};
           border-radius: ${style.borderRadiusBase};
           pointer-events: auto;
           box-shadow: ${style.boxShadowBase};
@@ -371,21 +371,21 @@ export const ImageViewerZoomPanel: FC<ImageViewerZoomPanelProps> = ({
                 padding: 18px 0 22px 0;
               }
               .ant-slider-track {
-                background-color: #666666;
+                background-color: ${style.textColorSecondary};
               }
               .ant-slider-handle {
-                border: 2px solid #666666;
+                border: 2px solid ${style.textColorSecondary};
                 &:focus {
                   box-shadow: 0 0 0 5px rgba(0, 0, 0, 0.06);
                 }
               }
               .ant-slider-handle-click-focused {
-                border: 2px solid #666666;
+                border: 2px solid ${style.textColorSecondary};
                 box-shadow: 0 0 0 5px rgba(0, 0, 0, 0.16);
               }
               .ant-slider-step {
                 .ant-slider-dot-active {
-                  border: 2px solid #666666;
+                  border: 2px solid ${style.textColorSecondary};
                 }
               }
             }

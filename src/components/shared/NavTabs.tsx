@@ -79,7 +79,7 @@ export const NavTabs: FC<NavTabsProps> = ({ className, children }) => {
           justify-content: center;
           align-items: center;
           box-shadow: -10px 0px 8px rgba(0, 0, 0, 0.2);
-          background-color: #fff;
+          background-color: ${style.backgroundColorLight};
           ${clickEffect()}
         }
         .ant-dropdown-menu-item > a:hover {

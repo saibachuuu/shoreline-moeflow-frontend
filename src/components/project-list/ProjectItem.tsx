@@ -81,6 +81,8 @@ export const ProjectItem: FC<ProjectItemProps> = ({
           box-shadow 100ms,
           border-color 100ms;
         border: 1px solid ${style.borderColorLight};
+        background-color: ${style.backgroundColorLight};
+        color: ${style.textColor};
         padding: 3px ${style.paddingBase - 5}px 0;
         &.ProjectItem--hasBelong {
           padding-top: ${style.paddingBase - 3}px;

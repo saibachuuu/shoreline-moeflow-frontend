@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 import { FC, File } from '@/interfaces';
 import { Source as ISource } from '@/interfaces/source';
 import { AppState } from '@/store';
+import style from '@/style';
 import { TranslationSaveFailed } from './TranslationSaveFailed';
 import { ImageSourceViewerSource } from './source';
 import { ImageSourceViewerTranslator } from './translate';
@@ -78,7 +79,7 @@ export const ImageSourceViewer: FC<ImageSourceViewerProps> = ({
       ref={containerRef}
       className={classNames(['ImageSourceViewer', className])}
       css={css`
-        background: #fff;
+        background: ${style.backgroundColorLight};
         display: flex;
         flex-direction: column;
         overflow: hidden;

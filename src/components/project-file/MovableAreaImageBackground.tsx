@@ -6,6 +6,7 @@ import classNames from 'classnames';
 /** 可移动区域图片背景的属性接口 */
 interface MovableAreaImageBackgroundProps {
   src: string;
+  darkness?: number;
   onLoad?: (size: { width: number; height: number }) => void;
   onError?: () => void;
   className?: string;
@@ -16,7 +17,7 @@ interface MovableAreaImageBackgroundProps {
  */
 export const MovableAreaImageBackground: FC<
   MovableAreaImageBackgroundProps
-> = ({ src, onLoad, onError, className: _className }) => {
+> = ({ src, darkness = 0, onLoad, onError, className: _className }) => {
   /**
    * required to override tailwindcss's @base
    * see https://tailwindcss.com/docs/preflight#images-are-block-level
@@ -28,6 +29,7 @@ export const MovableAreaImageBackground: FC<
       className={className}
       css={css`
         user-select: none;
+        filter: brightness(${1 - darkness / 100});
         /* 禁止 iOS 上 Safari/Chrome/Firefox，重按/长按图片弹出菜单 */
         -webkit-touch-callout: none;
         cursor: pointer;

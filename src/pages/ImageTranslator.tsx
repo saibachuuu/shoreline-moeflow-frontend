@@ -1,5 +1,5 @@
 import { css, Global } from '@emotion/core';
-import { Modal } from 'antd';
+import { Modal, Slider, Switch } from 'antd';
 import { useEffect, useState } from 'react';
 import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
@@ -10,6 +10,7 @@ import { ImageViewer, ImageSourceViewer } from '@/components/project-file';
 import { FC, Source } from '@/interfaces';
 import { AppState } from '@/store';
 import { setCurrentProjectSaga } from '@/store/project/slice';
+import { setThemeMode } from '@/store/site/slice';
 import { fetchSourcesSaga, focusSource } from '@/store/source/slice';
 import style from '../style';
 import { toLowerCamelCase } from '@/utils';
@@ -35,6 +36,7 @@ const ImageTranslator: FC = () => {
     (state: AppState) => state.source.focusedSource.id,
   );
   const platform = useSelector((state: AppState) => state.site.platform);
+  const themeMode = useSelector((state: AppState) => state.site.themeMode);
   const isMobile = platform === 'mobile';
   const [file, setFile] = useState<GetFileReturn>();
   const sourceListWidth = 400;
@@ -45,6 +47,7 @@ const ImageTranslator: FC = () => {
     sourceListHeightMobileDefault,
   );
   const [settingModalVisible, setSettingModalVisible] = useState(false);
+  const [imageDarkness, setImageDarkness] = useState(0);
   const currentProject = useSelector(
     (state: AppState) => state.project.currentProject,
   );
@@ -168,6 +171,7 @@ const ImageTranslator: FC = () => {
           file={file}
           targetID={targetID}
           labels={sources}
+          darkness={imageDarkness}
           width={imageTranslatorSize.width}
           height={imageTranslatorSize.height}
           loading={!currentProject || sourcesLoading}
@@ -191,6 +195,53 @@ const ImageTranslator: FC = () => {
         open={settingModalVisible}
         footer={null}
       >
+        <div
+          css={css`
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            color: ${style.textColor};
+          `}
+        >
+          <span>
+            {themeMode === 'dark'
+              ? formatMessage({ id: 'site.lightMode' })
+              : formatMessage({ id: 'site.darkMode' })}
+          </span>
+          <Switch
+            checked={themeMode === 'dark'}
+            onChange={(checked) => {
+              const newTheme = checked ? 'dark' : 'light';
+              dispatch(setThemeMode(newTheme));
+              localStorage.setItem('themeMode', newTheme);
+            }}
+          />
+        </div>
+        <div
+          css={css`
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            color: ${style.textColor};
+          `}
+        >
+          <span>{formatMessage({ id: 'imageTranslator.imageDarkness' })}</span>
+          <Slider
+            min={0}
+            max={99}
+            value={imageDarkness}
+            onChange={(value) => {
+              setImageDarkness(typeof value === 'number' ? value : value[0]);
+            }}
+            tooltip={{ formatter: (value) => `${value ?? 0}%` }}
+            css={css`
+              flex: 1;
+              min-width: 0;
+            `}
+          />
+        </div>
         {isMobile ? (
           formatMessage({ id: 'imageTranslator.mouseHotkeySettingUnavailable' })
         ) : (

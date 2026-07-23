@@ -28,7 +28,7 @@ export const FileUploadProgress: FC<FileUploadProgressProps> = ({
           position: relative;
           width: 100%;
           height: 10px;
-          background: #efefef;
+          background: ${style.borderColorLight};
           border-radius: ${style.borderRadiusBase};
         }
         .FileUploadProgress__ProgressLine {

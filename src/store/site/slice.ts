@@ -2,6 +2,8 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { OSName, Platform } from '@/interfaces';
 import { RuntimeConfig } from '@/configs';
 
+export type ThemeMode = 'light' | 'dark';
+
 export interface SiteState {
   osName: OSName;
   platform: Platform;
@@ -9,6 +11,7 @@ export interface SiteState {
   relatedApplicationsCount: number;
   runtimeConfig: RuntimeConfig;
   customSiteTitle: string;
+  themeMode: ThemeMode;
 }
 
 const initialState: SiteState = {
@@ -18,6 +21,7 @@ const initialState: SiteState = {
   newInvitationsCount: 0,
   runtimeConfig: null!,
   customSiteTitle: '',
+  themeMode: 'light',
 };
 const slice = createSlice({
   name: 'site',
@@ -41,6 +45,9 @@ const slice = createSlice({
     setCustomSiteTitle(state, action: PayloadAction<string>) {
       state.customSiteTitle = action.payload;
     },
+    setThemeMode(state, action: PayloadAction<ThemeMode>) {
+      state.themeMode = action.payload;
+    },
   },
 });
 
@@ -51,5 +58,6 @@ export const {
   setNewInvitationsCount,
   setRuntimeConfig,
   setCustomSiteTitle,
+  setThemeMode,
 } = slice.actions;
 export default slice.reducer;
