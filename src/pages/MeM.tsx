@@ -56,11 +56,11 @@ const MeM: FC<MeMProps> = () => {
           min-height: 150px;
         }
         .MeM__Button {
-          border-top: 1px solid #eee;
-          background: #fff;
+           border-top: 1px solid ${style.borderColorLight};
+           background: ${style.backgroundColorLight};
         }
         .MeM__Button:last-child {
-          border-bottom: 1px solid #eee;
+           border-bottom: 1px solid ${style.borderColorLight};
           margin-bottom: 45px;
         }
         .MeM__Badge {

@@ -213,7 +213,8 @@ export const MemberStats: FC<MemberStatsProps> = ({
             <div
               css={css`
                 position: absolute;
-                background: white;
+                 background: ${style.backgroundColorLight};
+                 color: ${style.textColor};
                 border-radius: ${style.borderRadiusBase};
                 box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
                 z-index: 1001;

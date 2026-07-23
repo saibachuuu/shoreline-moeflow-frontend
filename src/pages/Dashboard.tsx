@@ -48,6 +48,7 @@ const Dashboard: FC<DashboardProps> = () => {
   const { formatMessage } = useIntl(); // i18n
   useTitle({ prefix: formatMessage({ id: 'site.dashboard' }) }); // 设置标题
   const platform = useSelector((state: AppState) => state.site.platform);
+  const themeMode = useSelector((state: AppState) => state.site.themeMode);
   const isMobile = platform === 'mobile';
 
   const [menuCollapsed, setMenuCollapsed] = useState(true);
@@ -254,16 +255,18 @@ const Dashboard: FC<DashboardProps> = () => {
         {/* 手机版顶部导航栏（除了 Tab 页） */}
         {isMobile && !isMobileTabPage() && (
           <NavBarM
-            css={css`
-              position: fixed;
+             css={css`
+               position: fixed;
               width: 100%;
               height: ${style.navHeightM}px;
               top: 0;
               left: 0;
-              border-bottom: 1px solid ${style.borderColorLight};
-              z-index: 100;
-            `}
-            mode="light"
+               border-bottom: 1px solid ${style.borderColorLight};
+               background: ${style.backgroundColorLight};
+               color: ${style.textColor};
+               z-index: 100;
+             `}
+             mode={themeMode === 'dark' ? 'dark' : 'light'}
             icon={<Icon icon="angle-left" />}
             onLeftClick={() => {
               history.goBack();

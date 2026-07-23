@@ -58,6 +58,8 @@ export const EditWorkers: FC<EditWorkersProps> = ({
         padding: 10px;
         min-width: 280px;
         max-width: 400px;
+        background: ${style.backgroundColorLight};
+        color: ${style.textColor};
         .EditWorkers__Row {
           display: flex;
           align-items: center;
@@ -77,6 +79,8 @@ export const EditWorkers: FC<EditWorkersProps> = ({
           border: 1px solid ${style.borderColorLight};
           border-radius: ${style.borderRadiusBase};
           font-size: 14px;
+          background: ${style.backgroundColorLight};
+          color: ${style.textColor};
           outline: none;
           &:focus {
             border-color: ${style.primaryColor};
@@ -102,7 +106,7 @@ export const EditWorkers: FC<EditWorkersProps> = ({
         }
         .EditWorkers__Button--save {
           background: ${style.primaryColor};
-          color: white;
+           color: ${style.textColorInverse};
           opacity: ${isSaving ? 0.5 : 1};
           cursor: ${isSaving ? 'not-allowed' : 'pointer'};
         }
