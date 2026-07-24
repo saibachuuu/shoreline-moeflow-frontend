@@ -37,6 +37,9 @@ export const ImageSourceViewerSource: FC<ImageSourceViewerSourceProps> = ({
   const autoFocusInput = useSelector(
     (state: AppState) => state.site.imageTranslatorAutoFocusInput,
   );
+  const showSymbolInputter = useSelector(
+    (state: AppState) => state.site.imageTranslatorShowSymbolInputter,
+  );
   const domRefs = useRef<(HTMLDivElement | null)[]>([]);
   const textAreaRef = useRef<TextAreaRef>(null);
   const currentProject = useSelector(
@@ -409,6 +412,7 @@ export const ImageSourceViewerSource: FC<ImageSourceViewerSourceProps> = ({
               focusedSourceCreating ||
               focusedSourceDeleting
             }
+            defaultVisible={showSymbolInputter}
             onInsert={insertQuickCharacter}
           />
           <div className="ImageSourceViewerTranslator__StatusBar">

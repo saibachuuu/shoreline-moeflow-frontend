@@ -322,6 +322,7 @@
   "imageTranslator.settingTitle": "翻译器设置",
   "imageTranslator.imageDarkness": "图片减亮",
   "imageTranslator.autoFocusInput": "切换标签时自动激活输入框",
+  "imageTranslator.showSymbolInputter": "进入时展开符号输入器",
   "hotKeyRecorder.tip": "请按下按键",
   "hotKeyRecorder.null": "无",
   "hotKeyRecorder.unbind": "删除",

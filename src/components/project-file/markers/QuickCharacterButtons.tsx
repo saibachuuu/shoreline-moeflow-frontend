@@ -6,14 +6,16 @@ import { QUICK_CHARACTERS } from './quickCharacters';
 
 interface QuickCharacterButtonsProps {
   disabled?: boolean;
+  defaultVisible?: boolean;
   onInsert: (character: string) => void;
 }
 
 export const QuickCharacterButtons: FC<QuickCharacterButtonsProps> = ({
   disabled = false,
+  defaultVisible = false,
   onInsert,
 }) => {
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useState(defaultVisible);
 
   if (!visible) {
     return (

@@ -9,6 +9,16 @@
     <link rel="apple-touch-icon" href="/static/logo192.png" />
     <link rel="manifest" href="/static/manifest.json" />
     <title>MoeFlow</title>
+    <script>
+      (function () {
+        var theme = localStorage.getItem('themeMode');
+        if (theme !== 'light' && theme !== 'dark') {
+          theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.setAttribute('data-theme', theme);
+        document.documentElement.style.backgroundColor = theme === 'dark' ? '#1b1b20' : '#fff';
+      })();
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

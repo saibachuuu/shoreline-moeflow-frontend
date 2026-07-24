@@ -322,6 +322,7 @@
   "imageTranslator.settingTitle": "Translator Settings",
   "imageTranslator.imageDarkness": "Darken Image",
   "imageTranslator.autoFocusInput": "Focus input when switching labels",
+  "imageTranslator.showSymbolInputter": "Expand symbol inputter on entry",
   "hotKeyRecorder.tip": "Press the button",
   "hotKeyRecorder.null": "None",
   "hotKeyRecorder.unbind": "Delete",
