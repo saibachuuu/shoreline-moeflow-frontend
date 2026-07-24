@@ -22,6 +22,7 @@ import { AppState } from '@/store';
 import {
   setNewInvitationsCount,
   setRelatedApplicationsCount,
+  setThemeMode,
 } from '@/store/site/slice';
 import style from '../style';
 import { getCancelToken } from '@/utils/api';
@@ -271,7 +272,21 @@ const Dashboard: FC<DashboardProps> = () => {
             onLeftClick={() => {
               history.goBack();
             }}
-            rightContent={<Icon icon="ellipsis-h" />}
+            rightContent={
+              <span
+                css={css`
+                  cursor: pointer;
+                  font-size: 18px;
+                `}
+                onClick={() => {
+                  const newTheme = themeMode === 'dark' ? 'light' : 'dark';
+                  dispatch(setThemeMode(newTheme));
+                  localStorage.setItem('themeMode', newTheme);
+                }}
+              >
+                <Icon icon={themeMode === 'dark' ? 'sun' : 'moon'} />
+              </span>
+            }
           >
             {formatMessage({ id: 'site.dashboard' })}
           </NavBarM>

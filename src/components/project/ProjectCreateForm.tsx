@@ -108,7 +108,7 @@ export const ProjectCreateForm: FC<ProjectCreateFormProps> = ({
         }
         .ProjectCreateForm__Label {
           margin-right: 8px;
-          color: rgba(0, 0, 0, 0.85);
+          color: ${style.textColor};
         }
         .ProjectCreateForm__Tip {
           color: ${style.textColorSecondary};
@@ -124,6 +124,9 @@ export const ProjectCreateForm: FC<ProjectCreateFormProps> = ({
           width: 100%;
           margin-top: 10px;
           height: 80px;
+          background-color: ${style.backgroundColorLight};
+          color: ${style.textColor};
+          border: 1px solid ${style.borderColorBase};
         }
       `}
     >

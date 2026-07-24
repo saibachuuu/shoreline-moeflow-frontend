@@ -17,7 +17,6 @@ import {
   setRuntimeConfig,
   setThemeMode,
   setImageTranslatorAutoFocusInput,
-  setImageTranslatorShowSymbolInputter,
   setImageTranslatorImageDarkness,
   ThemeMode,
 } from './store/site/slice';
@@ -62,15 +61,15 @@ function initThemeMode(): ThemeMode {
 }
 const initialTheme = initThemeMode();
 store.dispatch(setThemeMode(initialTheme));
-const loadedSettings = imageTranslatorSettingsStorage.load();
 store.dispatch(
-  setImageTranslatorAutoFocusInput(loadedSettings.autoFocusInput),
+  setImageTranslatorAutoFocusInput(
+    imageTranslatorSettingsStorage.load().autoFocusInput,
+  ),
 );
 store.dispatch(
-  setImageTranslatorShowSymbolInputter(loadedSettings.showSymbolInputter),
-);
-store.dispatch(
-  setImageTranslatorImageDarkness(loadedSettings.imageDarkness),
+  setImageTranslatorImageDarkness(
+    imageTranslatorSettingsStorage.load().imageDarkness,
+  ),
 );
 document.documentElement.setAttribute('data-theme', initialTheme);
 // 监听系统主题变化

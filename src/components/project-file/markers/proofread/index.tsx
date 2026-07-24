@@ -43,9 +43,6 @@ export const ImageSourceViewerProofreader: FC<
   const autoFocusInput = useSelector(
     (state: AppState) => state.site.imageTranslatorAutoFocusInput,
   );
-  const showSymbolInputter = useSelector(
-    (state: AppState) => state.site.imageTranslatorShowSymbolInputter,
-  );
   const domRefs = useRef<(HTMLDivElement | null)[]>([]);
   const translationTextAreaRef = useRef<TextAreaRef>(null);
   const proofreadTextAreaRef = useRef<TextAreaRef>(null);
@@ -447,7 +444,6 @@ export const ImageSourceViewerProofreader: FC<
               focusedSource.myTranslationContentStatus === 'saving' ||
               focusedSource.myTranslationContentStatus === 'debouncing'
             }
-            defaultVisible={showSymbolInputter}
             onInsert={insertQuickCharacter}
           />
           <div className="ImageSourceViewerProofreader__TranslationArea">

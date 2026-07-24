@@ -178,6 +178,12 @@ const App: React.FC = () => {
           [data-theme='dark'] .ant-modal-body {
             color: rgba(255, 255, 255, 0.85);
           }
+          [data-theme='dark'] .ant-modal-confirm-body .ant-modal-confirm-title {
+            color: rgba(255, 255, 255, 0.85);
+          }
+          [data-theme='dark'] .ant-modal-confirm-body .ant-modal-confirm-content {
+            color: rgba(255, 255, 255, 0.65);
+          }
           [data-theme='dark'] .ant-dropdown-menu,
           [data-theme='dark'] .ant-menu,
           [data-theme='dark'] .ant-popover-inner {
@@ -219,6 +225,34 @@ const App: React.FC = () => {
             color: rgba(255, 255, 255, 0.85) !important;
           }
           [data-theme='dark'] .ant-select-item-option-content {
+            color: rgba(255, 255, 255, 0.85);
+          }
+          [data-theme='dark'] .ant-select-item-option-active {
+            background-color: rgba(255, 255, 255, 0.08);
+          }
+          [data-theme='dark'] .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+            background-color: rgba(255, 101, 124, 0.15);
+          }
+          [data-theme='dark'] .ant-select-selection-item {
+            background-color: #26262a;
+            border-color: #383840;
+            color: rgba(255, 255, 255, 0.85);
+          }
+          [data-theme='dark'] .ant-select-selection-item-remove {
+            color: rgba(255, 255, 255, 0.45);
+          }
+          [data-theme='dark'] .ant-select-selection-item-remove:hover {
+            color: rgba(255, 255, 255, 0.85);
+          }
+          [data-theme='dark'] .ant-select-multiple .ant-select-selection-item {
+            background-color: #26262a;
+            border-color: #383840;
+            color: rgba(255, 255, 255, 0.85);
+          }
+          [data-theme='dark'] .ant-select-multiple .ant-select-selection-item-remove {
+            color: rgba(255, 255, 255, 0.45);
+          }
+          [data-theme='dark'] .ant-select-multiple .ant-select-selection-item-remove:hover {
             color: rgba(255, 255, 255, 0.85);
           }
           [data-theme='dark'] .ant-btn {
@@ -301,6 +335,107 @@ const App: React.FC = () => {
           [data-theme='dark'] .ant-drawer-close:hover,
           [data-theme='dark'] .ant-modal-close:hover {
             color: var(--primary-color);
+          }
+
+          /* 分页 */
+          [data-theme='dark'] .ant-pagination {
+            color: rgba(255, 255, 255, 0.85);
+          }
+          [data-theme='dark'] .ant-pagination-item {
+            background-color: #26262a;
+            border-color: #383840;
+            color: rgba(255, 255, 255, 0.85);
+          }
+          [data-theme='dark'] .ant-pagination-item a {
+            color: rgba(255, 255, 255, 0.85);
+          }
+          [data-theme='dark'] .ant-pagination-item:hover {
+            border-color: var(--primary-color);
+          }
+          [data-theme='dark'] .ant-pagination-item-active {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+          }
+          [data-theme='dark'] .ant-pagination-item-active a {
+            color: #fff;
+          }
+          [data-theme='dark'] .ant-pagination-prev .ant-pagination-item-link,
+          [data-theme='dark'] .ant-pagination-next .ant-pagination-item-link {
+            background-color: #26262a;
+            border-color: #383840;
+            color: rgba(255, 255, 255, 0.85);
+          }
+          [data-theme='dark'] .ant-pagination-prev:hover .ant-pagination-item-link,
+          [data-theme='dark'] .ant-pagination-next:hover .ant-pagination-item-link {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+          }
+          [data-theme='dark'] .ant-pagination-disabled .ant-pagination-item-link,
+          [data-theme='dark'] .ant-pagination-disabled:hover .ant-pagination-item-link {
+            background-color: #1f1f24;
+            border-color: #2e2e34;
+            color: rgba(255, 255, 255, 0.25);
+          }
+          [data-theme='dark'] .ant-pagination-jump-prev .ant-pagination-item-container .ant-pagination-item-ellipsis,
+          [data-theme='dark'] .ant-pagination-jump-next .ant-pagination-item-container .ant-pagination-item-ellipsis {
+            color: rgba(255, 255, 255, 0.45);
+          }
+          [data-theme='dark'] .ant-pagination-simple-pager input {
+            background-color: #1f1f24;
+            border-color: #383840;
+            color: rgba(255, 255, 255, 0.85);
+          }
+          [data-theme='dark'] .ant-pagination-simple .ant-pagination-simple-pager input:hover {
+            border-color: var(--primary-color);
+          }
+          [data-theme='dark'] .ant-pagination-options-quick-jumper input {
+            background-color: #1f1f24;
+            border-color: #383840;
+            color: rgba(255, 255, 255, 0.85);
+          }
+
+          /* 消息提示 */
+          [data-theme='dark'] .ant-message .ant-message-notice-content {
+            background-color: #1f1f24;
+            color: rgba(255, 255, 255, 0.85);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+          }
+          [data-theme='dark'] .ant-message .ant-message-notice-content .anticon {
+            color: rgba(255, 255, 255, 0.85);
+          }
+          [data-theme='dark'] .ant-message .ant-message-notice-content .ant-message-success .anticon {
+            color: #52c41a;
+          }
+          [data-theme='dark'] .ant-message .ant-message-notice-content .ant-message-error .anticon {
+            color: #f5222d;
+          }
+          [data-theme='dark'] .ant-message .ant-message-notice-content .ant-message-warning .anticon {
+            color: #faad14;
+          }
+          [data-theme='dark'] .ant-message .ant-message-notice-content .ant-message-info .anticon {
+            color: #1890ff;
+          }
+
+          /* 通知提醒 */
+          [data-theme='dark'] .ant-notification {
+            color: rgba(255, 255, 255, 0.85);
+          }
+          [data-theme='dark'] .ant-notification-notice {
+            background-color: #1f1f24;
+            color: rgba(255, 255, 255, 0.85);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+          }
+          [data-theme='dark'] .ant-notification-notice-message {
+            color: rgba(255, 255, 255, 0.85);
+          }
+          [data-theme='dark'] .ant-notification-notice-description {
+            color: rgba(255, 255, 255, 0.65);
+          }
+          [data-theme='dark'] .ant-notification-notice-close {
+            color: rgba(255, 255, 255, 0.45);
+          }
+          [data-theme='dark'] .ant-notification-notice-close:hover {
+            color: rgba(255, 255, 255, 0.85);
           }
 
           .ant-badge-dot {

@@ -12,7 +12,6 @@ import { AppState } from '@/store';
 import { setCurrentProjectSaga } from '@/store/project/slice';
 import {
   setImageTranslatorAutoFocusInput,
-  setImageTranslatorShowSymbolInputter,
   setImageTranslatorImageDarkness,
   setThemeMode,
 } from '@/store/site/slice';
@@ -49,9 +48,6 @@ const ImageTranslator: FC = () => {
   const themeMode = useSelector((state: AppState) => state.site.themeMode);
   const autoFocusInput = useSelector(
     (state: AppState) => state.site.imageTranslatorAutoFocusInput,
-  );
-  const showSymbolInputter = useSelector(
-    (state: AppState) => state.site.imageTranslatorShowSymbolInputter,
   );
   const isMobile = platform === 'mobile';
   const [file, setFile] = useState<GetFileReturn>();
@@ -257,31 +253,6 @@ const ImageTranslator: FC = () => {
               dispatch(setImageTranslatorAutoFocusInput(checked));
               imageTranslatorSettingsStorage.save({
                 autoFocusInput: checked,
-                showSymbolInputter,
-                imageDarkness,
-              });
-            }}
-          />
-        </div>
-        <div
-          css={css`
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            color: ${style.textColor};
-          `}
-        >
-          <span>
-            {formatMessage({ id: 'imageTranslator.showSymbolInputter' })}
-          </span>
-          <Switch
-            checked={showSymbolInputter}
-            onChange={(checked) => {
-              dispatch(setImageTranslatorShowSymbolInputter(checked));
-              imageTranslatorSettingsStorage.save({
-                autoFocusInput,
-                showSymbolInputter: checked,
                 imageDarkness,
               });
             }}

@@ -1,21 +1,28 @@
 import { css } from '@emotion/core';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import store from 'store';
 import { FC } from '@/interfaces';
 import style from '@/style';
 import { QUICK_CHARACTERS } from './quickCharacters';
 
+const STORAGE_KEY = 'symbolInputterVisible';
+
 interface QuickCharacterButtonsProps {
   disabled?: boolean;
-  defaultVisible?: boolean;
   onInsert: (character: string) => void;
 }
 
 export const QuickCharacterButtons: FC<QuickCharacterButtonsProps> = ({
   disabled = false,
-  defaultVisible = false,
   onInsert,
 }) => {
-  const [visible, setVisible] = useState(defaultVisible);
+  const [visible, setVisible] = useState(() =>
+    store.get(STORAGE_KEY, false),
+  );
+
+  useEffect(() => {
+    store.set(STORAGE_KEY, visible);
+  }, [visible]);
 
   if (!visible) {
     return (

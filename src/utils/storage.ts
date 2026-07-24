@@ -92,7 +92,6 @@ export const llmConfStorage = {
 
 export interface ImageTranslatorSettings {
   autoFocusInput: boolean;
-  showSymbolInputter: boolean;
   imageDarkness: number;
 }
 
@@ -103,7 +102,6 @@ export const imageTranslatorSettingsStorage = {
     >;
     return {
       autoFocusInput: settings.autoFocusInput === true,
-      showSymbolInputter: settings.showSymbolInputter === true,
       imageDarkness:
         typeof settings.imageDarkness === 'number'
           ? Math.min(99, Math.max(0, settings.imageDarkness))
