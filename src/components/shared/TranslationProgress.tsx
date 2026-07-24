@@ -60,7 +60,7 @@ export const TranslationProgress: FC<TranslationProgressProps> = ({
           border-radius: ${style.borderRadiusBase};
         }
         .TranslationProgress__ProgressTranslatedSourceCount {
-          background: #ffe4a8;
+          background: ${style.warningColorLightest};
         }
         .TranslationProgress__ProgressCheckedSourceCount {
           background: ${style.primaryColorLightest};
@@ -84,10 +84,10 @@ export const TranslationProgress: FC<TranslationProgressProps> = ({
           padding: 0 3px 0 2px;
           font-weight: bold;
           &.TranslationProgress__TextItemTranslated {
-            background-color: #ffd26e;
+            background-color: ${style.warningColorLighter};
           }
           &.TranslationProgress__TextItemChecked {
-            background-color: #ffb3bc;
+            background-color: ${style.primaryColorLighter};
           }
           .TranslationProgress__TextItemIcon {
             margin-right: 2px;
