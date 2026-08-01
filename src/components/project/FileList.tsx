@@ -195,7 +195,7 @@ export const FileList: FC<FileListProps> = ({
         params: {
           page,
           limit: pageSize,
-          word,
+          word: word || undefined,
           target: target.id,
         },
         configs: {
