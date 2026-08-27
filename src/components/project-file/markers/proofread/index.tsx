@@ -29,13 +29,14 @@ interface ImageSourceViewerProofreaderProps {
   sources: ISource[];
   targetID: string;
   className?: string;
+  readOnly?: boolean;
 }
 /**
  * 校对模式
  */
 export const ImageSourceViewerProofreader: FC<
   ImageSourceViewerProofreaderProps
-> = ({ file, sources, targetID, className }) => {
+> = ({ file, sources, targetID, className, readOnly = false }) => {
   const dispatch = useDispatch();
   const { formatMessage } = useIntl();
   const platform = useSelector((state: AppState) => state.site.platform);
@@ -370,9 +371,10 @@ export const ImageSourceViewerProofreader: FC<
             index={index}
             key={source.id}
             targetID={targetID}
+            readOnly={readOnly}
           />
         ))}
-        {file && sources.length > 0 && (
+        {!readOnly && file && sources.length > 0 && (
           <div className="ImageSourceViewerProofreader__TranslationsBottom">
             <div className="ImageSourceViewerProofreader__TranslationsButtons">
               <Button
@@ -403,49 +405,53 @@ export const ImageSourceViewerProofreader: FC<
           })}
         >
           <div className="ImageSourceViewerProofreader__FunctionBar">
-            <Popconfirm
-              title={formatMessage({
-                id: 'translation.copyToProofreadNotEmptyTip',
-              })}
-              onConfirm={cloneTranslationContent}
-              okText={formatMessage({ id: 'translation.cover' })}
-              cancelText={formatMessage({ id: 'site.cancel' })}
-              disabled={!focusedTranslation?.proofreadContent}
-              placement={isMobile ? 'topLeft' : 'top'}
-            >
-              <button
-                type="button"
-                className="ImageSourceViewerProofreader__FunctionBarButton"
-                onClick={() => {
-                  if (!focusedTranslation?.proofreadContent) {
-                    cloneTranslationContent();
-                  }
-                }}
-                disabled={
-                  focusedSourceCreating ||
-                  focusedSourceDeleting ||
-                  isNoTranslation
-                }
-              >
-                {formatMessage({
-                  id: 'imageTranslator.copyTranslationContent',
+            {!readOnly && (
+              <Popconfirm
+                title={formatMessage({
+                  id: 'translation.copyToProofreadNotEmptyTip',
                 })}
-              </button>
-            </Popconfirm>
+                onConfirm={cloneTranslationContent}
+                okText={formatMessage({ id: 'translation.cover' })}
+                cancelText={formatMessage({ id: 'site.cancel' })}
+                disabled={!focusedTranslation?.proofreadContent}
+                placement={isMobile ? 'topLeft' : 'top'}
+              >
+                <button
+                  type="button"
+                  className="ImageSourceViewerProofreader__FunctionBarButton"
+                  onClick={() => {
+                    if (!focusedTranslation?.proofreadContent) {
+                      cloneTranslationContent();
+                    }
+                  }}
+                  disabled={
+                    focusedSourceCreating ||
+                    focusedSourceDeleting ||
+                    isNoTranslation
+                  }
+                >
+                  {formatMessage({
+                    id: 'imageTranslator.copyTranslationContent',
+                  })}
+                </button>
+              </Popconfirm>
+            )}
             <DebounceStatus
               className="ImageSourceViewerProofreader__DebounceStatus"
               status={mergedStatus}
             />
           </div>
-          <QuickCharacterButtons
-            disabled={
-              focusedSourceCreating ||
-              focusedSourceDeleting ||
-              focusedSource.myTranslationContentStatus === 'saving' ||
-              focusedSource.myTranslationContentStatus === 'debouncing'
-            }
-            onInsert={insertQuickCharacter}
-          />
+          {!readOnly && (
+            <QuickCharacterButtons
+              disabled={
+                focusedSourceCreating ||
+                focusedSourceDeleting ||
+                focusedSource.myTranslationContentStatus === 'saving' ||
+                focusedSource.myTranslationContentStatus === 'debouncing'
+              }
+              onInsert={insertQuickCharacter}
+            />
+          )}
           <div className="ImageSourceViewerProofreader__TranslationArea">
             <TranslationUser
               className="ImageSourceViewerProofreader__TranslationUser"
@@ -462,7 +468,7 @@ export const ImageSourceViewerProofreader: FC<
                       focusedTranslation?.user?.avatar,
                   },
                 )}
-                onChange={handleTranslationContentChange}
+                onChange={readOnly ? undefined : handleTranslationContentChange}
                 onFocus={() => setActiveInput('translation')}
                 value={focusedTranslation?.content}
                 placeholder={
@@ -476,15 +482,17 @@ export const ImageSourceViewerProofreader: FC<
                 }
                 // 新创建翻译时，focusedTranslation 会是一个 id 为空的虚拟对象，所以这里用 focusedTranslationID 判断
                 disabled={
-                  focusedSourceCreating ||
-                  focusedSourceDeleting ||
-                  focusedSource.proodreadContentStatuses[
-                    focusedTranslation?.id || ''
-                  ] === 'saving' ||
-                  focusedSource.proodreadContentStatuses[
-                    focusedTranslation?.id || ''
-                  ] === 'debouncing'
+                  !readOnly &&
+                  (focusedSourceCreating ||
+                    focusedSourceDeleting ||
+                    focusedSource.proodreadContentStatuses[
+                      focusedTranslation?.id || ''
+                    ] === 'saving' ||
+                    focusedSource.proodreadContentStatuses[
+                      focusedTranslation?.id || ''
+                    ] === 'debouncing')
                 }
+                readOnly={readOnly}
                 ref={translationTextAreaRef}
               ></TextArea>
             ) : (
@@ -514,7 +522,7 @@ export const ImageSourceViewerProofreader: FC<
                 'ImageSourceViewerProofreader__TextArea--hasAvatar':
                   focusedTranslation?.proofreader?.avatar,
               })}
-              onChange={handleProofreadContentChange}
+              onChange={readOnly ? undefined : handleProofreadContentChange}
               onFocus={() => setActiveInput('proofread')}
               value={focusedTranslation?.proofreadContent}
               placeholder={
@@ -532,12 +540,14 @@ export const ImageSourceViewerProofreader: FC<
               }
               // 新创建翻译时，focusedTranslation 会是一个 id 为空的虚拟对象，所以这里用 focusedTranslationID 判断
               disabled={
-                focusedSourceCreating ||
-                focusedSourceDeleting ||
-                isNoTranslation ||
-                focusedSource.myTranslationContentStatus === 'saving' ||
-                focusedSource.myTranslationContentStatus === 'debouncing'
+                !readOnly &&
+                (focusedSourceCreating ||
+                  focusedSourceDeleting ||
+                  isNoTranslation ||
+                  focusedSource.myTranslationContentStatus === 'saving' ||
+                  focusedSource.myTranslationContentStatus === 'debouncing')
               }
+              readOnly={readOnly}
               ref={proofreadTextAreaRef}
             ></TextArea>
           </div>

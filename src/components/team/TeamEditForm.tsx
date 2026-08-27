@@ -1,9 +1,9 @@
 import { css } from '@emotion/core';
-import { Button, Form as AntdForm, Input, message } from 'antd';
+import { Button, Form as AntdForm, Input, InputNumber, message } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
-import { Form, FormItem, RoleRadioGroup, TypeRadioGroup } from '@/components';
+import { Form, FormItem, TypeRadioGroup } from '@/components';
 import api from '@/apis';
 import { GROUP_ALLOW_APPLY_TYPE, TEAM_PERMISSION } from '@/constants';
 import { FC, UserTeam } from '@/interfaces';
@@ -56,6 +56,20 @@ export const TeamEditForm: FC<TeamEditFormProps> = ({ className }) => {
         error.default(form);
       })
       .finally(() => setSubmitting(false));
+  };
+
+  /** 团队内项目默认的名单植入页序号：非零整数合法；空（未设置）合法。 */
+  const validateStaffListPage = (_: any, value: number | null) => {
+    if (value === null || value === undefined) {
+      return Promise.resolve();
+    }
+    const num = Number(value);
+    if (!Number.isInteger(num) || num === 0) {
+      return Promise.reject(
+        new Error(formatMessage({ id: 'site.staffListPageInvalid' })),
+      );
+    }
+    return Promise.resolve();
   };
 
   return (
@@ -142,22 +156,22 @@ export const TeamEditForm: FC<TeamEditFormProps> = ({ className }) => {
           />
         </FormItem>
         <FormItem
-          style={{
-            display: isAllowApply ? 'flex' : 'none',
-          }}
-          name="defaultRole"
-          label={formatMessage({ id: 'site.defaultRoleLabel' })}
-          rules={[
-            {
-              required: true,
-              message: formatMessage({ id: 'form.selectRequired' }),
-            },
-          ]}
+          name="staffListPage"
+          label={formatMessage({ id: 'site.staffListPageLabel' })}
+          extra={formatMessage({ id: 'site.staffListPageTip' })}
+          rules={[{ validator: validateStaffListPage }]}
         >
-          <RoleRadioGroup
-            groupType="team"
+          <InputNumber
+            precision={0}
+            placeholder={formatMessage({ id: 'site.staffListPagePlaceholder' })}
+            style={{ width: '100%' }}
             disabled={!can(currentTeam, TEAM_PERMISSION.CHANGE)}
           />
+        </FormItem>
+        {/* Preserve the legacy field for the current PUT contract without
+            exposing default-role configuration in the identity UI. */}
+        <FormItem name="defaultRole" style={{ display: 'none' }}>
+          <Input type="hidden" />
         </FormItem>
         {can(currentTeam, TEAM_PERMISSION.CHANGE) && (
           <FormItem>

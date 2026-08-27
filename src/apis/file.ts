@@ -35,7 +35,7 @@ interface GetFileParams {
   target?: string;
 }
 export interface GetFileReturn extends File {
-  projectID: string;
+  projectId: string;
 }
 /** 获取文件 */
 const getFile = ({

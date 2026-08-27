@@ -3,7 +3,7 @@ import { request } from '.';
 import { APIUser } from './user';
 
 export interface APITip {
-  sourceID: string;
+  sourceId: string;
   id: string;
   content: string;
   user: APIUser | null;

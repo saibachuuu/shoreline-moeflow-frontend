@@ -349,6 +349,18 @@ site.allowApplyTypeLabel:
 site.applicationCheckTypeLabel:
   zhCn: 如何处理加入申请
   en: How to handle join requests
+site.staffListPageLabel:
+  zhCn: 名单植入位置
+  en: Personnel list position
+site.staffListPageTip:
+  zhCn: 导出翻译时，将项目人员名单插入指定页：1 为第一页、-1 为最后一页；超出页数会自动回退到最近一页；留空表示跟随团队设置
+  en: Insert the project personnel list on the given page when exporting (1 = first page, -1 = last page). Out-of-range values fall back to the nearest page; leave empty to follow the team setting
+site.staffListPagePlaceholder:
+  zhCn: 默认第一页
+  en: Default first page
+site.staffListPageInvalid:
+  zhCn: 请输入非零整数（如 1 或 -1）
+  en: Please enter a non-zero integer (e.g. 1 or -1)
 site.defaultRoleLabel:
   zhCn: 加入后默认角色
   en: Default Role After Joining
@@ -565,6 +577,33 @@ project.importProject:
 project.startImport:
   zhCn: 开始导入
   en: Start Import
+project.archiveUrl:
+  zhCn: 画廊网址（可选，自动导入图片）
+  en: Gallery URL (optional, auto-import images)
+project.archiveUrlPlaceholder:
+  zhCn: 例如 https://exhentai.org/g/12345/abcdef/
+  en: e.g. https://exhentai.org/g/12345/abcdef/
+project.archiveUrlInvalid:
+  zhCn: 无法识别画廊链接
+  en: Unrecognized gallery link
+project.archiveImportTriggerFailed:
+  zhCn: 归档导入任务启动失败，可在项目页重试
+  en: Failed to start archive import, you can retry on the project page
+project.archiveImportQueued:
+  zhCn: 归档导入任务已加入队列
+  en: Archive import task queued
+project.archiveImport:
+  zhCn: 归档导入中
+  en: Archive importing
+project.archiveImportFailed:
+  zhCn: 归档导入失败
+  en: Archive import failed
+project.archiveImportRetry:
+  zhCn: 重试
+  en: Retry
+project.archiveImportDone:
+  zhCn: 归档导入完成
+  en: Archive import completed
 project.finishTip:
   zhCn: 此操作将删除此项目的所有文件和图片。
   en: This action will delete all files and images for this item.
@@ -651,6 +690,21 @@ target.emptyTip:
 site.add:
   zhCn: 添加
   en: Add
+site.archiveApiKeys:
+  zhCn: 画廊归档 API key
+  en: Gallery Archive API Keys
+site.archiveApiUrlPlaceholder:
+  zhCn: 档案 API 基址（可选），例如 https://archive.example.com
+  en: Archive API base URL (optional), e.g. https://archive.example.com
+site.archiveApiUrlTip:
+  zhCn: 留空则使用系统默认的档案 API 地址
+  en: Leave empty to use the system default archive API address
+site.archiveApiKeyPlaceholder:
+  zhCn: 输入新的 API key 后回车或点击添加
+  en: Enter a new API key and press Enter or click Add
+site.archiveApiKeyEmptyTip:
+  zhCn: API key 不能为空
+  en: API key cannot be empty
 file.uploadSuccess:
   zhCn: 上传成功
   en: Upload Successful
@@ -758,6 +812,9 @@ imageTranslator.sourceViewer.rightClickToMarkSource:
 imageTranslator.sourceViewer.rightClickMarkToRemove:
   zhCn: 右键点击标记来删除标记
   en: Right click a mark to remove it
+imageTranslator.sourceViewer.readOnly:
+  zhCn: 当前项目为只读状态
+  en: This project is read-only
 site.noPermission:
   zhCn: 没有权限
   en: No permission
@@ -1356,3 +1413,585 @@ admin.imageModeration:
 admin.captchas:
   zhCn: 验证码
   en: Captchas
+identity.tag.creator:
+  zhCn: 创建者
+  en: Creator
+identity.tag.admin:
+  zhCn: 管理员
+  en: Administrator
+identity.tag.member:
+  zhCn: 成员
+  en: Member
+identity.tag.rawProvider:
+  zhCn: 图源
+  en: Raw Provider
+identity.tag.scanner:
+  zhCn: 扫图
+  en: Scanner
+identity.tag.cropper:
+  zhCn: 裁切
+  en: Cropper
+identity.tag.cleaner:
+  zhCn: 修图
+  en: Cleaner
+identity.tag.translator:
+  zhCn: 翻译
+  en: Translator
+identity.tag.proofreader:
+  zhCn: 校对
+  en: Proofreader
+identity.tag.typesetter:
+  zhCn: 嵌字
+  en: Typesetter
+identity.permission.project.access:
+  zhCn: 访问项目
+  en: Access project
+identity.permission.project.change:
+  zhCn: 修改项目
+  en: Change project
+identity.permission.project.completeProject:
+  zhCn: 完结项目
+  en: Complete project
+identity.permission.project.addFile:
+  zhCn: 添加文件
+  en: Add files
+identity.permission.project.moveFile:
+  zhCn: 移动文件
+  en: Move files
+identity.permission.project.renameFile:
+  zhCn: 重命名文件
+  en: Rename files
+identity.permission.project.deleteFile:
+  zhCn: 删除文件
+  en: Delete files
+identity.permission.project.outputTranslation:
+  zhCn: 导出翻译
+  en: Export translations
+identity.permission.project.addLabel:
+  zhCn: 添加标签
+  en: Add labels
+identity.permission.project.moveLabel:
+  zhCn: 移动标签
+  en: Move labels
+identity.permission.project.deleteLabel:
+  zhCn: 删除标签
+  en: Delete labels
+identity.permission.project.addTranslation:
+  zhCn: 添加翻译
+  en: Add translations
+identity.permission.project.deleteTranslation:
+  zhCn: 删除翻译
+  en: Delete translations
+identity.permission.project.proofreadTranslation:
+  zhCn: 校对翻译
+  en: Proofread translations
+identity.permission.project.checkTranslation:
+  zhCn: 审核翻译
+  en: Review translations
+identity.permission.project.addTarget:
+  zhCn: 添加目标语言
+  en: Add target languages
+identity.permission.project.changeTarget:
+  zhCn: 修改目标语言
+  en: Change target languages
+identity.permission.project.deleteTarget:
+  zhCn: 删除目标语言
+  en: Delete target languages
+identity.permission.project.checkUser:
+  zhCn: 查看成员
+  en: View members
+identity.permission.project.inviteUser:
+  zhCn: 邀请成员
+  en: Invite members
+identity.permission.project.changeUserRemark:
+  zhCn: 修改成员备注
+  en: Change member remarks
+identity.permission.project.changeUserRole:
+  zhCn: 修改成员角色
+  en: Change member roles
+identity.permission.project.deleteUser:
+  zhCn: 删除成员
+  en: Delete members
+identity.permission.project.manageMembers:
+  zhCn: 管理成员
+  en: Manage members
+identity.permission.team.access:
+  zhCn: 访问团队
+  en: Access team
+identity.permission.team.delete:
+  zhCn: 解散团队
+  en: Delete team
+identity.permission.team.change:
+  zhCn: 修改团队
+  en: Change team
+identity.permission.team.createRole:
+  zhCn: 创建角色
+  en: Create roles
+identity.permission.team.deleteRole:
+  zhCn: 删除角色
+  en: Delete roles
+identity.permission.team.checkUser:
+  zhCn: 查看成员
+  en: View members
+identity.permission.team.inviteUser:
+  zhCn: 邀请成员
+  en: Invite members
+identity.permission.team.deleteUser:
+  zhCn: 删除成员
+  en: Delete members
+identity.permission.team.changeUserRole:
+  zhCn: 修改成员角色
+  en: Change member roles
+identity.permission.team.changeUserRemark:
+  zhCn: 修改成员备注
+  en: Change member remarks
+identity.permission.team.createTermBank:
+  zhCn: 创建术语库
+  en: Create term banks
+identity.permission.team.accessTermBank:
+  zhCn: 访问术语库
+  en: Access term banks
+identity.permission.team.changeTermBank:
+  zhCn: 修改术语库
+  en: Change term banks
+identity.permission.team.deleteTermBank:
+  zhCn: 删除术语库
+  en: Delete term banks
+identity.permission.team.createTerm:
+  zhCn: 创建术语
+  en: Create terms
+identity.permission.team.changeTerm:
+  zhCn: 修改术语
+  en: Change terms
+identity.permission.team.deleteTerm:
+  zhCn: 删除术语
+  en: Delete terms
+identity.permission.team.createProject:
+  zhCn: 创建项目
+  en: Create projects
+identity.permission.team.createProjectSet:
+  zhCn: 创建项目集
+  en: Create project sets
+identity.permission.team.changeProjectSet:
+  zhCn: 修改项目集
+  en: Change project sets
+identity.permission.team.deleteProjectSet:
+  zhCn: 删除项目集
+  en: Delete project sets
+identity.permission.team.useOcrQuota:
+  zhCn: 使用 OCR 配额
+  en: Use OCR quota
+identity.permission.team.useMtQuota:
+  zhCn: 使用机器翻译配额
+  en: Use machine translation quota
+identity.permission.team.insight:
+  zhCn: 数据洞察
+  en: View insights
+site.memberList.memberStatusActive:
+  zhCn: 正常
+  en: Active
+site.memberList.memberStatusInvited:
+  zhCn: 待处理
+  en: Pending
+site.memberList.memberStatusRemoved:
+  zhCn: 已移除
+  en: Removed
+site.memberList.searchPlaceholder:
+  zhCn: 搜索成员
+  en: Search members
+site.memberList.selectMember:
+  zhCn: 请选择成员
+  en: Please select a member
+site.memberList.cannotRemoveOwnIdentity:
+  zhCn: 不能移除自己的{tags}身份
+  en: Cannot remove your own {tags} identity
+site.memberList.projectMembersUpdated:
+  zhCn: 项目成员已更新
+  en: Project members updated
+site.memberList.removeProjectMemberTitle:
+  zhCn: 移除项目成员
+  en: Remove project member
+site.memberList.removeTeamMemberTitle:
+  zhCn: 移除团队成员
+  en: Remove team member
+site.memberList.removeMemberConfirm:
+  zhCn: 确认移除“{name}”吗？移除后仍可从成员管理中恢复。
+  en: Remove "{name}"? They can still be restored from member management afterwards.
+site.memberList.remove:
+  zhCn: 移除
+  en: Remove
+site.memberList.cancel:
+  zhCn: 取消
+  en: Cancel
+site.memberList.projectMemberRemoved:
+  zhCn: 项目成员已移除
+  en: Project member removed
+site.memberList.projectMemberRestored:
+  zhCn: 项目成员已恢复
+  en: Project member restored
+site.memberList.teamMembersUpdated:
+  zhCn: 团队成员已更新
+  en: Team members updated
+site.memberList.teamMemberRemoved:
+  zhCn: 团队成员已移除
+  en: Team member removed
+site.memberList.teamMemberRestored:
+  zhCn: 团队成员已恢复
+  en: Team member restored
+site.memberList.projectMemberBound:
+  zhCn: 项目成员已绑定
+  en: Project member bound
+site.memberList.mergeUnavailable:
+  zhCn: 该用户已有项目成员记录，但当前列表中的记录已不可合并，请刷新后重试
+  en: The user already has a project member record, but the record in the current list can no longer be merged. Please refresh and retry.
+site.memberList.projectMembersMerged:
+  zhCn: 项目成员已合并
+  en: Project members merged
+site.memberList.ownerTransferred:
+  zhCn: 项目 owner 已转移
+  en: Project owner transferred
+site.memberList.member:
+  zhCn: 成员
+  en: Member
+site.memberList.registeredUser:
+  zhCn: 注册用户
+  en: Registered user
+site.memberList.externalUser:
+  zhCn: 外部署名
+  en: External name
+site.memberList.projectDisplayName:
+  zhCn: 项目展示名
+  en: Project display name
+site.memberList.projectIdentity:
+  zhCn: 项目身份
+  en: Project identity
+site.memberList.identityMember:
+  zhCn: 成员
+  en: Member
+site.memberList.identityAdmin:
+  zhCn: 管理员
+  en: Admin
+site.memberList.identityCreator:
+  zhCn: 创建者
+  en: Creator
+site.memberList.projectJob:
+  zhCn: 项目职位
+  en: Project role
+site.memberList.status:
+  zhCn: 状态
+  en: Status
+site.memberList.bindRegisteredUser:
+  zhCn: 绑定注册用户
+  en: Bind registered user
+site.memberList.searchRegisteredUserPlaceholder:
+  zhCn: 搜索注册用户
+  en: Search registered users
+site.memberList.bind:
+  zhCn: 绑定
+  en: Bind
+site.memberList.transferToOwner:
+  zhCn: 转移为 owner
+  en: Transfer to owner
+site.memberList.baseIdentity:
+  zhCn: 基础身份
+  en: Base identity
+site.memberList.defaultDisplayName:
+  zhCn: 加入项目的默认展示名
+  en: Default display name on joining projects
+site.memberList.defaultDisplayNamePlaceholder:
+  zhCn: 留空则使用注册用户名
+  en: Leave empty to use the site username
+site.memberList.defaultDisplayNameHint:
+  zhCn: 主动加入项目或被邀请加入项目时，将默认使用此展示名
+  en: This display name is used by default when joining or being invited to projects
+site.memberList.teamTags:
+  zhCn: 团队标签
+  en: Team tags
+site.memberList.workerQualifications:
+  zhCn: 工作人员资格
+  en: Worker qualifications
+site.memberList.siteAliasesReadonly:
+  zhCn: 站点别名（只读）
+  en: Site aliases (read-only)
+site.memberList.none:
+  zhCn: 无
+  en: None
+site.memberList.teamAliases:
+  zhCn: 团队别名
+  en: Team aliases
+site.memberList.aliasInputPlaceholder:
+  zhCn: 输入后回车添加
+  en: Type and press Enter to add
+site.memberList.refresh:
+  zhCn: 刷新
+  en: Refresh
+site.memberList.removeMember:
+  zhCn: 移除成员
+  en: Remove member
+site.memberList.restoreMember:
+  zhCn: 恢复成员
+  en: Restore member
+site.memberList.save:
+  zhCn: 保存
+  en: Save
+site.memberList.mergeProjectMembersTitle:
+  zhCn: 合并项目成员
+  en: Merge project members
+site.memberList.confirmMerge:
+  zhCn: 确认合并
+  en: Confirm merge
+site.memberList.mergeHint:
+  zhCn: 该注册用户已经存在项目成员记录。请选择保留的项目展示名，并确认最终标签；外部署名记录会被标记为已移除。
+  en: This registered user already has a project member record. Choose the display name to keep and confirm the final tags; the external record will be marked as removed.
+site.memberList.mergeExistingMember:
+  zhCn: 已有成员：{name}
+  en: 'Existing member: {name}'
+site.memberList.mergeExternalName:
+  zhCn: 外部署名：{name}
+  en: 'External name: {name}'
+site.memberList.mergedTags:
+  zhCn: 合并后的项目标签
+  en: Tags after merge
+site.editWorkers.title:
+  zhCn: 项目成员快捷编辑
+  en: Quick member editor
+site.editWorkers.switchToFull:
+  zhCn: 切换到完整模式（按职位逐项编辑）
+  en: Switch to full mode (edit role by role)
+site.editWorkers.switchToSimple:
+  zhCn: 切换到简略模式（全部职位同时显示）
+  en: Switch to simple mode (all roles shown at once)
+site.editWorkers.fullMode:
+  zhCn: 完整模式
+  en: Full mode
+site.editWorkers.simpleMode:
+  zhCn: 简略模式
+  en: Simple mode
+site.editWorkers.openMemberSettings:
+  zhCn: 打开项目成员管理
+  en: Open member settings
+site.editWorkers.simpleSearchPlaceholder:
+  zhCn: 搜索添加；留空推荐已加入成员
+  en: Search to add; leave blank to see joined members
+site.editWorkers.searchPlaceholder:
+  zhCn: 输入名称搜索团队；回车添加外部成员
+  en: Type a name to search the team; press Enter to add an external member
+site.editWorkers.panelHint:
+  zhCn: 空输入显示已加入成员，点选补充职位；点击搜索结果添加成员；回车直接添加外部成员
+  en: An empty input shows joined members to add roles to; click a search result to add a member; press Enter to add an external member directly
+site.editWorkers.addMember:
+  zhCn: 添加成员
+  en: Add member
+site.editWorkers.collapse:
+  zhCn: 收起
+  en: Collapse
+site.editWorkers.personCount:
+  zhCn: '{count} 人'
+  en: '{count} people'
+site.editWorkers.emptyResultsHint:
+  zhCn: 输入名称搜索团队成员，或直接回车添加外部成员
+  en: Type a name to search team members, or press Enter to add an external member directly
+site.editWorkers.holdsRole:
+  zhCn: 已持有
+  en: Already holds
+site.editWorkers.invited:
+  zhCn: 邀请中
+  en: Invited
+site.editWorkers.invitedNotice:
+  zhCn: 该成员仍在受邀状态，需先接受邀请
+  en: This member is still in the invited state and must accept the invitation first
+site.editWorkers.noQualification:
+  zhCn: 该成员没有{role}工作人员资格
+  en: This member is not qualified for the {role} role
+site.editWorkers.addAsRole:
+  zhCn: 添加为{role}
+  en: Add as {role}
+site.editWorkers.addExternalAlias:
+  zhCn: 添加外部署名：{name}
+  en: 'Add external alias: {name}'
+site.editWorkers.aliasGroup:
+  zhCn: （{aliases}）
+  en: ({aliases})
+site.editWorkers.aliasSeparator:
+  zhCn: 、
+  en: ", "
+site.editWorkers.memberWithNote:
+  zhCn: '{name}（{note}）'
+  en: '{name} ({note})'
+site.editWorkers.noteEnclosed:
+  zhCn: （{note}）
+  en: ({note})
+site.editWorkers.editNameTooltip:
+  zhCn: 修改展示名（也可双击名字）
+  en: Edit display name (you can also double-click the name)
+site.editWorkers.noRoleMembers:
+  zhCn: 暂无持有「{role}」职位的成员，点击右上「添加成员」开始添加
+  en: No members currently hold the {role} role. Click "Add member" at the top right to start adding.
+site.editWorkers.joinProject:
+  zhCn: 加入项目
+  en: Join project
+site.editWorkers.joinPending:
+  zhCn: 等待加入处理
+  en: Waiting for the join request to be processed
+site.editWorkers.leaveProject:
+  zhCn: 退出项目
+  en: Leave project
+site.editWorkers.leaveConfirm:
+  zhCn: 确认退出当前项目吗？
+  en: Are you sure you want to leave this project?
+site.editWorkers.leaveConfirmOk:
+  zhCn: 退出
+  en: Leave
+site.editWorkers.cancel:
+  zhCn: 取消
+  en: Cancel
+site.editWorkers.saving:
+  zhCn: 保存中
+  en: Saving
+site.editWorkers.confirm:
+  zhCn: 确认
+  en: Confirm
+site.editWorkers.noChanges:
+  zhCn: 没有需要保存的成员变更
+  en: No member changes to save
+site.editWorkers.saveFailed:
+  zhCn: 保存项目成员失败
+  en: Failed to save project members
+site.editWorkers.applicationSubmitted:
+  zhCn: 已提交加入申请
+  en: Join request submitted
+site.teamSetting.operationFailed:
+  zhCn: 操作失败
+  en: Operation failed
+site.teamSetting.notTeamMember:
+  zhCn: 当前用户不是团队成员
+  en: You are not a member of this team
+site.teamSetting.leaveTeamSuccess:
+  zhCn: 已退出团队
+  en: Left the team
+site.teamSetting.workerQualificationCheck:
+  zhCn: 工作人员资格校验
+  en: Worker qualification check
+site.teamSetting.workerQualificationTip:
+  zhCn: 开启后不校验团队成员的工作人员资格，全员可加入项目的任意职位
+  en: When enabled, team members' worker qualifications are not checked, and anyone can join any position of a project
+site.projectSetting.operationFailed:
+  zhCn: 操作失败
+  en: Operation failed
+site.projectSetting.clearSuccess:
+  zhCn: 项目内容已清空
+  en: Project content has been cleared
+site.projectSetting.completeSuccess:
+  zhCn: 项目已完结
+  en: Project has been completed
+site.projectSetting.reopenSuccess:
+  zhCn: 项目已恢复
+  en: Project has been reopened
+site.projectSetting.notProjectMember:
+  zhCn: 当前用户不是项目成员
+  en: You are not a member of this project
+site.projectSetting.leaveProjectSuccess:
+  zhCn: 已退出项目
+  en: Left the project
+site.projectSetting.clearTitle:
+  zhCn: 清空项目内容
+  en: Clear project content
+site.projectSetting.clearConfirm:
+  zhCn: 清空后项目内容不可恢复，确认继续吗？
+  en: Project content cannot be recovered after clearing. Continue?
+site.projectSetting.clearOk:
+  zhCn: 清空
+  en: Clear
+site.projectSetting.completeTitle:
+  zhCn: 完结项目
+  en: Complete project
+site.projectSetting.completeConfirm:
+  zhCn: 完结后项目内容会保留并进入只读状态，确认继续吗？
+  en: Project content will be kept and become read-only after completion. Continue?
+site.projectSetting.completeOk:
+  zhCn: 完结
+  en: Complete
+site.projectSetting.reopenButton:
+  zhCn: 恢复项目
+  en: Reopen project
+site.projectSetting.currentIdentityTag:
+  zhCn: 当前身份标签
+  en: Current identity tag
+site.projectSetting.actions:
+  zhCn: 项目操作
+  en: Project operations
+site.invitation.identityTagNotRecognized:
+  zhCn: 无法识别所选身份标签
+  en: Unable to recognize the selected identity tag
+site.invitation.memberNotFound:
+  zhCn: 成员不存在
+  en: Member does not exist
+site.invitation.identityTagUpdated:
+  zhCn: 身份标签已更新
+  en: Identity tag updated
+site.invitation.identityTagUpdateFailed:
+  zhCn: 更新身份标签失败
+  en: Failed to update the identity tag
+site.identityTagPolicy.updated:
+  zhCn: 标签策略已更新
+  en: Identity tag policy updated
+site.identityTagPolicy.deleteCustomTag:
+  zhCn: 删除自定义标签
+  en: Delete custom tag
+site.identityTagPolicy.deleteCustomTagTip:
+  zhCn: 删除后，已使用该标签的成员将无法继续使用它。确认删除吗？
+  en: After deletion, members already using this tag can no longer use it. Are you sure you want to delete it?
+site.identityTagPolicy.projectTags:
+  zhCn: 项目标签
+  en: Project tags
+site.identityTagPolicy.teamTags:
+  zhCn: 团队标签
+  en: Team tags
+site.identityTagPolicy.systemTag:
+  zhCn: 系统
+  en: System
+site.identityTagPolicy.overriddenTag:
+  zhCn: 已覆盖
+  en: Overridden
+site.identityTagPolicy.addTag:
+  zhCn: 添加标签
+  en: Add tag
+site.identityTagPolicy.tagCode:
+  zhCn: 标签代码
+  en: Tag code
+site.identityTagPolicy.codePlaceholder:
+  zhCn: 例如 reviewer
+  en: e.g. reviewer
+site.identityTagPolicy.tagName:
+  zhCn: 标签名称
+  en: Tag name
+site.identityTagPolicy.permissions:
+  zhCn: 权限
+  en: Permissions
+site.identityTagPolicy.assignableToMembers:
+  zhCn: 允许分配给成员
+  en: Allow assigning to members
+site.identityTagPolicy.restoreInitialPermissions:
+  zhCn: 还原为初始权限
+  en: Restore initial permissions
+site.invitationOptions.rawProvider:
+  zhCn: 图源
+  en: Raw provider
+site.invitationOptions.scanner:
+  zhCn: 扫图
+  en: Scanner
+site.invitationOptions.cropper:
+  zhCn: 裁切
+  en: Cropper
+site.invitationOptions.cleaner:
+  zhCn: 修图
+  en: Cleaner
+site.invitationOptions.translator:
+  zhCn: 翻译
+  en: Translator
+site.invitationOptions.proofreader:
+  zhCn: 校对
+  en: Proofreader
+site.invitationOptions.typesetter:
+  zhCn: 嵌字
+  en: Typesetter

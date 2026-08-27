@@ -89,7 +89,7 @@ export const TeamInsightProjectList: FC<TeamInsightProjectListProps> = ({
       .createTeamOutput({
         teamID,
       })
-      .then((result) => {
+      .then(() => {
         message.success('导出任务创建成功，您可以关闭页面稍后前来下载。');
         refresh();
       })
@@ -109,7 +109,7 @@ export const TeamInsightProjectList: FC<TeamInsightProjectListProps> = ({
       .createAllOutput({
         projectID,
       })
-      .then((result) => {
+      .then(() => {
         refresh();
       })
       .catch((error) => {
@@ -235,7 +235,7 @@ export const TeamInsightProjectList: FC<TeamInsightProjectListProps> = ({
             title={formatMessage({ id: 'site.projectName' })}
             key="project"
             width="30%"
-            render={(text, record: APIInsightProjectWithPage, index) => {
+            render={(text, record: APIInsightProjectWithPage) => {
               return (
                 <div
                   key={record.project.id}
@@ -282,9 +282,9 @@ export const TeamInsightProjectList: FC<TeamInsightProjectListProps> = ({
                           className="TeamInsightProjectList__Project"
                         >
                           <span className="TeamInsightProjectList__Name">
-                            {user.name}
+                            {user.displayName || user.name}
                           </span>{' '}
-                          <Tag>{user.role.name}</Tag>
+                          {(user.tags || []).map((tag) => <Tag key={tag}>{tag}</Tag>)}
                         </div>
                       );
                     })}
@@ -327,7 +327,7 @@ export const TeamInsightProjectList: FC<TeamInsightProjectListProps> = ({
             title={formatMessage({ id: 'project.export' })}
             key="project"
             width="30%"
-            render={(text, record: APIInsightProjectWithPage, index) => {
+            render={(text, record: APIInsightProjectWithPage) => {
               return (
                 <div
                   key={record.project.id}
@@ -344,7 +344,7 @@ export const TeamInsightProjectList: FC<TeamInsightProjectListProps> = ({
                   >
                     导出所有语言 zip
                   </Button>
-                  {record.outputs.map((output) => (
+                  {(record.outputs || []).map((output) => (
                     <div>
                       <CustomButton
                         className="TeamInsightProjectList__OutputDownloadButton"

@@ -19,7 +19,7 @@ export interface File {
   parseStatus: ParseStatuses;
   parseStatusDetailName: string;
   parseErrorTypeDetailName: string;
-  parentID: string | null;
+  parentId: string | null;
   fileTargetCache?: FileTargetCache;
   url?: string;
   coverUrl?: string;

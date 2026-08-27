@@ -29,6 +29,26 @@ describe('toLowerCamelCase', () => {
       expect(toLowerCamelCase(underScores[i])).toEqual(lowerCamels[i]);
     }
   });
+
+  it('preserves scalar values inside arrays', () => {
+    expect(toLowerCamelCase({ effective_permissions: ['team:CREATE_PROJECT_SET'] })).toEqual({
+      effectivePermissions: ['team:CREATE_PROJECT_SET'],
+    });
+  });
+
+  it('converts API abbreviations to lower camel case', () => {
+    expect(toLowerCamelCase({
+      user_id: 'u1',
+      project_id: 'p1',
+      labelplus_txt: 'labels',
+      captcha_id: 'captcha',
+    })).toEqual({
+      userId: 'u1',
+      projectId: 'p1',
+      labelplusTxt: 'labels',
+      captchaId: 'captcha',
+    });
+  });
 });
 
 describe('toUnderScoreCase', () => {

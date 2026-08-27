@@ -13,6 +13,7 @@ import { TEAM_ALLOW_APPLY_TYPE } from '@/constants';
 import { AppState } from '@/store';
 import { createTeam } from '@/store/team/slice';
 import { toLowerCamelCase } from '@/utils';
+import { hasIdentityMembership } from '@/utils/user';
 import { FC, UserTeam } from '@/interfaces';
 import { Team } from '@/interfaces';
 import { LIST_ITEM_DEFAULT_HEIGHT } from '@/components/shared/ListItem';
@@ -105,7 +106,7 @@ export const TeamSearchList: FC<TeamSearchListProps> = ({ className } = {}) => {
         // 弹出提示
         message.success(data.message);
         // 无需审核或之前有邀请，则跳转到所在团队
-        if (data.group && data.group.role) {
+        if (hasIdentityMembership(data.group)) {
           // 加入成功
           dispatch(createTeam({ team: data.group as UserTeam, unshift: true }));
           // 跳转到团队

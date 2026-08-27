@@ -21,6 +21,7 @@ interface SourceProps {
   index: number;
   targetID: string;
   className?: string;
+  readOnly?: boolean;
 }
 /**
  * 原文
@@ -28,7 +29,7 @@ interface SourceProps {
 const SourceWithoutRef: React.ForwardRefRenderFunction<
   HTMLDivElement,
   SourceProps
-> = ({ source, index, className }, ref) => {
+> = ({ source, index, className, readOnly = false }, ref) => {
   const { formatMessage } = useIntl();
   const dispatch = useDispatch();
   const currentUser = useSelector((state: AppState) => state.user);
@@ -348,14 +349,14 @@ const SourceWithoutRef: React.ForwardRefRenderFunction<
                 <div
                   className="ImageSourceViewerProofreaderSource__TranslationCheckbox"
                   onClick={() => {
-                    if (!source.selecting) {
+                    if (!readOnly && !source.selecting) {
                       handleSelectTranslation(translation);
                     }
                   }}
                 >
                   <Checkbox
                     checked={translation.selected}
-                    disabled={source.selecting || batchSelecting}
+                    disabled={readOnly || source.selecting || batchSelecting}
                   />
                 </div>
               </div>

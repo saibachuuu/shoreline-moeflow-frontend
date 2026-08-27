@@ -3,24 +3,39 @@
  */
 import { AxiosRequestConfig } from 'axios';
 import { PaginationParams, request } from '.';
-import { Role } from '../interfaces';
 import { toUnderScoreCase } from '../utils';
-import { APIProject } from './project';
+import { APIProjectMemberSummary } from './project';
 import { APIUser } from './user';
 import { APIOutput } from './output';
+import { ProjectSet } from '../interfaces';
 
-export type APIInsightUserProject = Omit<APIProject, 'team'>;
+/** Project fields used by user insight; permissions and legacy roles are excluded. */
+export interface APIInsightUserProject {
+  groupType: 'project';
+  id: string;
+  name: string;
+  projectSet: ProjectSet;
+  memberSummary?: APIProjectMemberSummary[];
+}
 export interface APIInsightUser {
   user: APIUser;
   projects: APIInsightUserProject[];
   count: number;
 }
 
-export type APIInsightProjectUser = APIUser & { role: Role };
+export interface APIInsightProjectUser {
+  id: string;
+  userId?: string | null;
+  name?: string;
+  displayName: string;
+  tags: string[];
+  status: 'active' | 'invited' | 'removed';
+  externalId?: string | null;
+}
 export interface APIInsightProject {
   project: APIInsightUserProject;
   users: APIInsightProjectUser[];
-  outputs: APIOutput[];
+  outputs?: APIOutput[];
   count: number;
 }
 

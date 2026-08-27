@@ -20,7 +20,7 @@ export const initialState: ProjectState = {
     page: 1,
     word: '',
     scrollTop: 0,
-    status: PROJECT_STATUS.WORKING,
+    status: PROJECT_STATUS.NORMAL,
   },
 };
 const slice = createSlice({

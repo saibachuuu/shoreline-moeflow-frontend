@@ -6,7 +6,7 @@ import { APITarget } from './target';
 import { APIUser } from './user';
 
 export interface APITranslation {
-  sourceID: string;
+  sourceId: string;
   id: string;
   mt: boolean;
   content: string;

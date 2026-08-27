@@ -21,6 +21,7 @@ interface ImageSourceViewerSourceProps {
   sources: ISource[];
   targetID: string;
   className?: string;
+  readOnly?: boolean;
 }
 /**
  * The panel for source markers and texts
@@ -29,6 +30,7 @@ export const ImageSourceViewerSource: FC<ImageSourceViewerSourceProps> = ({
   sources,
   targetID,
   className,
+  readOnly = false,
 }) => {
   const { formatMessage } = useIntl();
   const dispatch = useDispatch();
@@ -379,9 +381,9 @@ export const ImageSourceViewerSource: FC<ImageSourceViewerSourceProps> = ({
         <div className="ImageSourceViewerTranslator__Bottom">
           <TextArea
             className="ImageSourceViewerTranslator__TextArea"
-            onChange={handleTranslationContentChange}
+            onChange={readOnly ? undefined : handleTranslationContentChange}
             value={
-              can(currentProject, PROJECT_PERMISSION.ADD_TRA)
+              readOnly || can(currentProject, PROJECT_PERMISSION.ADD_TRA)
                 ? focusedSource?.myTranslation?.content
                 : formatMessage({
                     id: 'imageTranslator.translationNoPremissionPlaceholder',
@@ -397,20 +399,24 @@ export const ImageSourceViewerSource: FC<ImageSourceViewerSourceProps> = ({
                     })
             }
             disabled={
-              !can(currentProject, PROJECT_PERMISSION.ADD_TRA) ||
-              focusedSourceCreating ||
-              focusedSourceDeleting
+              !readOnly &&
+              (!can(currentProject, PROJECT_PERMISSION.ADD_TRA) ||
+                focusedSourceCreating ||
+                focusedSourceDeleting)
             }
+            readOnly={readOnly}
             ref={textAreaRef}
           ></TextArea>
-          <QuickCharacterButtons
-            disabled={
-              !can(currentProject, PROJECT_PERMISSION.ADD_TRA) ||
-              focusedSourceCreating ||
-              focusedSourceDeleting
-            }
-            onInsert={insertQuickCharacter}
-          />
+          {!readOnly && (
+            <QuickCharacterButtons
+              disabled={
+                !can(currentProject, PROJECT_PERMISSION.ADD_TRA) ||
+                focusedSourceCreating ||
+                focusedSourceDeleting
+              }
+              onInsert={insertQuickCharacter}
+            />
+          )}
           <div className="ImageSourceViewerTranslator__StatusBar">
             <DebounceStatus
               className="ImageSourceViewerTranslator__DebounceStatus"

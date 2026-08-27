@@ -61,8 +61,8 @@ export const Output: FC<OutputProps> = ({ index, output, className }) => {
             {formatMessage(
               {
                 id:
-                  output.fileIDsExclude.length > 0 ||
-                  output.fileIDsInclude.length > 0
+                  (output.fileIdsExclude || []).length > 0 ||
+                  (output.fileIdsInclude || []).length > 0
                     ? 'output.partAt'
                     : 'output.at',
               },

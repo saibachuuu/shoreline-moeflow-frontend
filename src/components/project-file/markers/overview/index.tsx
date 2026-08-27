@@ -10,6 +10,7 @@ interface ImageSourceViewerGodProps {
   sources: ISource[];
   targetID: string;
   className?: string;
+  readOnly?: boolean;
 }
 /**
  * Overview aka 全能模式
@@ -18,6 +19,7 @@ export const ImageSourceViewerGod: FC<ImageSourceViewerGodProps> = ({
   sources,
   targetID,
   className,
+  readOnly = false,
 }) => {
   return (
     <div
@@ -56,6 +58,7 @@ export const ImageSourceViewerGod: FC<ImageSourceViewerGodProps> = ({
             targetID={targetID}
             index={index}
             key={source.id}
+            readOnly={readOnly}
           />
         );
       })}

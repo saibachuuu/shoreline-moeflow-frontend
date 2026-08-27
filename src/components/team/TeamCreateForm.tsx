@@ -134,19 +134,9 @@ export const TeamCreateForm: FC<TeamCreateFormProps> = ({ className }) => {
             useDefaultType={true}
           />
         </FormItem>
-        <FormItem
-          style={{
-            display: isAllowApply ? 'flex' : 'none',
-          }}
-          name="defaultRole"
-          label={formatMessage({ id: 'site.defaultRoleLabel' })}
-          rules={[
-            {
-              required: true,
-              message: formatMessage({ id: 'form.selectRequired' }),
-            },
-          ]}
-        >
+        {/* Keep the legacy request field until the backend create contract is
+            removed; new team identity is configured in member management. */}
+        <FormItem name="defaultRole" style={{ display: 'none' }} rules={[{ required: true }]}>
           <RoleRadioGroup groupType="team" useDefaultType={true} />
         </FormItem>
         <FormItem>

@@ -13,8 +13,11 @@ export interface APIOutput {
   user?: APIUser;
   type: OUTPUT_TYPE;
   status: OUTPUT_STATUS;
-  fileIDsInclude: string[];
-  fileIDsExclude: string[];
+  // The response mapper (toLowerCamelCase) turns file_ids_include/exclude
+  // into fileIdsInclude/fileIdsExclude (capital I, lowercase d), so these
+  // fields must use that spelling — fileIDs* would be undefined at runtime.
+  fileIdsInclude: string[];
+  fileIdsExclude: string[];
   statusDetails: {
     id: OUTPUT_STATUS;
     name: string;

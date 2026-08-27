@@ -29,6 +29,7 @@ interface SourceProps {
   targetID: string;
   index: number;
   className?: string;
+  readOnly?: boolean;
 }
 /**
  * An item in Overview tab
@@ -41,6 +42,7 @@ export const Source: FC<SourceProps> = ({
   targetID,
   index,
   className,
+  readOnly = false,
 }) => {
   const dispatch = useDispatch();
   const { formatMessage } = useIntl(); // i18n
@@ -200,7 +202,7 @@ export const Source: FC<SourceProps> = ({
         <div className="Source__ContentTop">
           <div className="Source__Info">
             <div className="Source__Index">{index + 1}</div>
-            {prevSource && (
+            {!readOnly && prevSource && (
               <Button
                 className="Source__RerankButton"
                 elem="button"
@@ -212,7 +214,7 @@ export const Source: FC<SourceProps> = ({
                 onClick={handleRerankUp}
               />
             )}
-            {nextSource && (
+            {!readOnly && nextSource && (
               <Button
                 className="Source__RerankButton"
                 elem="button"
@@ -232,6 +234,7 @@ export const Source: FC<SourceProps> = ({
               source={source}
               targetID={targetID}
               className="Source__TranslationList"
+              readOnly={readOnly}
             />
           </div>
         </div>
@@ -251,6 +254,7 @@ export const Source: FC<SourceProps> = ({
               })}
               checked={source.positionType === SOURCE_POSITION_TYPE.IN}
               onChange={handleSourcePositionTypeChange}
+              disabled={readOnly}
             />
           ) : (
             <div className="Source__SourcePositionTypeText">

@@ -1,10 +1,10 @@
 import { css } from '@emotion/core';
-import { Button, Form as AntdForm, Input, message } from 'antd';
+import { Button, Form as AntdForm, Input, InputNumber, message } from 'antd';
 import { useEffect, useState } from 'react';
 import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
 import { NavLink } from 'react-router-dom';
-import { Form, FormItem, RoleRadioGroup, TypeRadioGroup } from '..';
+import { Form, FormItem, TypeRadioGroup } from '..';
 import api from '../../apis';
 import { GROUP_ALLOW_APPLY_TYPE, PROJECT_PERMISSION } from '@/constants';
 import { FC, Project } from '@/interfaces';
@@ -16,13 +16,14 @@ import { can } from '@/utils/user';
 /** 修改项目表单的属性接口 */
 interface ProjectEditFormProps {
   className?: string;
+  readOnly?: boolean;
 }
 /**
  * 修改项目表单
  * 从 redux 的 currentProject 中读取值，使用前必须先
  * dispatch(setCurrentProject({ id }));
  */
-export const ProjectEditForm: FC<ProjectEditFormProps> = ({ className }) => {
+export const ProjectEditForm: FC<ProjectEditFormProps> = ({ className, readOnly = false }) => {
   const { formatMessage } = useIntl(); // i18n
   const [form] = AntdForm.useForm();
   const dispatch = useDispatch();
@@ -58,6 +59,20 @@ export const ProjectEditForm: FC<ProjectEditFormProps> = ({ className }) => {
       .finally(() => setSubmitting(false));
   };
 
+  /** 名单植入页序号：非零整数合法；空（未设置）合法；不校验是否超出实际页数。 */
+  const validateStaffListPage = (_: any, value: number | null) => {
+    if (value === null || value === undefined) {
+      return Promise.resolve();
+    }
+    const num = Number(value);
+    if (!Number.isInteger(num) || num === 0) {
+      return Promise.reject(
+        new Error(formatMessage({ id: 'site.staffListPageInvalid' })),
+      );
+    }
+    return Promise.resolve();
+  };
+
   return (
     <div
       className={className}
@@ -87,7 +102,7 @@ export const ProjectEditForm: FC<ProjectEditFormProps> = ({ className }) => {
           label={formatMessage({ id: 'project.name' })}
           rules={[{ required: true }, { min: 1 }, { max: 40 }]}
         >
-          <Input disabled={!can(currentProject, PROJECT_PERMISSION.CHANGE)} />
+          <Input disabled={readOnly || !can(currentProject, PROJECT_PERMISSION.CHANGE)} />
         </FormItem>
         <FormItem
           name="intro"
@@ -95,7 +110,7 @@ export const ProjectEditForm: FC<ProjectEditFormProps> = ({ className }) => {
           rules={[{ min: 0 }, { max: 140 }]}
         >
           <Input.TextArea
-            disabled={!can(currentProject, PROJECT_PERMISSION.CHANGE)}
+            disabled={readOnly || !can(currentProject, PROJECT_PERMISSION.CHANGE)}
           />
         </FormItem>
         <FormItem label={formatMessage({ id: 'project.sourceLanguage' })}>
@@ -125,7 +140,7 @@ export const ProjectEditForm: FC<ProjectEditFormProps> = ({ className }) => {
           <TypeRadioGroup
             typeName="allowApplyType"
             groupType="project"
-            disabled={!can(currentProject, PROJECT_PERMISSION.CHANGE)}
+            disabled={readOnly || !can(currentProject, PROJECT_PERMISSION.CHANGE)}
           />
         </FormItem>
         <FormItem
@@ -144,28 +159,28 @@ export const ProjectEditForm: FC<ProjectEditFormProps> = ({ className }) => {
           <TypeRadioGroup
             typeName="applicationCheckType"
             groupType="project"
-            disabled={!can(currentProject, PROJECT_PERMISSION.CHANGE)}
+            disabled={readOnly || !can(currentProject, PROJECT_PERMISSION.CHANGE)}
           />
         </FormItem>
         <FormItem
-          style={{
-            display: isAllowApply ? 'flex' : 'none',
-          }}
-          name="defaultRole"
-          label={formatMessage({ id: 'site.defaultRoleLabel' })}
-          rules={[
-            {
-              required: true,
-              message: formatMessage({ id: 'form.selectRequired' }),
-            },
-          ]}
+          name="staffListPage"
+          label={formatMessage({ id: 'site.staffListPageLabel' })}
+          extra={formatMessage({ id: 'site.staffListPageTip' })}
+          rules={[{ validator: validateStaffListPage }]}
         >
-          <RoleRadioGroup
-            groupType="project"
-            disabled={!can(currentProject, PROJECT_PERMISSION.CHANGE)}
+          <InputNumber
+            precision={0}
+            placeholder={formatMessage({ id: 'site.staffListPagePlaceholder' })}
+            style={{ width: '100%' }}
+            disabled={readOnly || !can(currentProject, PROJECT_PERMISSION.CHANGE)}
           />
         </FormItem>
-        {can(currentProject, PROJECT_PERMISSION.CHANGE) && (
+        {/* Preserve the legacy field for the current PUT contract without
+            exposing default-role configuration in the identity UI. */}
+        <FormItem name="defaultRole" style={{ display: 'none' }}>
+          <Input type="hidden" />
+        </FormItem>
+        {!readOnly && can(currentProject, PROJECT_PERMISSION.CHANGE) && (
           <FormItem>
             <Button type="primary" block htmlType="submit" loading={submitting}>
               {formatMessage({ id: 'site.save' })}

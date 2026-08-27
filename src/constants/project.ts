@@ -9,26 +9,46 @@ export const PROJECT_ALLOW_APPLY_TYPE = {
 // 项目权限
 export const PROJECT_PERMISSION = {
   ...GROUP_PERMISSION,
-  FINISH: 1010,
-  ADD_FILE: 1020,
-  MOVE_FILE: 1030,
-  RENAME_FILE: 1040,
-  DELETE_FILE: 1050,
-  OUTPUT_TRA: 1060,
-  ADD_LABEL: 1080,
-  MOVE_LABEL: 1090,
-  DELETE_LABEL: 1100,
-  ADD_TRA: 1110,
-  DELETE_TRA: 1120,
-  PROOFREAD_TRA: 1130,
-  CHECK_TRA: 1140,
-};
+  COMPLETE_PROJECT: 'COMPLETE_PROJECT',
+  MANAGE_MEMBERS: 'MANAGE_MEMBERS',
+  ADD_FILE: 'ADD_FILE',
+  MOVE_FILE: 'MOVE_FILE',
+  RENAME_FILE: 'RENAME_FILE',
+  DELETE_FILE: 'DELETE_FILE',
+  OUTPUT_TRA: 'OUTPUT_TRA',
+  ADD_LABEL: 'ADD_LABEL',
+  MOVE_LABEL: 'MOVE_LABEL',
+  DELETE_LABEL: 'DELETE_LABEL',
+  ADD_TRA: 'ADD_TRA',
+  DELETE_TRA: 'DELETE_TRA',
+  PROOFREAD_TRA: 'PROOFREAD_TRA',
+  CHECK_TRA: 'CHECK_TRA',
+  ADD_TARGET: 'ADD_TARGET',
+  CHANGE_TARGET: 'CHANGE_TARGET',
+  DELETE_TARGET: 'DELETE_TARGET',
+} as const;
 
 // 项目状态
 export enum PROJECT_STATUS {
-  WORKING = 0,
-  FINISHED = 1,
+  NORMAL = 'NORMAL',
+  COMPLETED = 'COMPLETED',
+  CLEARED = 'CLEARED',
 }
+
+export type ProjectStatus = PROJECT_STATUS | number;
+
+export const normalizeProjectStatus = (status: unknown): PROJECT_STATUS => {
+  if (status === PROJECT_STATUS.COMPLETED || status === 'COMPLETED' || status === 5) {
+    return PROJECT_STATUS.COMPLETED;
+  }
+  if (status === PROJECT_STATUS.CLEARED || status === 'CLEARED' || status === 1) {
+    return PROJECT_STATUS.CLEARED;
+  }
+  return PROJECT_STATUS.NORMAL;
+};
+
+export const isProjectEditable = (status: unknown): boolean =>
+  normalizeProjectStatus(status) === PROJECT_STATUS.NORMAL;
 
 // 从 LP 导入状态
 export enum IMPORT_FROM_LABELPLUS_STATUS {

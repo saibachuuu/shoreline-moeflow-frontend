@@ -48,6 +48,7 @@ export { TeamCreateForm } from './team/TeamCreateForm';
 export { TeamEditForm } from './team/TeamEditForm';
 export { TeamInsightProjectList } from './team/TeamInsightProjectList';
 export { TeamInsightUserList } from './team/TeamInsightUserList';
+export { IdentityTagPolicy } from './team/IdentityTagPolicy';
 export { TeamList } from './team/TeamList';
 export { TeamSearchList } from './team/TeamSearchList';
 export { TeamSettingBase } from './team/TeamSettingBase';

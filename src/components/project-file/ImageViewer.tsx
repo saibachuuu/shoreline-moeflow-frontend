@@ -72,6 +72,7 @@ interface ImageViewerProps {
   loading: boolean;
   darkness?: number;
   onSettingButtonClick?: () => void;
+  readOnly?: boolean;
   className?: string;
 }
 /**
@@ -87,6 +88,7 @@ export const ImageViewer: FC<ImageViewerProps> = ({
   loading,
   darkness = 0,
   onSettingButtonClick,
+  readOnly = false,
   className,
 }) => {
   const imageAreaSize = { width: imageAreaWidth, height: imageAreaHeight };
@@ -385,6 +387,7 @@ export const ImageViewer: FC<ImageViewerProps> = ({
 
   // 处理图片点击
   const handleImageTap: OnTap = ({ x, y, button }) => {
+    if (readOnly) return;
     if (button === 0) {
       dispatch(
         createSourceSaga({
@@ -408,6 +411,7 @@ export const ImageViewer: FC<ImageViewerProps> = ({
 
   // 移动端长按图片空白处，直接创建框外标签
   const handleImageLongPress: OnLongPress = ({ x, y }) => {
+    if (readOnly) return;
     if (!isMobile) {
       return;
     }
@@ -605,6 +609,7 @@ export const ImageViewer: FC<ImageViewerProps> = ({
         status={label.labelStatus}
         content={content}
         styleTransition={imageTransition}
+        readOnly={readOnly}
       >
         {index + 1}
       </MovableLabel>
@@ -703,7 +708,7 @@ export const ImageViewer: FC<ImageViewerProps> = ({
               showOriginalImage={useOriginalImage}
               onShowOriginalImage={setUseOriginalImage}
               fileId={file.id}
-              onRegenerateThumbnail={handleRegenerateThumbnail}
+              onRegenerateThumbnail={readOnly ? undefined : handleRegenerateThumbnail}
             />
           </MovableItem>
           <MovableItem
@@ -714,7 +719,7 @@ export const ImageViewer: FC<ImageViewerProps> = ({
             maxScale={imageMaxScale}
             scaleStep={imageScaleStep}
             onTap={handleImageTap}
-            onLongPress={isMobile ? handleImageLongPress : undefined}
+            onLongPress={readOnly ? undefined : (isMobile ? handleImageLongPress : undefined)}
             onZoomStart={handleImageZoomStart}
             onZooming={handleImageZooming}
             onZoomEnd={handleImageZoomEnd}

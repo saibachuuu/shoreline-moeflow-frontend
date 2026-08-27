@@ -5,6 +5,7 @@ import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { api } from '@/apis';
+import { PROJECT_STATUS, normalizeProjectStatus } from '@/constants';
 import { useHotKey } from '@/components';
 import { ImageViewer, ImageSourceViewer } from '@/components/project-file';
 import { FC, Source } from '@/interfaces';
@@ -65,6 +66,7 @@ const ImageTranslator: FC = () => {
   const currentProject = useSelector(
     (state: AppState) => state.project.currentProject,
   );
+  const projectReadOnly = normalizeProjectStatus(currentProject?.status) !== PROJECT_STATUS.NORMAL;
 
   useTitle({ prefix: file?.name }, [file?.name]); // 设置标题
 
@@ -118,7 +120,7 @@ const ImageTranslator: FC = () => {
       .then((result) => {
         const file = toLowerCamelCase(result.data);
         setFile(file);
-        dispatch(setCurrentProjectSaga({ id: file.projectID }));
+        dispatch(setCurrentProjectSaga({ id: file.projectId }));
       })
       .catch((error) => {
         error.default();
@@ -186,7 +188,7 @@ const ImageTranslator: FC = () => {
       {file && (
         <ImageViewer
           className="ImageTranslator__ImageViewer"
-          projectId={file.projectID}
+          projectId={file.projectId}
           file={file}
           targetID={targetID}
           labels={sources}
@@ -194,6 +196,7 @@ const ImageTranslator: FC = () => {
           width={imageTranslatorSize.width}
           height={imageTranslatorSize.height}
           loading={!currentProject || sourcesLoading}
+          readOnly={projectReadOnly}
           onSettingButtonClick={() => {
             setSettingModalVisible(true);
           }}
@@ -205,6 +208,7 @@ const ImageTranslator: FC = () => {
         sources={sources}
         targetID={targetID}
         loading={!currentProject || sourcesLoading}
+        readOnly={projectReadOnly}
         onHeightChange={isMobile ? handleSourceListHeightChange : undefined}
       />
       <Modal

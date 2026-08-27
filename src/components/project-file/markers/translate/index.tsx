@@ -22,13 +22,14 @@ interface ImageSourceViewerTranslatorProps {
   sources: ISource[];
   targetID: string;
   className?: string;
+  readOnly?: boolean;
 }
 /**
  * "translate" model, the panel to fill in text 翻译模式
  */
 export const ImageSourceViewerTranslator: FC<
   ImageSourceViewerTranslatorProps
-> = ({ sources, targetID, className }) => {
+> = ({ sources, targetID, className, readOnly = false }) => {
   const { formatMessage } = useIntl();
   const dispatch = useDispatch();
   const platform = useSelector((state: AppState) => state.site.platform);
@@ -422,19 +423,21 @@ export const ImageSourceViewerTranslator: FC<
           >
             <div className="ImageSourceViewerTranslator__DragHandleBar" />
           </div>
-          <QuickCharacterButtons
-            disabled={
-              !can(currentProject, PROJECT_PERMISSION.ADD_TRA) ||
-              focusedSourceCreating ||
-              focusedSourceDeleting
-            }
-            onInsert={insertQuickCharacter}
-          />
+          {!readOnly && (
+            <QuickCharacterButtons
+              disabled={
+                !can(currentProject, PROJECT_PERMISSION.ADD_TRA) ||
+                focusedSourceCreating ||
+                focusedSourceDeleting
+              }
+              onInsert={insertQuickCharacter}
+            />
+          )}
           <TextArea
             className="ImageSourceViewerTranslator__TextArea"
-            onChange={handleTranslationContentChange}
+            onChange={readOnly ? undefined : handleTranslationContentChange}
             value={
-              can(currentProject, PROJECT_PERMISSION.ADD_TRA)
+              readOnly || can(currentProject, PROJECT_PERMISSION.ADD_TRA)
                 ? focusedSource?.myTranslation?.content
                 : formatMessage({
                     id: 'imageTranslator.translationNoPremissionPlaceholder',
@@ -450,10 +453,12 @@ export const ImageSourceViewerTranslator: FC<
                     })
             }
             disabled={
-              !can(currentProject, PROJECT_PERMISSION.ADD_TRA) ||
-              focusedSourceCreating ||
-              focusedSourceDeleting
+              !readOnly &&
+              (!can(currentProject, PROJECT_PERMISSION.ADD_TRA) ||
+                focusedSourceCreating ||
+                focusedSourceDeleting)
             }
+            readOnly={readOnly}
             ref={textAreaRef}
           ></TextArea>
           <div className="ImageSourceViewerTranslator__StatusBar">

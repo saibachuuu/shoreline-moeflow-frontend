@@ -44,6 +44,7 @@ interface TranslationProps {
     | undefined;
   proofreadTextAreaProps?: TextAreaProps;
   className?: string;
+  readOnly?: boolean;
 }
 /**
  * 翻译内容
@@ -60,6 +61,7 @@ export const Translation: FC<TranslationProps> = ({
   proofreadTextAreaRef,
   proofreadTextAreaProps,
   className,
+  readOnly = false,
 }) => {
   const dispatch = useDispatch();
   const { formatMessage } = useIntl();
@@ -275,7 +277,7 @@ export const Translation: FC<TranslationProps> = ({
           avatar={mine ? userAvatar : translation?.user?.avatar}
           name={mine ? userName : translation?.user?.name}
         />
-        {translation?.id &&
+        {!readOnly && translation?.id &&
           translation?.content &&
           can(currentProject, PROJECT_PERMISSION.PROOFREAD_TRA) && (
             <Tooltip
@@ -311,7 +313,7 @@ export const Translation: FC<TranslationProps> = ({
               </Popconfirm>
             </Tooltip>
           )}
-        {!mine &&
+        {!readOnly && !mine &&
           translation?.content &&
           can(currentProject, PROJECT_PERMISSION.ADD_TRA) && (
             <Tooltip
@@ -368,8 +370,9 @@ export const Translation: FC<TranslationProps> = ({
               id: 'imageTranslator.translationPlaceholder',
             })}
             value={translationContent}
-            onChange={handleMyTranslationContentChange}
+            onChange={readOnly ? undefined : handleMyTranslationContentChange}
             {...textAreaProps}
+            readOnly={readOnly}
           />
         ) : (
           <div
@@ -408,7 +411,7 @@ export const Translation: FC<TranslationProps> = ({
               }
               avatar={translation.proofreader?.avatar}
             />
-            {!mine &&
+            {!readOnly && !mine &&
               proofreadContent &&
               can(currentProject, PROJECT_PERMISSION.ADD_TRA) && (
                 <Tooltip
@@ -458,7 +461,8 @@ export const Translation: FC<TranslationProps> = ({
       {translation?.id &&
         (translation?.content || translation?.proofreadContent) && (
           <div className="Translation__Proofread">
-            {proofreadEditable &&
+            {!readOnly &&
+            proofreadEditable &&
             can(currentProject, PROJECT_PERMISSION.PROOFREAD_TRA) ? (
               <TextArea
                 className="Translation__ProofreadContentTextArea"
@@ -495,14 +499,14 @@ export const Translation: FC<TranslationProps> = ({
                 <div
                   className="Translation__TranslationCheckbox"
                   onClick={() => {
-                    if (!source.selecting) {
+                    if (!readOnly && !source.selecting) {
                       handleSelectTranslation();
                     }
                   }}
                 >
                   <Checkbox
                     checked={translation.selected}
-                    disabled={source.selecting}
+                    disabled={readOnly || source.selecting}
                   />
                 </div>
               ) : (

@@ -4,7 +4,7 @@ import { useEffect, useState, cloneElement } from 'react';
 import { useIntl } from 'react-intl';
 import { useSelector } from 'react-redux';
 import { FileList, Icon, ListItem } from '@/components';
-import { IMPORT_FROM_LABELPLUS_STATUS, PROJECT_STATUS } from '@/constants';
+import { IMPORT_FROM_LABELPLUS_STATUS, PROJECT_STATUS, normalizeProjectStatus } from '@/constants';
 import { useTitle } from '@/hooks';
 import { FC, Project, Target } from '@/interfaces';
 import { AppState } from '@/store';
@@ -14,9 +14,9 @@ import {
   loadDefaultTargetID,
   saveDefaultTargetID,
 } from '@/utils/storage';
-import { ProjectFinishedTip } from '@/components/project/ProjectFinishedTip';
 import { ProjectTargetList } from '@/components/project/ProjectTargetList';
 import { ProjectImportFromLabelplusStatus } from '@/components/project/ProjectImportFromLabelplusStatus';
+import { ArchiveImportProgress } from '@/components/project/ArchiveImportProgress';
 
 /** 项目文件页的属性接口 */
 interface ProjectFilesProps {
@@ -40,10 +40,7 @@ const ProjectFiles: FC<ProjectFilesProps> = ({ project }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [project?.id]);
 
-  // 项目已完结返回提示
-  if (project?.status === PROJECT_STATUS.FINISHED) {
-    return <ProjectFinishedTip />;
-  }
+  const readOnly = normalizeProjectStatus(project?.status) !== PROJECT_STATUS.NORMAL;
 
   if (!project) {
     return (
@@ -151,18 +148,22 @@ const ProjectFiles: FC<ProjectFilesProps> = ({ project }) => {
   return cloneElement(
     wrapper,
     undefined,
-    <FileList
-      project={project}
-      target={currentTarget}
-      onChangeTargetClick={() => {
-        if (targets.length > 1) {
-          setCurrentTarget(undefined);
-          clearDefaultTargetID({ projectID: project.id });
-        } else {
-          message.info(formatMessage({ id: 'project.onlyOneTargetTip' }), 1);
-        }
-      }}
-    />,
+    <>
+      <ArchiveImportProgress projectID={project.id} />
+      <FileList
+        project={project}
+        target={currentTarget}
+        readOnly={readOnly}
+        onChangeTargetClick={() => {
+          if (targets.length > 1) {
+            setCurrentTarget(undefined);
+            clearDefaultTargetID({ projectID: project.id });
+          } else {
+            message.info(formatMessage({ id: 'project.onlyOneTargetTip' }), 1);
+          }
+        }}
+      />
+    </>,
   );
 };
 export default ProjectFiles;

@@ -189,7 +189,11 @@ export const TeamInsightUserList: FC<TeamInsightUserListProps> = ({
                           >
                             {project.name}
                           </Link>{' '}
-                          <Tag>{project.role.name}</Tag>
+                          {(project.memberSummary || [])
+                            .flatMap((member) => member.tags || [])
+                            .filter((tag, tagIndex, tags) => tags.indexOf(tag) === tagIndex)
+                            .slice(0, 3)
+                            .map((tag) => <Tag key={tag}>{tag}</Tag>)}
                         </div>
                       );
                     })}

@@ -4,6 +4,7 @@ jest.mock('./index', () => ({ request: mockRequest }));
 
 import fileApi from './file';
 import projectApi from './project';
+import memberApi from './member';
 
 describe('migrated image and worker APIs', () => {
   beforeEach(() => {
@@ -29,37 +30,44 @@ describe('migrated image and worker APIs', () => {
     });
   });
 
-  test('uses worker endpoints and preserves worker payloads', async () => {
-    const workers = { translator: ['Alice'], proofreader: ['Bob'] };
-
-    await projectApi.parseProjectWorkers({ id: 'project-1' });
+  test('uses identity member changes instead of workers endpoints', async () => {
+    await memberApi.applyProjectMemberChanges({
+      projectID: 'project-1',
+      data: {
+        operations: [{
+          operationId: 'op-1',
+          action: 'update',
+          memberId: 'member-1',
+          expectedMemberVersion: 2,
+          changes: { tags: ['translator', 'proofreader'] },
+        }],
+      },
+    });
     expect(mockRequest).toHaveBeenLastCalledWith({
       method: 'POST',
-      url: '/v1/projects/project-1/workers/parse',
-    });
-
-    await projectApi.updateProjectWorkers({
-      id: 'project-1',
-      data: { workers },
-    });
-    expect(mockRequest).toHaveBeenLastCalledWith({
-      method: 'PUT',
-      url: '/v1/projects/project-1/workers',
-      data: { workers },
+      url: '/v1/projects/project-1/members/changes',
+      data: {
+        operations: [{
+          operation_id: 'op-1',
+          action: 'update',
+          member_id: 'member-1',
+          expected_member_version: 2,
+          changes: { tags: ['translator', 'proofreader'] },
+        }],
+      },
     });
   });
 
   test('sends selected project sets for worker/role searches', async () => {
     await projectApi.getTeamProjects({
       teamID: 'team-1',
-      projectSetID: 'set-1',
       params: {
         page: 2,
         limit: 30,
         mode: 'search-worker',
         projectSets: ['set-1', 'set-2'],
-        role: 'translator',
-        worker_name: 'Alice',
+        tag: 'translator',
+        workerName: 'Alice',
       },
     });
 
@@ -67,12 +75,11 @@ describe('migrated image and worker APIs', () => {
       method: 'GET',
       url: '/v1/teams/team-1/projects',
       params: {
-        project_set: 'set-1',
         page: 2,
         limit: 30,
         mode: 'search-worker',
         project_sets: ['set-1', 'set-2'],
-        role: 'translator',
+        tag: 'translator',
         worker_name: 'Alice',
       },
     });

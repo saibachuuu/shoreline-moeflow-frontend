@@ -14,13 +14,14 @@ import { can } from '@/utils/user';
 /** 模板的属性接口 */
 interface ImageSourceViewerModeControlProps {
   className?: string;
+  readOnly?: boolean;
 }
 /**
  * 模板
  */
 export const ImageSourceViewerModeControl: FC<
   ImageSourceViewerModeControlProps
-> = ({ className }) => {
+> = ({ className, readOnly = false }) => {
   const { formatMessage } = useIntl(); // i18n
   const dispatch = useDispatch();
   const mode = useSelector((state: AppState) => state.imageTranslator.mode);
@@ -64,7 +65,7 @@ export const ImageSourceViewerModeControl: FC<
         }
       `}
     >
-      <button
+      {!readOnly && <button
         type="button"
         style={{ display: 'none' }}
         className={classNames('ImageSourceViewerModeControl__Button', {
@@ -75,7 +76,7 @@ export const ImageSourceViewerModeControl: FC<
         }}
       >
         {formatMessage({ id: 'imageTranslator.markerMode' })}
-      </button>
+      </button>}
       <button
         type="button"
         className={classNames('ImageSourceViewerModeControl__Button', {
@@ -87,7 +88,7 @@ export const ImageSourceViewerModeControl: FC<
       >
         {formatMessage({ id: 'imageTranslator.translatorMode' })}
       </button>
-      {can(currentProject, PROJECT_PERMISSION.PROOFREAD_TRA) && (
+      {(readOnly || can(currentProject, PROJECT_PERMISSION.PROOFREAD_TRA)) && (
         <button
           type="button"
           className={classNames('ImageSourceViewerModeControl__Button', {

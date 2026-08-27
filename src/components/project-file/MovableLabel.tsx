@@ -48,6 +48,7 @@ export interface OnMove {
 interface MovableLabelProps {
   x: number;
   y: number;
+  readOnly?: boolean;
 }
 /**
  * 可移动标签
@@ -61,6 +62,7 @@ export const MovableLabel: FC<MovableLabelProps & LabelProps> = ({
   positionType,
   content,
   styleTransition = '',
+  readOnly = false,
   children,
   ...movableItemProps
 }) => {
@@ -75,6 +77,7 @@ export const MovableLabel: FC<MovableLabelProps & LabelProps> = ({
   );
 
   const handleMoveEnd: OnMoveEnd = ({ x: newX, y: newY, reset }) => {
+    if (readOnly) return;
     // 发生了移动
     if (newX !== x || newY !== y) {
       dispatch(
@@ -89,6 +92,7 @@ export const MovableLabel: FC<MovableLabelProps & LabelProps> = ({
   };
 
   const handleTap: OnTap = ({ button }) => {
+    if (readOnly) return;
     // 右键单击
     if (button === 2 && !saving) {
       dispatch(deleteSourceSaga({ id }));
@@ -112,6 +116,7 @@ export const MovableLabel: FC<MovableLabelProps & LabelProps> = ({
   };
 
   const handleLongPress: OnLongPress = ({ button }) => {
+    if (readOnly) return;
     // 左键长按
     if (button === 0 && !saving) {
       dispatch(deleteSourceSaga({ id }));
@@ -145,8 +150,10 @@ export const MovableLabel: FC<MovableLabelProps & LabelProps> = ({
       limitWithSize={false}
       onMoveEnd={handleMoveEnd}
       onTap={handleTap}
-      onLongPress={isMobile || isIPad ? handleLongPress : undefined}
-      allowMove={!['creating', 'deleting'].includes(status)}
+      onLongPress={
+        !readOnly && (isMobile || isIPad) ? handleLongPress : undefined
+      }
+      allowMove={!readOnly && !['creating', 'deleting'].includes(status)}
       {...movableItemProps}
     >
       {label}

@@ -10,6 +10,7 @@ import ReactResizeDetector from 'react-resize-detector';
 import { useDebouncedCallback } from 'use-debounce';
 import { ListSearchInput, ListSkeletonItem } from '@/components';
 import { AppState } from '@/store';
+import style from '@/style';
 import { getCancelToken } from '@/utils/api';
 import { ListSearchInputProps } from './ListSearchInput';
 
@@ -281,6 +282,11 @@ export function List<T>({
         align-items: center;
         overflow-x: hidden;
         overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: ${style.borderColorLight} transparent;
+        &::-webkit-scrollbar { width: 8px; }
+        &::-webkit-scrollbar-thumb { background: ${style.borderColorLight}; border-radius: 4px; }
+        &::-webkit-scrollbar-track { background: transparent; }
         .List__Header {
           width: 100%;
         }

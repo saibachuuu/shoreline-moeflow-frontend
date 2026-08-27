@@ -34,7 +34,7 @@ export const RoleSelect: FC<RoleSelectProps> = ({
         !roles ||
         user.role.systemCode === 'creator' ||
         !can(group, TEAM_PERMISSION.CHANGE_USER_ROLE) ||
-        group.role.level <= user.role.level
+        (group.role?.level ?? Infinity) <= user.role.level
       }
       className={classNames('RoleSelect', className)}
       css={css`
@@ -57,7 +57,7 @@ export const RoleSelect: FC<RoleSelectProps> = ({
             <Option
               value={type.id}
               key={type.id}
-              disabled={group.role.level <= type.level}
+              disabled={(group.role?.level ?? Infinity) <= type.level}
             >
               {type.name}
             </Option>

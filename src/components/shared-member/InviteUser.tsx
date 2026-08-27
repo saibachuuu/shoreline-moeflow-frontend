@@ -15,6 +15,10 @@ import { toLowerCamelCase } from '@/utils';
 import { getCancelToken } from '@/utils/api';
 import { Spin } from '@/components';
 import { LIST_ITEM_DEFAULT_HEIGHT } from '@/components/shared/ListItem';
+import {
+  projectInvitationPositionOptions,
+  teamInvitationRoleOptions,
+} from '@/utils/invitationOptions';
 
 const { Option } = Select;
 
@@ -35,17 +39,20 @@ export const InviteUser: FC<InviteUserProps> = ({
   className,
 }) => {
   const { formatMessage } = useIntl(); // i18n
+  const isProject = groupType === 'project';
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0); // 元素总个数
   const [searchWord, setSearchWord] = useState('');
   const [items, setItems] = useState<any[]>([]); // 元素
-  const [types, setTypes] = useState<Role[]>(); // 系统角色
-  const [inviteRole, setInviteRole] = useState(''); // 邀请角色
+  const [types, setTypes] = useState<Role[]>(); // 系统角色（仅团队邀请）
+  const [inviteRole, setInviteRole] = useState(''); // 邀请角色（团队）
+  const [inviteTags, setInviteTags] = useState<string[]>([]); // 邀请职位（项目）
   // 弹出框
   const [spinningIDs] = useState<string[]>([]); // 删除请求中
 
-  /** 挂载时获取用户角色 */
+  /** 挂载时获取用户角色（项目邀请使用当前职位标签，不请求旧系统角色） */
   useEffect(() => {
+    if (isProject) return;
     const [cancelToken, cancel] = getCancelToken();
     getTypes({ cancelToken });
     return cancel;
@@ -62,7 +69,8 @@ export const InviteUser: FC<InviteUserProps> = ({
         },
       })
       .then((result) => {
-        setTypes(result.data);
+        // 过滤掉旧身份（资深成员/见习成员等），只保留当前团队基础身份。
+        setTypes(teamInvitationRoleOptions(result.data as Role[]));
         return result.data as Role[];
       })
       .catch((error) => {
@@ -88,24 +96,22 @@ export const InviteUser: FC<InviteUserProps> = ({
       if (groupType === 'project') {
         setLoading(true);
         api
-          .getMembers({
-            groupID: (currentGroup as Project).team.id,
-            groupType: 'team',
+          .getTeamMembers({
+            teamID: (currentGroup as Project).team.id,
             params: {
               page,
               limit: pageSize,
+              status: 'active',
               word,
             },
-            configs: {
-              cancelToken,
-            },
+            configs: { cancelToken },
           })
           .then((result) => {
             // 设置数量
             setTotal(result.headers['x-pagination-count']);
             setLoading(false);
-            // 转成大写
-            setItems(result.data?.map((item: any) => toLowerCamelCase(item)));
+            // 项目邀请列表展示团队成员对应的注册用户。
+            setItems(result.data.map((item) => item.user));
           })
           .catch((error) => {
             // 如果是 cancel 的请求，则不取消 loading 状态，因为肯定有下一个请求
@@ -149,8 +155,8 @@ export const InviteUser: FC<InviteUserProps> = ({
 
   /** 邀请用户 */
   const invite = (user: any) => {
-    // role 为空提示选择
-    if (inviteRole === '') {
+    // 团队邀请未选角色 / 项目邀请未选职位时提示
+    if (isProject ? inviteTags.length === 0 : inviteRole === '') {
       message.error({
         content: formatMessage({ id: 'invitation.needRole' }),
         key: 'needRole',
@@ -161,11 +167,17 @@ export const InviteUser: FC<InviteUserProps> = ({
       .createInvitation({
         groupType,
         groupID: currentGroup.id,
-        data: {
-          userID: user.id,
-          roleID: inviteRole,
-          message: '',
-        },
+        data: isProject
+          ? {
+              userID: user.id,
+              tags: inviteTags,
+              message: '',
+            }
+          : {
+              userID: user.id,
+              roleID: inviteRole,
+              message: '',
+            },
       })
       .then((result) => {
         message.success(result.data.message);
@@ -190,28 +202,42 @@ export const InviteUser: FC<InviteUserProps> = ({
         `}
       >
         <Select
-          loading={!types}
-          disabled={!types}
+          loading={isProject ? false : !types}
+          disabled={isProject ? false : !types}
+          mode={isProject ? 'multiple' : undefined}
           style={{ width: '100%' }}
           placeholder={formatMessage({ id: 'invitation.needRole' })}
+          value={isProject ? inviteTags : undefined}
           onChange={(value: SelectValue) => {
-            setInviteRole(value as string);
+            if (isProject) {
+              setInviteTags(value as string[]);
+            } else {
+              setInviteRole(value as string);
+            }
           }}
         >
-          {types?.map((type) => {
-            return (
-              <Option
-                value={type.id}
-                key={type.id}
-                disabled={currentGroup.role.level <= type.level}
-              >
-                {formatMessage(
-                  { id: 'invitation.inviteAsRole' },
-                  { role: type.name },
-                )}
-              </Option>
-            );
-          })}
+          {isProject
+            ? projectInvitationPositionOptions.map((option) => (
+                <Option value={option.code} key={option.code}>
+                  {formatMessage({ id: option.labelId })}
+                </Option>
+              ))
+            : types?.map((type) => {
+                return (
+                  <Option
+                    value={type.id}
+                    key={type.id}
+                    disabled={
+                      (currentGroup.role?.level ?? Infinity) <= type.level
+                    }
+                  >
+                    {formatMessage(
+                      { id: 'invitation.inviteAsRole' },
+                      { role: type.name },
+                    )}
+                  </Option>
+                );
+              })}
         </Select>
       </div>
       <List

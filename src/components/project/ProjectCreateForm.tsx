@@ -22,6 +22,12 @@ interface ProjectCreateFormProps {
   projectSetID: string;
   className?: string;
 }
+
+/** 从画廊 URL 解析 gid/token（兼容 exhentai.org / e-hentai.org 及常见镜像域名）。 */
+const parseGalleryUrl = (url: string) => {
+  const match = url.match(/\/g\/(\d+)\/([A-Za-z0-9]+)/);
+  return match ? { gid: match[1], token: match[2] } : null;
+};
 /**
  * 创建项目表单
  */
@@ -69,10 +75,32 @@ export const ProjectCreateForm: FC<ProjectCreateFormProps> = ({
 
   const handleFinish = (values: any) => {
     setSubmitting(true);
+    const parsed = values.galleryUrl
+      ? parseGalleryUrl(values.galleryUrl)
+      : null;
     api.project
       .createProject({
         teamID: currentTeam.id,
         data: { ...values, labelplusTXT },
+      })
+      .then((result) => {
+        const projectID = result.data.project.id;
+        // 填了画廊网址时，创建后触发归档导入（失败不阻断创建流程）
+        const triggerArchive = parsed
+          ? api.project
+              .importFromArchive({
+                projectID,
+                gid: parsed.gid,
+                token: parsed.token,
+                galleryUrl: values.galleryUrl,
+              })
+              .catch((error) => {
+                message.error(
+                  formatMessage({ id: 'project.archiveImportTriggerFailed' }),
+                );
+              })
+          : Promise.resolve();
+        return triggerArchive.then(() => result);
       })
       .then((result) => {
         setSubmitting(false);
@@ -241,18 +269,31 @@ export const ProjectCreateForm: FC<ProjectCreateFormProps> = ({
           />
         </FormItem>
         <FormItem
-          style={{
-            display: isAllowApply ? 'flex' : 'none',
-          }}
-          name="defaultRole"
-          label={formatMessage({ id: 'site.defaultRoleLabel' })}
+          name="galleryUrl"
+          label={formatMessage({ id: 'project.archiveUrl' })}
           rules={[
             {
-              required: true,
-              message: formatMessage({ id: 'form.selectRequired' }),
+              validator: (_, value) => {
+                if (!value || parseGalleryUrl(value)) {
+                  return Promise.resolve();
+                }
+                return Promise.reject(
+                  new Error(
+                    formatMessage({ id: 'project.archiveUrlInvalid' }),
+                  ),
+                );
+              },
             },
           ]}
         >
+          <Input
+            placeholder={formatMessage({ id: 'project.archiveUrlPlaceholder' })}
+            allowClear
+          />
+        </FormItem>
+        {/* The current backend still requires this legacy field for the
+            invitation adapter. It is not an identity configuration control. */}
+        <FormItem name="defaultRole" style={{ display: 'none' }} rules={[{ required: true }]}>
           <RoleRadioGroup groupType="project" useDefaultType={true} />
         </FormItem>
         <FormItem name="projectSet" style={{ display: 'none' }}>

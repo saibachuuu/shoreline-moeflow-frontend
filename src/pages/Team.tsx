@@ -60,9 +60,7 @@ const Team: FC<TeamProps> = () => {
       title={formatMessage({ id: 'projectSet.createProjectSet' })}
       placement="right"
     >
-      <div className="ListItem__RightButton">
-        <Icon className="ListItem__RightButtonIcon" icon="plus"></Icon>
-      </div>
+      <Icon className="ListItem__RightButtonIcon" icon="plus"></Icon>
     </Tooltip>
   );
 

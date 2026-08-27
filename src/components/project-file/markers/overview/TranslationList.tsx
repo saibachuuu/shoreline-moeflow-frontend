@@ -19,6 +19,7 @@ interface TranslationListProps {
   source: Source;
   targetID: string;
   className?: string;
+  readOnly?: boolean;
 }
 /**
  * 翻译列表
@@ -29,8 +30,9 @@ export const TranslationList: FC<TranslationListProps> = ({
   source,
   targetID,
   className,
+  readOnly = false,
 }) => {
-  const proofreadEditable = true;
+  const proofreadEditable = !readOnly;
   const textAreasRef = useRef<TextAreaRef>(null);
   const currentProject = useSelector(
     (state: AppState) => state.project.currentProject,
@@ -76,7 +78,8 @@ export const TranslationList: FC<TranslationListProps> = ({
         }
       `}
     >
-      {(can(currentProject, PROJECT_PERMISSION.ADD_TRA) ||
+      {(readOnly ||
+        can(currentProject, PROJECT_PERMISSION.ADD_TRA) ||
         isValidTranslation(myTranslation)) && (
         <div className="TranslationList__MyTranslation">
           <Translation
@@ -84,11 +87,18 @@ export const TranslationList: FC<TranslationListProps> = ({
             targetID={targetID}
             translation={myTranslation}
             mine={true}
-            textAreaProps={{
-              disabled: ['creating', 'deleting'].includes(source?.labelStatus),
-            }}
+            textAreaProps={
+              readOnly
+                ? undefined
+                : {
+                    disabled: ['creating', 'deleting'].includes(
+                      source?.labelStatus,
+                    ),
+                  }
+            }
             proofreadEditable={proofreadEditable}
             textAreaRef={textAreasRef}
+            readOnly={readOnly}
           />
         </div>
       )}
@@ -104,6 +114,7 @@ export const TranslationList: FC<TranslationListProps> = ({
                 mine={false}
                 myTranslation={myTranslation}
                 proofreadEditable={proofreadEditable}
+                readOnly={readOnly}
                 key={otherTranslation.id}
               />
             );

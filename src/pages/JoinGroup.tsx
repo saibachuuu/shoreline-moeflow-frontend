@@ -16,6 +16,7 @@ import { Button, Input, message } from 'antd';
 import { useDispatch } from 'react-redux';
 import { APPLICATION_CHECK_TYPE } from '../constants';
 import { resetFilesState } from '../store/file/slice';
+import { hasIdentityMembership } from '../utils/user';
 
 /** 加入团体界面的属性接口 */
 interface JoinGroupProps {
@@ -97,7 +98,7 @@ const JoinGroup: FC<JoinGroupProps> = ({ className }) => {
         message.success(data.message);
         if (groupType === 'team') {
           // 无需审核或之前有邀请，则跳转到所在团队
-          if (data.group && data.group.role) {
+          if (hasIdentityMembership(data.group)) {
             // 加入成功
             dispatch(
               createTeam({ team: data.group as UserTeam, unshift: true }),

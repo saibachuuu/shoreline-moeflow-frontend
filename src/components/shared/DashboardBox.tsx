@@ -29,23 +29,29 @@ export const DashboardBox: FC<DashboardBoxProps> = ({
         align-items: stretch;
         height: 100%;
         width: 100%;
-        overflow-y: auto;
+        min-width: 0;
+        min-height: 0;
+        overflow: hidden;
         .DashboardBox__Nav {
+          flex: none;
           height: ${style.navHeight}px;
         }
         .DashboardBox__Content {
-          flex: 1 0 auto;
+          flex: 1 1 auto;
           display: flex;
           flex-direction: column;
           justify-content: flex-start;
           align-items: center;
-          height: 100%;
+          width: 100%;
+          height: auto;
+          min-width: 0;
+          min-height: 0;
+          overflow: auto;
         }
         ${nav &&
         css`
           .DashboardBox__Content {
-            height: calc(100% - ${style.navHeight}px);
-            overflow-y: auto;
+            height: auto;
           }
         `}
       `}

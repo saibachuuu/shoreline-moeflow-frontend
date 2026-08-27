@@ -6,7 +6,7 @@ export interface APISiteSetting {
   enableWhitelist: boolean;
   whitelistEmails: string[];
   onlyAllowAdminCreateTeam: boolean;
-  autoJoinTeamIDs: string[];
+  autoJoinTeamIds: string[];
   customSiteTitle: string;
   homepageWelcome: string;
   homepageImageUrl: string;

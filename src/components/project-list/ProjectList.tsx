@@ -1,5 +1,5 @@
 import { css } from '@emotion/core';
-import { Button } from 'antd';
+import { Button, Select } from 'antd';
 import { CancelToken } from 'axios';
 import classNames from 'classnames';
 import React, { useEffect, useRef, useState } from 'react';
@@ -9,7 +9,7 @@ import { useHistory, useRouteMatch } from 'react-router-dom';
 import { EmptyTip, Icon, List } from '@/components';
 import { ProjectItem } from './ProjectItem';
 import api, { resultTypes } from '@/apis';
-import { PROJECT_STATUS } from '@/constants';
+import { PROJECT_STATUS, normalizeProjectStatus } from '@/constants';
 import { FC, UserProjectSet } from '@/interfaces';
 import { AppState } from '@/store';
 import {
@@ -21,6 +21,7 @@ import {
 import style from '@/style';
 import { toLowerCamelCase } from '@/utils';
 import { clickEffect } from '@/utils/style';
+import { buildTeamProjectSearchParams } from '@/utils/projectSearch';
 import { PROJECT_WORKER_ROLES, ProjectWorkerRole } from '@/apis/project';
 
 /** 项目列表的属性接口 */
@@ -132,9 +133,8 @@ export const ProjectList: FC<ProjectListProps> = ({
           setTotal(result.headers['x-pagination-count']);
           setLoading(false);
           for (const project of result.data) {
-            const originalWorkers = project.workers;
             const camelProject = toLowerCamelCase(project);
-            camelProject.workers = originalWorkers;
+            camelProject.status = normalizeProjectStatus(camelProject.status);
             dispatch(createProject({ project: camelProject }));
           }
         })
@@ -146,30 +146,19 @@ export const ProjectList: FC<ProjectListProps> = ({
           error.default();
         });
     } else if (from === 'team') {
-      const isBrowsingCurrentProjectSet = !word;
-      const params: any = {
+      const params = buildTeamProjectSearchParams({
         page,
         limit: pageSize,
         status,
-        mode: isBrowsingCurrentProjectSet
-          ? 'search-project-name'
-          : searchMode,
-        projectSets: isBrowsingCurrentProjectSet
-          ? [currentProjectSet!.id]
-          : selectedProjectSetIDs,
-      };
-      if (!isBrowsingCurrentProjectSet && searchMode === 'search-worker') {
-        if (searchRole) {
-          params.role = searchRole;
-        }
-        params.worker_name = word;
-      } else {
-        params.word = word;
-      }
+        searchMode,
+        searchRole,
+        word,
+        currentProjectSetID: currentProjectSet!.id,
+        selectedProjectSetIDs,
+      });
       return api
         .getTeamProjects({
           teamID: currentTeam!.id,
-          projectSetID: currentProjectSet!.id,
           params,
           configs: {
             cancelToken,
@@ -180,9 +169,8 @@ export const ProjectList: FC<ProjectListProps> = ({
           setTotal(result.headers['x-pagination-count']);
           setLoading(false);
           for (const project of result.data) {
-            const originalWorkers = project.workers;
             const camelProject = toLowerCamelCase(project);
-            camelProject.workers = originalWorkers;
+            camelProject.status = normalizeProjectStatus(camelProject.status);
             dispatch(createProject({ project: camelProject }));
           }
         })
@@ -273,7 +261,7 @@ export const ProjectList: FC<ProjectListProps> = ({
       minPageSize={isMobile ? 10 : 15}
       itemCreater={(project) => <ProjectItem from={from} project={project} />}
       emptyTipCreater={() => {
-        if (status === PROJECT_STATUS.WORKING) {
+        if (status === PROJECT_STATUS.NORMAL) {
           if (from === 'user') {
             return (
               <EmptyTip
@@ -371,103 +359,19 @@ export const ProjectList: FC<ProjectListProps> = ({
                   font-size: 12px;
                   color: ${style.textColorSecondary};
                 }
-                .WorkerSearch__Select {
+                .WorkerSearch__Control {
                   flex: 1;
                   min-width: 0;
-                  padding: 4px 8px;
-                  border: 1px solid ${style.borderColorLight};
-                  border-radius: ${style.borderRadiusBase};
-                  font-size: 13px;
-                  background: ${style.backgroundColorLight};
-                  color: ${style.textColor};
-                  outline: none;
-                  &:focus {
-                    border-color: ${style.primaryColor};
-                  }
-                }
-                .WorkerSearch__Input {
-                  flex: 1;
-                  min-width: 0;
-                  padding: 4px 8px;
-                  border: 1px solid ${style.borderColorLight};
-                  border-radius: ${style.borderRadiusBase};
-                  font-size: 13px;
-                  background: ${style.backgroundColorLight};
-                  color: ${style.textColor};
-                  outline: none;
-                  &:focus {
-                    border-color: ${style.primaryColor};
-                  }
-                }
-                .WorkerSearch__ProjectSetDropdown {
-                  position: relative;
-                  flex: 1;
-                  min-width: 0;
-                }
-                .WorkerSearch__ProjectSetSummary {
-                  padding: 4px 8px;
-                  border: 1px solid ${style.borderColorLight};
-                  border-radius: ${style.borderRadiusBase};
-                  font-size: 13px;
-                  background: ${style.backgroundColorLight};
-                  color: ${style.textColor};
-                  cursor: pointer;
-                }
-                .WorkerSearch__ProjectSetOptions {
-                  position: absolute;
-                  z-index: 1;
-                  top: calc(100% + 4px);
-                  left: 0;
-                  right: 0;
-                  max-height: 220px;
-                  overflow-y: auto;
-                  padding: 4px 0;
-                  border: 1px solid ${style.borderColorLight};
-                  border-radius: ${style.borderRadiusBase};
-                  background: ${style.backgroundColorLight};
-                  box-shadow: ${style.boxShadowBase};
-                }
-                .WorkerSearch__ProjectSetOption {
-                  display: flex;
-                  align-items: center;
-                  gap: 6px;
-                  padding: 5px 8px;
-                  font-size: 13px;
-                  cursor: pointer;
-                }
-                .WorkerSearch__Buttons {
-                  display: flex;
-                  justify-content: flex-end;
-                  gap: 8px;
-                }
-                .WorkerSearch__Button {
-                  display: flex;
-                  align-items: center;
-                  gap: 4px;
-                  padding: 4px 12px;
-                  border-radius: ${style.borderRadiusBase};
-                  font-size: 12px;
-                  cursor: pointer;
-                  ${clickEffect()};
-                }
-                .WorkerSearch__Button--primary {
-                  background: ${style.primaryColor};
-                  color: white;
-                }
-                .WorkerSearch__Button--ghost {
-                  background: ${style.backgroundColorLight};
-                  color: ${style.textColorSecondary};
-                  border: 1px solid ${style.borderColorLight};
                 }
               `}
             >
               <div className="WorkerSearch__Row">
                 <span className="WorkerSearch__Label">查询模式</span>
-                <select
-                  className="WorkerSearch__Select"
+                <Select
+                  className="WorkerSearch__Control"
+                  size="small"
                   value={searchMode}
-                  onChange={(e) => {
-                    const newMode = e.target.value;
+                  onChange={(newMode) => {
                     setSearchMode(newMode);
                     if (newMode === 'search-project-name') {
                       setActiveWorkerSearch(false);
@@ -476,74 +380,65 @@ export const ProjectList: FC<ProjectListProps> = ({
                     }
                   }}
                 >
-                  <option value="search-project-name">项目名搜索</option>
-                  <option value="search-worker">成员搜索</option>
-                </select>
+                  <Select.Option value="search-project-name">
+                    项目名搜索
+                  </Select.Option>
+                  <Select.Option value="search-worker">成员搜索</Select.Option>
+                </Select>
               </div>
               <div className="WorkerSearch__Row">
                 <span className="WorkerSearch__Label">范围</span>
-                <details className="WorkerSearch__ProjectSetDropdown">
-                  <summary className="WorkerSearch__ProjectSetSummary">
-                    已选 {selectedProjectSetIDs.length} 个项目集
-                  </summary>
-                  <div className="WorkerSearch__ProjectSetOptions">
-                    {[currentProjectSet!, ...availableProjectSets.filter(
+                <Select
+                  className="WorkerSearch__Control"
+                  size="small"
+                  mode="multiple"
+                  value={selectedProjectSetIDs}
+                  onChange={(value) =>
+                    setSelectedProjectSetIDs(value as string[])
+                  }
+                >
+                  {[
+                    currentProjectSet!,
+                    ...availableProjectSets.filter(
                       (projectSet) => projectSet.id !== currentProjectSet!.id,
-                    )].map((projectSet) => {
-                      const isCurrent = projectSet.id === currentProjectSet!.id;
-                      return (
-                        <label
-                          className="WorkerSearch__ProjectSetOption"
-                          key={projectSet.id}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={selectedProjectSetIDs.includes(projectSet.id)}
-                            disabled={isCurrent}
-                            onChange={() => {
-                              setSelectedProjectSetIDs((ids) =>
-                                ids.includes(projectSet.id)
-                                  ? ids.filter((id) => id !== projectSet.id)
-                                  : [...ids, projectSet.id],
-                              );
-                            }}
-                          />
-                          {projectSet.name}
-                          {isCurrent && '（当前）'}
-                        </label>
-                      );
-                    })}
-                  </div>
-                </details>
+                    ),
+                  ].map((projectSet) => (
+                    <Select.Option
+                      key={projectSet.id}
+                      value={projectSet.id}
+                      disabled={projectSet.id === currentProjectSet!.id}
+                    >
+                      {projectSet.name}
+                    </Select.Option>
+                  ))}
+                </Select>
               </div>
               {searchMode === 'search-worker' && (
                 <div className="WorkerSearch__Row">
                   <span className="WorkerSearch__Label">限定职位</span>
-                  <select
-                    className="WorkerSearch__Select"
+                  <Select
+                    className="WorkerSearch__Control"
+                    size="small"
                     value={searchRole}
-                    onChange={(e) =>
-                      setSearchRole(e.target.value as ProjectWorkerRole | '')
+                    onChange={(value) =>
+                      setSearchRole(value as ProjectWorkerRole | '')
                     }
                   >
-                    <option value="">任何职位</option>
-                    {PROJECT_WORKER_ROLES.map((r) => (
-                      <option key={r.key} value={r.key}>
-                        {r.label}
-                      </option>
+                    <Select.Option value="">任何职位</Select.Option>
+                    {PROJECT_WORKER_ROLES.map((role) => (
+                      <Select.Option key={role.key} value={role.key}>
+                        {role.label}
+                      </Select.Option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
               )}
               {activeWorkerSearch && (
-                <div className="WorkerSearch__Buttons">
-                  <span
-                    className="WorkerSearch__Button WorkerSearch__Button--ghost"
-                    onClick={handleWorkerSearchClear}
-                  >
+                <div className="WorkerSearch__Row">
+                  <Button size="small" onClick={handleWorkerSearchClear}>
                     <Icon icon="times" />
                     清除搜索
-                  </span>
+                  </Button>
                 </div>
               )}
             </div>
@@ -587,12 +482,11 @@ export const ProjectList: FC<ProjectListProps> = ({
           <div className="ProjectList__Statuses">
             <div
               className={classNames('ProjectList__Status', {
-                'ProjectList__Status--active':
-                  status === PROJECT_STATUS.WORKING,
+                'ProjectList__Status--active': status === PROJECT_STATUS.NORMAL,
               })}
               onClick={() => {
                 dispatch(resetProjectsState());
-                dispatch(setProjectsState({ status: PROJECT_STATUS.WORKING }));
+                dispatch(setProjectsState({ status: PROJECT_STATUS.NORMAL }));
               }}
             >
               {formatMessage({ id: 'project.working' })}
@@ -600,11 +494,14 @@ export const ProjectList: FC<ProjectListProps> = ({
             <div
               className={classNames('ProjectList__Status', {
                 'ProjectList__Status--active':
-                  status === PROJECT_STATUS.FINISHED,
+                  status === PROJECT_STATUS.COMPLETED ||
+                  status === PROJECT_STATUS.CLEARED,
               })}
               onClick={() => {
                 dispatch(resetProjectsState());
-                dispatch(setProjectsState({ status: PROJECT_STATUS.FINISHED }));
+                dispatch(
+                  setProjectsState({ status: PROJECT_STATUS.COMPLETED }),
+                );
               }}
             >
               {formatMessage({ id: 'project.finished' })}

@@ -152,6 +152,7 @@ export interface GetUserInfoResponse {
   has_avatar: boolean;
   // local
   admin?: boolean;
+  aliases?: string[];
 }
 /** 获取用户信息 */
 const getUserInfo = ({

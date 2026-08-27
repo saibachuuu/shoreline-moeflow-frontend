@@ -22,11 +22,11 @@ export interface APIProject {
   isNeedCheckApplication: boolean;
   maxUser: number;
   userCount: number;
-  status: number;
+  status: PROJECT_STATUS | number;
   createTime: string;
   editTime: string;
-  role: Role;
-  autoBecomeProjectAdmin: boolean;
+  role?: Role;
+  autoBecomeProjectAdmin?: boolean;
   sourceLanguage: Language;
   targetCount: number;
   sourceCount: number;
@@ -38,40 +38,83 @@ export interface APIProject {
   importFromLabelplusPercent: number;
   importFromLabelplusErrorType: IMPORT_FROM_LABELPLUS_ERROR_TYPE;
   importFromLabelplusErrorTypeName: string;
-  workers: ProjectWorkers;
+  ownerUserId?: string | null;
+  ownerVersion?: number;
+  statusVersion?: number;
+  effectivePermissions?: string[];
+  memberSummary?: APIProjectMemberSummary[];
+  /** 导出 translations.txt 时人员名单的植入页序号（1=第一页，-1=最后一页；null=未设置）。 */
+  staffListPage?: number | null;
 }
 
-export type ProjectWorkers = Partial<Record<ProjectWorkerRole, string[]>>;
-export type ProjectWorkerRole =
-  | 'provider'
-  | 'scan'
-  | 'scan_retoucher'
+export type ProjectTag =
+  | 'creator'
+  | 'admin'
+  | 'raw_provider'
+  | 'scanner'
+  | 'cropper'
+  | 'cleaner'
   | 'translator'
   | 'proofreader'
-  | 'picture_editor';
+  | 'typesetter'
+  | string;
+
+export type ProjectWorkerRole =
+  | 'raw_provider'
+  | 'scanner'
+  | 'cropper'
+  | 'cleaner'
+  | 'translator'
+  | 'proofreader'
+  | 'typesetter';
 
 export const PROJECT_WORKER_ROLES: ReadonlyArray<{
   key: ProjectWorkerRole;
   label: string;
 }> = [
-  { key: 'provider', label: '图源' },
-  { key: 'scan', label: '扫图' },
-  { key: 'scan_retoucher', label: '修图' },
+  { key: 'raw_provider', label: '图源' },
+  { key: 'scanner', label: '扫图' },
+  { key: 'cropper', label: '裁切' },
+  { key: 'cleaner', label: '修图' },
   { key: 'translator', label: '翻译' },
   { key: 'proofreader', label: '校对' },
-  { key: 'picture_editor', label: '嵌字' },
+  { key: 'typesetter', label: '嵌字' },
 ];
 
 export const PROJECT_WORKER_DISPLAY_ROLES = PROJECT_WORKER_ROLES.filter(
   (r) =>
     r.key === 'translator' ||
     r.key === 'proofreader' ||
-    r.key === 'picture_editor',
+    r.key === 'typesetter',
 );
 
-interface ProjectWorkersResponse {
-  message: string;
-  workers: ProjectWorkers;
+export interface APIProjectMemberSummary {
+  /** Full member responses expose memberId; compact list responses use id and
+   * are normalized before entering the editor. */
+  memberId: string;
+  id?: string;
+  userId?: string | null;
+  externalId?: string | null;
+  displayName: string;
+  tags: string[];
+  status: 'active' | 'invited' | 'removed';
+  isOwner?: boolean;
+}
+
+export interface APIProjectMemberUser {
+  id: string;
+  name: string;
+  avatar?: string;
+  hasAvatar?: boolean;
+  aliases?: string[];
+}
+
+export interface APIProjectMember extends APIProjectMemberSummary {
+  projectId: string;
+  effectivePermissions?: string[];
+  version: number;
+  /** Site identity of a registered member; null for external members. */
+  user?: APIProjectMemberUser | null;
 }
 
 /** 获取团队的项目列表的请求数据 */
@@ -80,18 +123,16 @@ interface GetTeamProjectsParams {
   status?: PROJECT_STATUS;
   mode?: string;
   projectSets?: string[];
-  role?: ProjectWorkerRole;
-  worker_name?: string;
+  tag?: string;
+  workerName?: string;
 }
 /** 获取团队的项目列表 */
 const getTeamProjects = ({
   teamID,
-  projectSetID,
   params,
   configs,
 }: {
   teamID: string;
-  projectSetID: string;
   params?: GetTeamProjectsParams & PaginationParams;
   configs?: AxiosRequestConfig;
 }) => {
@@ -99,8 +140,6 @@ const getTeamProjects = ({
     method: 'GET',
     url: `/v1/teams/${teamID}/projects`,
     params: {
-      project_set: projectSetID,
-      project_sets: params?.projectSets,
       ...toUnderScoreCase(params),
     },
     ...configs,
@@ -239,6 +278,8 @@ interface EditProjectData {
   intro: string;
   allowApplyType: number;
   applicationCheckType: number;
+  /** 导出人员名单的植入页序号：非零整数；null 表示未设置（跟随团队/默认）。 */
+  staffListPage?: number | null;
   defaultRole: string;
 }
 /** 修改项目 */
@@ -260,19 +301,52 @@ const editProject = ({
 };
 
 /** 完结项目 */
-const finishProject = ({
+const completeProject = ({
   id,
+  expectedVersion,
   configs,
 }: {
   id: string;
+  expectedVersion?: number;
   configs?: AxiosRequestConfig;
 }) => {
   return request({
-    method: 'DELETE',
-    url: `/v1/projects/${id}`,
+    method: 'POST',
+    url: `/v1/projects/${id}/complete`,
+    data: expectedVersion === undefined ? undefined : { expected_version: expectedVersion },
     ...configs,
   });
 };
+
+const reopenProject = ({
+  id,
+  expectedVersion,
+  configs,
+}: {
+  id: string;
+  expectedVersion?: number;
+  configs?: AxiosRequestConfig;
+}) => request({
+  method: 'POST',
+  url: `/v1/projects/${id}/reopen`,
+  data: expectedVersion === undefined ? undefined : { expected_version: expectedVersion },
+  ...configs,
+});
+
+const clearProject = ({
+  id,
+  expectedVersion,
+  configs,
+}: {
+  id: string;
+  expectedVersion?: number;
+  configs?: AxiosRequestConfig;
+}) => request({
+  method: 'POST',
+  url: `/v1/projects/${id}/clear`,
+  data: expectedVersion === undefined ? undefined : { expected_version: expectedVersion },
+  ...configs,
+});
 
 /**
  * @deprecated being retired
@@ -291,42 +365,54 @@ const startProjectOCR = ({
   });
 };
 
-/** 解析翻译数据并保存工作人员 */
-const parseProjectWorkers = ({
-  id,
+/** 触发画廊归档导入（gid/token 由画廊 URL 解析，可空 galleryUrl 仅供展示） */
+const importFromArchive = ({
+  projectID,
+  gid,
+  token,
+  galleryUrl,
   configs,
 }: {
-  id: string;
+  projectID: string;
+  gid: string;
+  token: string;
+  galleryUrl?: string;
   configs?: AxiosRequestConfig;
-}) => {
-  return request<ProjectWorkersResponse>({
+}) =>
+  request({
     method: 'POST',
-    url: `/v1/projects/${id}/workers/parse`,
+    url: `/v1/projects/${projectID}/import-from-archive`,
+    data: toUnderScoreCase({ gid, token, galleryUrl }),
     ...configs,
   });
-};
 
-/** 更新工作人员的请求数据 */
-interface UpdateWorkersData {
-  workers: ProjectWorkers;
-}
-/** 更新工作人员列表 */
-const updateProjectWorkers = ({
-  id,
-  data,
+/** 获取画廊归档导入任务状态（前端轮询） */
+const getArchiveImportTask = ({
+  projectID,
   configs,
 }: {
-  id: string;
-  data: UpdateWorkersData;
+  projectID: string;
   configs?: AxiosRequestConfig;
-}) => {
-  return request<ProjectWorkersResponse>({
-    method: 'PUT',
-    url: `/v1/projects/${id}/workers`,
-    data: toUnderScoreCase(data),
+}) =>
+  request({
+    method: 'GET',
+    url: `/v1/projects/${projectID}/import-task`,
     ...configs,
   });
-};
+
+/** 关闭项目的归档导入提示（永久存库，前端不再展示） */
+const dismissArchiveImportTask = ({
+  projectID,
+  configs,
+}: {
+  projectID: string;
+  configs?: AxiosRequestConfig;
+}) =>
+  request({
+    method: 'POST',
+    url: `/v1/projects/${projectID}/import-task/dismiss`,
+    ...configs,
+  });
 
 export default {
   getUserProjects,
@@ -334,10 +420,13 @@ export default {
   getProject,
   createProject,
   editProject,
-  finishProject,
+  completeProject,
+  reopenProject,
+  clearProject,
   startProjectOCR,
   importProject,
   uploadFile,
-  parseProjectWorkers,
-  updateProjectWorkers,
+  importFromArchive,
+  getArchiveImportTask,
+  dismissArchiveImportTask,
 };

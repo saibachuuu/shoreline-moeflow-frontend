@@ -50,7 +50,10 @@ const getInvitations = ({
 /** 创建邀请的请求数据 */
 interface CreateInvitationData {
   userID: string;
-  roleID: string;
+  /** 团队邀请使用旧角色 id；项目邀请使用当前身份职位标签。 */
+  roleID?: string;
+  /** 项目邀请的职位标签（当前身份系统）。 */
+  tags?: string[];
   message: string;
 }
 /** 创建邀请 */
@@ -73,9 +76,10 @@ const createInvitation = ({
   });
 };
 
-/** 修改邀请（角色）的请求数据 */
+/** 修改邀请的请求数据：团队邀请改角色 id；项目邀请改职位标签。 */
 interface EditInvitationData {
-  roleID: string;
+  roleID?: string;
+  tags?: string[];
 }
 /** 修改邀请（角色） */
 const editInvitation = ({

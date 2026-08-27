@@ -49,7 +49,11 @@ const getRelatedApplications = ({
   });
 };
 
+const updateAliases = ({ aliases, configs }: { aliases: string[]; configs?: AxiosRequestConfig }) =>
+  request({ method: 'PATCH', url: '/v1/me/aliases', data: { aliases }, ...configs });
+
 export default {
   getUserInvitations,
   getRelatedApplications,
+  updateAliases,
 };

@@ -36,6 +36,7 @@ interface FileListProps {
   onChangeTargetClick?: () => void;
   target: Target;
   className?: string;
+  readOnly?: boolean;
 }
 
 const debugLogger = createDebugLogger('components:project:FileList');
@@ -47,6 +48,7 @@ export const FileList: FC<FileListProps> = ({
   target,
   onChangeTargetClick,
   className,
+  readOnly = false,
 }) => {
   const { formatMessage } = useIntl(); // i18n
   const history = useHistory(); // 路由
@@ -168,7 +170,7 @@ export const FileList: FC<FileListProps> = ({
       parseStatusDetailName: formatMessage({ id: 'file.parseNotStart' }),
       parseErrorTypeDetailName: '',
       url: '',
-      parentID: null,
+      parentId: null,
       fileTargetCache: {
         translatedSourceCount: 0,
         checkedSourceCount: 0,
@@ -295,7 +297,7 @@ export const FileList: FC<FileListProps> = ({
           }
         `}
       />
-      <FilePond
+      {!readOnly && <FilePond
         name="file"
         className="FileList__FilePond"
         ref={(ref) => (filePondRef.current = ref)}
@@ -367,7 +369,7 @@ export const FileList: FC<FileListProps> = ({
             headers: { Authorization: `Bearer ${token}` },
           },
         }}
-      />
+      />}
       <div className="FileList__Header">
         <Button
           className="FileList__ChangeTargetButton"
@@ -381,7 +383,7 @@ export const FileList: FC<FileListProps> = ({
             ? formatMessage({ id: 'project.changeTarget' }) + ' - '
             : '') + target?.language.i18nName}
         </Button>
-        {aiEnabled && aiTranslateApi && (
+        {!readOnly && aiEnabled && aiTranslateApi && (
           <Button
             tooltipProps={{
               overlay: formatMessage({ id: 'fileList.aiTranslate.buttonTip' }),
@@ -411,13 +413,13 @@ export const FileList: FC<FileListProps> = ({
             setListMode(listMode === 'text' ? 'image' : 'text');
           }}
         ></Button> */}
-        {can(project, PROJECT_PERMISSION.OUTPUT_TRA) && (
+        {!readOnly && can(project, PROJECT_PERMISSION.OUTPUT_TRA) && (
           <Button icon="download" onClick={() => setOutputDrawerVisible(true)}>
             {!isMobile && formatMessage({ id: 'project.export' })}
             {selectedFileIds.length > 0 && ` (${selectedFileIds.length})`}
           </Button>
         )}
-        {can(project, PROJECT_PERMISSION.ADD_FILE) && (
+        {!readOnly && can(project, PROJECT_PERMISSION.ADD_FILE) && (
           <Button
             icon="plus"
             onClick={() => {
@@ -427,7 +429,7 @@ export const FileList: FC<FileListProps> = ({
             {!isMobile && formatMessage({ id: 'site.upload' })}
           </Button>
         )}
-        {can(project, PROJECT_PERMISSION.CHANGE) && (
+        {!readOnly && can(project, PROJECT_PERMISSION.CHANGE) && (
           <Button
             icon="image"
             onClick={() => {
@@ -540,7 +542,7 @@ export const FileList: FC<FileListProps> = ({
                     file.uploadState === 'success') &&
                     openInTranslator(file);
                 }}
-                selectVisible={can(project, PROJECT_PERMISSION.OUTPUT_TRA)}
+                selectVisible={!readOnly && can(project, PROJECT_PERMISSION.OUTPUT_TRA)}
                 selected={selectedFileIds.includes(file.id)}
                 onSelect={(value) => {
                   if (value) {
@@ -559,7 +561,7 @@ export const FileList: FC<FileListProps> = ({
                     );
                   }
                 }}
-                deleteButtonVisible={
+                deleteButtonVisible={!readOnly &&
                   can(project, PROJECT_PERMISSION.DELETE_FILE) &&
                   (file.uploadState === undefined ||
                     file.uploadState === 'success')

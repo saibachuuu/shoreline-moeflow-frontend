@@ -2,7 +2,7 @@ import { css } from '@emotion/core';
 import { Button, message, Modal, Tag } from 'antd';
 import classNames from 'classnames';
 import copy from 'copy-to-clipboard';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
@@ -12,13 +12,12 @@ import {
   ContentTitle,
   FormItem,
   Icon,
-  Tooltip,
 } from '@/components';
-import api from '../../apis';
+import api from '@/apis';
 import {
   PROJECT_PERMISSION,
   PROJECT_STATUS,
-  TEAM_PERMISSION,
+  normalizeProjectStatus,
 } from '@/constants';
 import { FC, Project } from '@/interfaces';
 import { AppState } from '@/store';
@@ -30,24 +29,21 @@ import {
 import style from '../../style';
 import { toLowerCamelCase } from '@/utils';
 import { can } from '@/utils/user';
+import { projectMemberOperationId } from '@/utils/projectMembers';
 import { ProjectEditForm } from './ProjectEditForm';
 
-/** 项目基础设置的属性接口 */
 interface ProjectSettingBaseProps {
   className?: string;
 }
-/**
- * 项目基础设置
- */
+
 export const ProjectSettingBase: FC<ProjectSettingBaseProps> = ({
   className,
 }) => {
-  const history = useHistory(); // 路由
-  const { formatMessage } = useIntl(); // i18n
+  const { formatMessage } = useIntl();
+  const history = useHistory();
   const dispatch = useDispatch();
   const [leaveLoading, setLeaveLoading] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
-  const [adminJoining, setAdminJoining] = useState(false);
+  const [lifecycleLoading, setLifecycleLoading] = useState(false);
   const currentTeam = useSelector((state: AppState) => state.team.currentTeam);
   const currentProjectSet = useSelector(
     (state: AppState) => state.projectSet.currentProjectSet,
@@ -57,117 +53,148 @@ export const ProjectSettingBase: FC<ProjectSettingBaseProps> = ({
   ) as Project;
   const userID = useSelector((state: AppState) => state.user.id);
   const [permissionsVisible, setPermissionsVisible] = useState(false);
-
-  /** 完结项目 */
-  const finishProject = () => {
-    setDeleteLoading(true);
-    api
-      .finishProject({ id: currentProject.id })
-      .then((result) => {
-        setDeleteLoading(false);
-        const finishedProject = {
-          ...currentProject,
-          status: PROJECT_STATUS.FINISHED,
-        };
-        dispatch(deleteProject(finishedProject));
-        dispatch(setCurrentProject(finishedProject));
-        // 弹出提示
-        message.success(result.data.message);
-      })
-      .catch((error) => {
-        error.default();
-        setDeleteLoading(false);
-      });
+  const status = normalizeProjectStatus(currentProject.status);
+  const reportError = (error: any) => {
+    if (typeof error?.default === 'function') {
+      error.default();
+    } else {
+      message.error(
+        error?.message ||
+          formatMessage({ id: 'site.projectSetting.operationFailed' }),
+      );
+    }
   };
 
-  /** 退出项目确认 */
-  const showLeaveConfirm = () => {
+  const updateLifecycle = (action: 'complete' | 'reopen' | 'clear') => {
+    setLifecycleLoading(true);
+    const call =
+      action === 'complete'
+        ? api.completeProject
+        : action === 'reopen'
+          ? api.reopenProject
+          : api.clearProject;
+    call({
+      id: currentProject.id,
+      expectedVersion: currentProject.statusVersion,
+    })
+      .then((result: any) => {
+        const nextProject = toLowerCamelCase(
+          result.data.project || result.data,
+        ) as Project;
+        nextProject.status = normalizeProjectStatus(nextProject.status);
+        // Keep the previous member summary when the lifecycle response does not
+        // carry one, so project cards never render with an undefined
+        // memberSummary (which froze the member stats in a render loop).
+        if (!nextProject.memberSummary) {
+          nextProject.memberSummary =
+            (currentProject as any)?.memberSummary || [];
+        }
+        dispatch(setCurrentProject(nextProject));
+        dispatch(editProject(nextProject));
+        message.success(
+          action === 'clear'
+            ? formatMessage({ id: 'site.projectSetting.clearSuccess' })
+            : action === 'complete'
+              ? formatMessage({ id: 'site.projectSetting.completeSuccess' })
+              : formatMessage({ id: 'site.projectSetting.reopenSuccess' }),
+        );
+      })
+      .catch(reportError)
+      .finally(() => setLifecycleLoading(false));
+  };
+
+  const showLeaveConfirm = () =>
     Modal.confirm({
       title: formatMessage({ id: 'project.leave' }),
       content: formatMessage({ id: 'project.leaveConfirm' }),
       onOk: () => {
         setLeaveLoading(true);
         api
-          .deleteMember({
-            groupType: 'project',
-            groupID: currentProject.id,
-            userID,
+          .getProjectMembers({
+            projectID: currentProject.id,
+            params: { status: 'active', limit: 1000 },
           })
           .then((result) => {
-            setLeaveLoading(false);
+            const member = result.data.find((item) => item.userId === userID);
+            if (!member) {
+              message.error(
+                formatMessage({ id: 'site.projectSetting.notProjectMember' }),
+              );
+              return Promise.reject(
+                new Error('current user is not a project member'),
+              );
+            }
+            return api.applyProjectMemberChanges({
+              projectID: currentProject.id,
+              data: {
+                operations: [
+                  {
+                    // Stable idempotency key (project+subject+action+payload): a
+                    // retried leave must replay instead of creating a second
+                    // operation; the removed payload distinguishes it from other
+                    // updates of the same member.
+                    operationId: projectMemberOperationId(
+                      currentProject.id,
+                      {
+                        id: member.memberId,
+                        userId: member.userId,
+                        displayName: member.displayName,
+                        tags: member.tags,
+                        status: member.status,
+                        version: member.version,
+                      },
+                      'update',
+                      { status: 'removed' },
+                    ),
+                    action: 'update',
+                    memberId: member.memberId,
+                    expectedMemberVersion: member.version,
+                    changes: { status: 'removed' },
+                  },
+                ],
+              },
+            });
+          })
+          .then((result: any) => {
             const data = toLowerCamelCase(result.data);
-            dispatch(editProject(data.group));
-            // 弹出提示
-            message.success(result.data.message);
+            message.success(
+              formatMessage({ id: 'site.projectSetting.leaveProjectSuccess' }),
+            );
             if (currentTeam && currentProjectSet) {
-              if (
-                !can(currentTeam, TEAM_PERMISSION.AUTO_BECOME_PROJECT_ADMIN)
-              ) {
-                history.replace(
-                  `/dashboard/teams/${currentTeam.id}/project-sets/${currentProjectSet.id}`,
-                );
-              } else {
-                dispatch(setCurrentProject(data.group));
-              }
+              if (data.project) dispatch(editProject(data.project));
+              history.replace(
+                `/dashboard/teams/${currentTeam.id}/project-sets/${currentProjectSet.id}`,
+              );
             } else {
-              dispatch(deleteProject({ id: data.group.id }));
-              history.replace(`/dashboard/projects`);
+              dispatch(deleteProject({ id: currentProject.id }));
+              history.replace('/dashboard/projects');
             }
           })
-          .catch((error) => {
-            setLeaveLoading(false);
-            error.default();
-          });
+          .catch(reportError)
+          .finally(() => setLeaveLoading(false));
       },
-      onCancel: () => {},
       okText: formatMessage({ id: 'form.ok' }),
       cancelText: formatMessage({ id: 'form.cancel' }),
     });
-  };
 
-  /** 完结项目确认 */
-  const confirmFinishProject = () => {
+  const confirmLifecycle = (action: 'complete' | 'clear') =>
     Modal.confirm({
-      title: <div>{formatMessage({ id: 'project.finishTipTitle' })}</div>,
-      content: formatMessage(
-        { id: 'project.finishTip' },
-        { project: currentProject.name },
-      ),
-      okText: formatMessage({ id: 'project.finish' }),
+      title:
+        action === 'clear'
+          ? formatMessage({ id: 'site.projectSetting.clearTitle' })
+          : formatMessage({ id: 'site.projectSetting.completeTitle' }),
+      content:
+        action === 'clear'
+          ? formatMessage({ id: 'site.projectSetting.clearConfirm' })
+          : formatMessage({ id: 'site.projectSetting.completeConfirm' }),
+      okType: action === 'clear' ? 'danger' : 'primary',
+      okText:
+        action === 'clear'
+          ? formatMessage({ id: 'site.projectSetting.clearOk' })
+          : formatMessage({ id: 'site.projectSetting.completeOk' }),
       cancelText: formatMessage({ id: 'form.cancel' }),
-      onOk() {
-        finishProject();
-      },
-      onCancel() {},
+      onOk: () => updateLifecycle(action),
     });
-  };
-
-  /** 团队管理员直接加入项目成为项目管理员 */
-  const adminNewProject = () => {
-    setAdminJoining(true);
-    api
-      .createApplication({
-        groupType: 'project',
-        groupID: currentProject.id,
-        data: {
-          message: '',
-        },
-      })
-      .then((result) => {
-        const data = toLowerCamelCase(result.data);
-        // 加入成功
-        dispatch(editProject(data.group));
-        dispatch(setCurrentProject(data.group));
-        // 弹出提示
-        message.success(data.message);
-      })
-      .catch((error) => {
-        error.default();
-      })
-      .finally(() => {
-        setAdminJoining(false);
-      });
-  };
 
   return (
     <div
@@ -176,66 +203,45 @@ export const ProjectSettingBase: FC<ProjectSettingBaseProps> = ({
         width: 100%;
         max-width: ${style.contentMaxWidth}px;
         padding: ${style.paddingBase}px;
-        .ProjectSettingBase__PermissionsToggleIcon {
-          margin-left: 5px;
-        }
       `}
     >
       <Content>
         <ContentTitle>{formatMessage({ id: 'project.me' })}</ContentTitle>
         <ContentItem>
-          {formatMessage(
-            { id: 'site.myRoleIs' },
-            { role: currentProject.role.name },
-          )}
-          {currentProject.autoBecomeProjectAdmin &&
-            formatMessage({ id: 'project.autoBecomeProjectAdmin' })}
+          <span>
+            {formatMessage({ id: 'site.projectSetting.currentIdentityTag' })}
+          </span>
+          <div>
+            {(currentProject.effectivePermissions || [])
+              .slice(0, 4)
+              .map((permission) => (
+                <Tag key={permission}>{permission}</Tag>
+              ))}
+          </div>
           <Button
-            className="ProjectSettingBase__PermissionsToggle"
             type="link"
-            onClick={() => {
-              setPermissionsVisible((x) => !x); // 显示/隐藏权限
-            }}
+            onClick={() => setPermissionsVisible((visible) => !visible)}
           >
             {formatMessage({ id: 'site.permission' })}{' '}
-            <Icon
-              icon={permissionsVisible ? 'caret-up' : 'caret-down'}
-              className="ProjectSettingBase__PermissionsToggleIcon"
-            />
+            <Icon icon={permissionsVisible ? 'caret-up' : 'caret-down'} />
           </Button>
         </ContentItem>
         {permissionsVisible && (
           <ContentItem>
-            <div className="permissions">
-              {currentProject.role.permissions.map((x) => {
-                return (
-                  <Tooltip
-                    overlayClassName="permission-tag-tooltip"
-                    title={x.intro}
-                    key={x.id}
-                  >
-                    <Tag>{x.name}</Tag>
-                  </Tooltip>
-                );
-              })}
+            <div>
+              {(currentProject.effectivePermissions || []).map((permission) => (
+                <Tag key={permission}>{permission}</Tag>
+              ))}
             </div>
           </ContentItem>
         )}
-        {currentProject.autoBecomeProjectAdmin && (
+        {currentProject.ownerUserId !== userID && (
           <ContentItem>
-            <Button block onClick={adminNewProject} loading={adminJoining}>
-              {formatMessage({ id: 'project.join' })}
+            <Button block onClick={showLeaveConfirm} loading={leaveLoading}>
+              {formatMessage({ id: 'project.leave' })}
             </Button>
           </ContentItem>
         )}
-        {currentProject.role.systemCode !== 'creator' &&
-          !currentProject.autoBecomeProjectAdmin && (
-            <ContentItem>
-              <Button block onClick={showLeaveConfirm} loading={leaveLoading}>
-                {formatMessage({ id: 'project.leave' })}
-              </Button>
-            </ContentItem>
-          )}
       </Content>
       <Content>
         <ContentTitle>{formatMessage({ id: 'project.info' })}</ContentTitle>
@@ -243,45 +249,61 @@ export const ProjectSettingBase: FC<ProjectSettingBaseProps> = ({
           {currentProject.id}{' '}
           <Button
             type="ghost"
-            onClick={() => {
-              const root =
-                window.location.protocol + '//' + window.location.host;
-              const url = root + `/dashboard/join/project/${currentProject.id}`;
-              copy(url);
-            }}
+            onClick={() =>
+              copy(
+                `${window.location.origin}/dashboard/join/project/${currentProject.id}`,
+              )
+            }
           >
             {formatMessage({ id: 'group.copyJoinLink' })}
           </Button>
         </FormItem>
         <ContentItem>
-          <ProjectEditForm />
+          <ProjectEditForm readOnly={status !== PROJECT_STATUS.NORMAL} />
         </ContentItem>
       </Content>
-      {/* <Content>
-        <ContentTitle>{formatMessage({ id: 'site.aboutQuota' })}</ContentTitle>
-        <ContentItem>
-          {formatMessage({ id: 'site.userCount' })+ formatMessage({ id: ':' })}
-          {currentProject.userCount}/{currentProject.maxUser}
-        </ContentItem>
-      </Content> */}
       <Content>
-        {(can(currentProject, PROJECT_PERMISSION.FINISH) ||
-          can(currentProject, PROJECT_PERMISSION.DELETE)) && (
-          <ContentTitle>
-            {formatMessage({ id: 'site.dangerZone' })}
-          </ContentTitle>
-        )}
-        {can(currentProject, PROJECT_PERMISSION.FINISH) && (
-          <ContentItem>
-            <Button
-              block
-              onClick={confirmFinishProject}
-              loading={deleteLoading}
-            >
-              {formatMessage({ id: 'project.finish' })}
-            </Button>
-          </ContentItem>
-        )}
+        <ContentTitle>
+          {formatMessage({ id: 'site.projectSetting.actions' })}
+        </ContentTitle>
+        {status === PROJECT_STATUS.NORMAL &&
+          can(currentProject, PROJECT_PERMISSION.COMPLETE_PROJECT) && (
+            <ContentItem>
+              <Button
+                block
+                onClick={() => confirmLifecycle('complete')}
+                loading={lifecycleLoading}
+              >
+                {formatMessage({ id: 'site.projectSetting.completeTitle' })}
+              </Button>
+            </ContentItem>
+          )}
+        {status === PROJECT_STATUS.COMPLETED &&
+          can(currentProject, PROJECT_PERMISSION.COMPLETE_PROJECT) && (
+            <ContentItem>
+              <Button
+                block
+                onClick={() => updateLifecycle('reopen')}
+                loading={lifecycleLoading}
+              >
+                {formatMessage({ id: 'site.projectSetting.reopenButton' })}
+              </Button>
+            </ContentItem>
+          )}
+        {status === PROJECT_STATUS.NORMAL &&
+          (currentTeam?.baseTag || currentProject.team?.baseTag) ===
+            'creator' && (
+            <ContentItem>
+              <Button
+                danger
+                block
+                onClick={() => confirmLifecycle('clear')}
+                loading={lifecycleLoading}
+              >
+                {formatMessage({ id: 'site.projectSetting.clearTitle' })}
+              </Button>
+            </ContentItem>
+          )}
       </Content>
     </div>
   );

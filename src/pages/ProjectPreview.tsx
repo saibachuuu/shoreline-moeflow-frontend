@@ -15,6 +15,7 @@ import { editProject, setCurrentProject } from '@/store/project/slice';
 import style from '../style';
 import { toLowerCamelCase } from '@/utils';
 import { cardActiveEffect, cardClickEffect, clickEffect } from '@/utils/style';
+import { hasIdentityMembership } from '@/utils/user';
 
 /** 团队设置页的属性接口 */
 interface ProjectPreviewProps {
@@ -116,7 +117,7 @@ const ProjectPreview: FC<ProjectPreviewProps> = ({
         // 弹出提示
         message.success(data.message);
         // 无需审核或先前有邀请，则跳转到所在项目
-        if (data.group && data.group.role) {
+        if (hasIdentityMembership(data.group)) {
           // 加入成功
           dispatch(setCurrentProject(data.group));
           dispatch(editProject(data.group));

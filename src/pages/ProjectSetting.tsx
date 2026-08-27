@@ -1,6 +1,7 @@
 import { css } from '@emotion/core';
 import { useIntl } from 'react-intl';
 import { useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { Redirect, Route, Switch, useRouteMatch } from 'react-router-dom';
 import {
   ApplicationList,
@@ -11,7 +12,7 @@ import {
   NavTabs,
   Spin,
 } from '@/components';
-import { PROJECT_PERMISSION, PROJECT_STATUS } from '@/constants';
+import { PROJECT_PERMISSION, PROJECT_STATUS, normalizeProjectStatus } from '@/constants';
 import { useTitle } from '@/hooks';
 import { FC, Project } from '@/interfaces';
 import { AppState } from '@/store';
@@ -19,6 +20,7 @@ import { can } from '@/utils/user';
 import { ProjectFinishedTip } from '@/components/project/ProjectFinishedTip';
 import { ProjectSettingBase } from '@/components/project/ProjectSettingBase';
 import { ProjectSettingTarget } from '@/components/project/ProjectSettingTarget';
+import { editProject, setCurrentProject } from '@/store/project/slice';
 
 /** 团队设置页的属性接口 */
 interface ProjectSettingProps {
@@ -29,6 +31,7 @@ interface ProjectSettingProps {
  */
 const ProjectSetting: FC<ProjectSettingProps> = ({ project }) => {
   const { formatMessage } = useIntl(); // i18n
+  const dispatch = useDispatch();
   useTitle(); // 设置标题
   const { path, url } = useRouteMatch();
   const platform = useSelector((state: AppState) => state.site.platform);
@@ -36,36 +39,42 @@ const ProjectSetting: FC<ProjectSettingProps> = ({ project }) => {
     (state: AppState) => state.project.currentProject,
   );
   const isMobile = platform === 'mobile';
+  const status = normalizeProjectStatus(currentProject?.status);
+  const isCompleted = status === PROJECT_STATUS.COMPLETED;
 
   const nav = currentProject && (
     <NavTabs>
       <NavTab to={`${url}/base`}>
         {formatMessage({ id: 'site.baseSetting' })}
       </NavTab>
-      <NavTab to={`${url}/member`}>
-        {formatMessage({ id: 'site.memberSetting' })}
-      </NavTab>
-      {can(currentProject, PROJECT_PERMISSION.CHECK_USER) && (
-        <NavTab to={`${url}/application`}>
-          {formatMessage({ id: 'site.applicationSetting' })}
-        </NavTab>
+      {!isCompleted && (
+        <>
+          <NavTab to={`${url}/member`}>
+            {formatMessage({ id: 'site.memberSetting' })}
+          </NavTab>
+          {can(currentProject, PROJECT_PERMISSION.CHECK_USER) && (
+            <NavTab to={`${url}/application`}>
+              {formatMessage({ id: 'site.applicationSetting' })}
+            </NavTab>
+          )}
+          {can(currentProject, PROJECT_PERMISSION.INVITE_USER) && (
+            <NavTab to={`${url}/invitation`}>
+              {formatMessage({ id: 'site.invitationSetting' })}
+            </NavTab>
+          )}
+          <NavTab to={`${url}/target`}>
+            {formatMessage({ id: 'project.targetSetting' })}
+          </NavTab>
+        </>
       )}
-      {can(currentProject, PROJECT_PERMISSION.INVITE_USER) && (
-        <NavTab to={`${url}/invitation`}>
-          {formatMessage({ id: 'site.invitationSetting' })}
-        </NavTab>
-      )}
-      <NavTab to={`${url}/target`}>
-        {formatMessage({ id: 'project.targetSetting' })}
-      </NavTab>
       {/* <NavTab to={`${url}/role`}>
         {formatMessage({ id: 'site.roleSetting' })}
       </NavTab> */}
     </NavTabs>
   );
 
-  // 项目已完结返回提示
-  if (currentProject?.status === PROJECT_STATUS.FINISHED) {
+  // 已清空项目不可再进入设置；已完结项目保留基础页用于只读查看和恢复。
+  if (status === PROJECT_STATUS.CLEARED) {
     return <ProjectFinishedTip />;
   }
 
@@ -88,20 +97,22 @@ const ProjectSetting: FC<ProjectSettingProps> = ({ project }) => {
             <ProjectSettingBase />
           </Route>
           <Route path={`${path}/member`}>
-            <MemberList groupType="project" currentGroup={currentProject} />
+            {isCompleted ? <ProjectFinishedTip /> : <MemberList groupType="project" currentGroup={currentProject} onProjectUpdated={(nextProject) => { dispatch(setCurrentProject(nextProject)); dispatch(editProject(nextProject)); }} />}
           </Route>
           <Route path={`${path}/application`}>
-            <ApplicationList
-              type="group"
-              groupType="project"
-              currentGroup={currentProject}
-            />
+            {isCompleted ? <ProjectFinishedTip /> : (
+              <ApplicationList
+                type="group"
+                groupType="project"
+                currentGroup={currentProject}
+              />
+            )}
           </Route>
           <Route path={`${path}/invitation`}>
-            <InvitationList groupType="project" currentGroup={currentProject} />
+            {isCompleted ? <ProjectFinishedTip /> : <InvitationList groupType="project" currentGroup={currentProject} />}
           </Route>
           <Route path={`${path}/target`}>
-            <ProjectSettingTarget />
+            {isCompleted ? <ProjectFinishedTip /> : <ProjectSettingTarget />}
           </Route>
           <Route path={`${path}/role`}>自定义角色【施工中】</Route>
         </Switch>

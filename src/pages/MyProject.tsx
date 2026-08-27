@@ -91,7 +91,7 @@ const MyProject: FC<MyProjectProps> = () => {
           flex: none;
           display: flex;
           flex-direction: column;
-          width: 260px;
+          width: 265px;
           overflow: hidden;
           border-right: 1px solid ${style.borderColorLight};
           .List__SearchInputWrapper {

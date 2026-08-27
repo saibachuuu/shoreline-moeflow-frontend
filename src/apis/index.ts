@@ -104,11 +104,12 @@ export interface BasicSuccessResult<T = any> {
 /** 基础错误响应结果的数据 */
 interface BasicFailureResultData {
   /** 错误代码 */
-  code: number;
+  code: number | string;
   /** 错误类名 */
   error: string;
   /** 支持 i18n 的错误信息 */
   message: string;
+  requestId?: string;
 }
 
 /** 基础错误响应结果 */
@@ -121,7 +122,7 @@ interface BasicFailureResult {
 /** 验证错误响应结果的数据 */
 interface ValidationFailureResultData {
   /** 错误代码 */
-  code: 2;
+  code: 2 | string;
   /** 错误类名 */
   error: string;
   /** 每个错误字段的支持 i18n 的错误信息 */
@@ -186,9 +187,14 @@ export async function request<T = any>(
         error.response.status >= 400 &&
         error.response.status < 500
       ) {
-        const errorData = error.response.data as
+        const rawErrorData = error.response.data as
           | BasicFailureResultData
           | ValidationFailureResultData;
+        const nested = (rawErrorData as any).error;
+        const errorData = {
+          ...(typeof nested === 'object' && nested ? nested : rawErrorData),
+          requestId: (rawErrorData as any).request_id || (nested && nested.request_id),
+        } as BasicFailureResultData | ValidationFailureResultData;
         if (errorData.code === 2) {
           // 将 message 中的字段名转为小驼峰
           errorData.message = toLowerCamelCase(

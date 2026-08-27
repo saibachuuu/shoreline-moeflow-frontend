@@ -63,9 +63,7 @@ const ProjectSet: FC<ProjectSetProps> = () => {
       title={formatMessage({ id: 'project.createProject' })}
       placement="right"
     >
-      <div className="ListItem__RightButton">
-        <Icon className="ListItem__RightButtonIcon" icon="plus"></Icon>
-      </div>
+      <Icon className="ListItem__RightButtonIcon" icon="plus"></Icon>
     </Tooltip>
   );
 
@@ -84,7 +82,7 @@ const ProjectSet: FC<ProjectSetProps> = () => {
           flex: none;
           display: flex;
           flex-direction: column;
-          width: 260px;
+          width: 265px;
           border-right: 1px solid ${style.borderColorLight};
           .ProjectSet__ListItemTitle {
             align-items: center;

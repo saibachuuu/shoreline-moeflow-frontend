@@ -18,6 +18,7 @@ import {
   ApplicationList,
   TeamInsightUserList,
   TeamInsightProjectList,
+  IdentityTagPolicy,
 } from '../components';
 import { AppState } from '../store';
 import { setCurrentTeamSaga } from '../store/team/slice';
@@ -72,6 +73,7 @@ const TeamSetting: FC<TeamSettingProps> = () => {
           {formatMessage({ id: 'team.userInsight' })}
         </NavTab>
       )}
+      {can(currentTeam, 'team:CHANGE') && <NavTab to={`${url}/identity-tags`}>身份标签</NavTab>}
       {can(currentTeam, TEAM_PERMISSION.INSIGHT) && (
         <NavTab to={`${url}/insight-project`}>
           {formatMessage({ id: 'team.projectInsight' })}
@@ -119,6 +121,9 @@ const TeamSetting: FC<TeamSettingProps> = () => {
           </Route>
           <Route path={`${path}/insight-project`}>
             <TeamInsightProjectList team={currentTeam} />
+          </Route>
+          <Route path={`${path}/identity-tags`}>
+            <IdentityTagPolicy team={currentTeam} />
           </Route>
           <Route path={`${path}/role`}>自定义角色【施工中】</Route>
         </Switch>

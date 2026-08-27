@@ -53,8 +53,8 @@
   "scripts": {
     "build": "vite build",
     "start": "vite",
-    "lint": "eslint .",
-    "lint:fix": "eslint --fix .",
+    "lint": "eslint src",
+    "lint:fix": "eslint --fix src",
     "format": "prettier --check src",
     "format:fix": "prettier --write src",
     "build:locale": "tsx scripts/generate-locale-json.ts",

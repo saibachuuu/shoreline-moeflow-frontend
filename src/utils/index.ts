@@ -74,7 +74,7 @@ function toUnderScoreCase(
 function stringToLowerCamelCase(value: string) {
   // 将全大写的简写提前替换
   abbrs.forEach((item) => {
-    value = value.replace('_' + item[2], '_' + item[0]);
+    value = value.replace('_' + item[2], '_' + item[1]);
   });
   return value.replace(/_(\w)/g, (all, letter) => {
     return letter.toUpperCase();
@@ -91,7 +91,11 @@ function toLowerCamelCase(
   if (typeof value === 'string') {
     return stringToLowerCamelCase(value);
   } else if (isArray(value)) {
-    return value.map((v: any) => toLowerCamelCase(v));
+    // Arrays carry values as well as objects. Convert nested object keys, but
+    // preserve scalar strings such as permission codes and identity tags.
+    return value.map((v: any) => (
+      isPlainObject(v) || isArray(v) ? toLowerCamelCase(v) : v
+    ));
   } else if (isPlainObject(value)) {
     const newValue: { [key: string]: any } = {};
     for (const key in value) {
@@ -100,9 +104,9 @@ function toLowerCamelCase(
         newValue[stringToLowerCamelCase(key)] = toLowerCamelCase(value[key]);
       } else if (isArray(value[key])) {
         // 递归处理所以子数组
-        newValue[stringToLowerCamelCase(key)] = value[key].map((v: any) =>
-          toLowerCamelCase(v),
-        );
+        newValue[stringToLowerCamelCase(key)] = value[key].map((v: any) => (
+          isPlainObject(v) || isArray(v) ? toLowerCamelCase(v) : v
+        ));
       } else {
         newValue[stringToLowerCamelCase(key)] = value[key];
       }

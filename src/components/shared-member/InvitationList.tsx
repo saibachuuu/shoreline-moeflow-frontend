@@ -18,6 +18,11 @@ import { getCancelToken } from '@/utils/api';
 import { FC } from '@/interfaces';
 import { clickEffect } from '@/utils/style';
 import { INVITATION_STATUS } from '@/constants';
+import { can } from '@/utils/user';
+import {
+  projectInvitationPositionOptions,
+  teamInvitationRoleOptions,
+} from '@/utils/invitationOptions';
 
 const { Option } = Select;
 
@@ -36,18 +41,20 @@ export const InvitationList: FC<InvitationListProps> = ({
   className,
 }) => {
   const { formatMessage } = useIntl(); // i18n
+  const isProject = groupType === 'project';
   const platform = useSelector((state: AppState) => state.site.platform);
   const isMobile = platform === 'mobile';
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0); // 元素总个数
   const [items, setItems] = useState<any[]>([]); // 元素
-  const [types, setTypes] = useState<Role[]>(); // 系统角色
+  const [types, setTypes] = useState<Role[]>(); // 系统角色（仅团队邀请）
   // 弹出框
   const [spinningIDs, setSpinningIDs] = useState<string[]>([]); // 删除请求中
   const [drawerVisible, setDrawerVisible] = useState(false);
 
-  /** 挂载时获取用户角色 */
+  /** 挂载时获取用户角色（项目邀请使用当前职位标签） */
   useEffect(() => {
+    if (isProject) return;
     const [cancelToken, cancel] = getCancelToken();
     getTypes({ cancelToken });
     return cancel;
@@ -65,7 +72,8 @@ export const InvitationList: FC<InvitationListProps> = ({
         },
       })
       .then((result) => {
-        setTypes(result.data);
+        // 过滤掉旧身份（资深成员/见习成员等），只保留当前团队基础身份。
+        setTypes(teamInvitationRoleOptions(result.data as Role[]));
         return result.data as Role[];
       })
       .catch((error) => {
@@ -121,25 +129,25 @@ export const InvitationList: FC<InvitationListProps> = ({
     }
   };
 
-  /** 修改邀请角色 */
-  const handleRoleChange = (invitation: any, role: string) => {
+  /** 修改邀请（团队改角色 / 项目改职位） */
+  const handleRoleChange = (invitation: any, value: string | string[]) => {
     setSpinningIDs((ids) => [invitation.id, ...ids]);
-    api
-      .editInvitation({
-        invitationID: invitation.id,
-        data: {
-          roleID: role,
-        },
-      })
+    editRequest(invitation, value)
       .then((result) => {
         message.success(result.data.message);
         // 修改数据
         setItems((items) => {
           return items.map((item) => {
-            // 获取设置后和 role，并赋值
-            const newRole = types?.find((type) => type.id === role);
+            // 获取设置后的 role/tags，并赋值
+            const newRole = Array.isArray(value)
+              ? undefined
+              : types?.find((type) => type.id === value);
             if (item.id === invitation.id) {
-              item.role = newRole;
+              if (Array.isArray(value)) {
+                item.tags = value;
+              } else {
+                item.role = newRole;
+              }
             }
             return item;
           });
@@ -151,6 +159,24 @@ export const InvitationList: FC<InvitationListProps> = ({
       .finally(() => {
         setSpinningIDs((ids) => ids.filter((id) => id !== invitation.id));
       });
+  };
+
+  /** 发送修改邀请请求：项目邀请传职位标签，团队邀请传角色 id */
+  const editRequest = (invitation: any, value: string | string[]) => {
+    if (isProject) {
+      return api.editInvitation({
+        invitationID: invitation.id,
+        data: {
+          tags: value as string[],
+        },
+      });
+    }
+    return api.editInvitation({
+      invitationID: invitation.id,
+      data: {
+        roleID: value as string,
+      },
+    });
   };
 
   /** 删除邀请确认 */
@@ -254,9 +280,10 @@ export const InvitationList: FC<InvitationListProps> = ({
                 }
                 rightButton={
                   item.status === INVITATION_STATUS.PENDING &&
-                  currentGroup.role.level > item.role.level && ( // 本人角色等级大于邀请角色
-                    <Icon icon="times" />
-                  )
+                  (isProject
+                    ? can(currentGroup, 'project:INVITE_USER')
+                    : (currentGroup.role?.level ?? Infinity) >
+                      item.role.level) && <Icon icon="times" /> // 本人角色等级大于邀请角色
                 }
                 onRightButtonClick={() => {
                   // 显示删除用户模态框
@@ -282,30 +309,53 @@ export const InvitationList: FC<InvitationListProps> = ({
                     `}
                   >
                     {item.status === INVITATION_STATUS.PENDING ? (
-                      <Select
-                        disabled={
-                          !types || currentGroup.role.level <= item.role.level
-                        }
-                        loading={!types}
-                        defaultValue={item.role.id}
-                        value={item.role.id}
-                        style={{ width: '100%' }}
-                        onChange={(value: SelectValue) => {
-                          handleRoleChange(item, value as string);
-                        }}
-                      >
-                        {types?.map((type) => {
-                          return (
-                            <Option
-                              value={type.id}
-                              key={type.id}
-                              disabled={currentGroup.role.level <= type.level}
-                            >
-                              {type.name}
+                      isProject ? (
+                        <Select
+                          mode="multiple"
+                          disabled={!can(currentGroup, 'project:INVITE_USER')}
+                          value={item.tags || []}
+                          style={{ width: '100%' }}
+                          onChange={(value: SelectValue) => {
+                            handleRoleChange(item, value as string[]);
+                          }}
+                        >
+                          {projectInvitationPositionOptions.map((option) => (
+                            <Option value={option.code} key={option.code}>
+                              {formatMessage({ id: option.labelId })}
                             </Option>
-                          );
-                        })}
-                      </Select>
+                          ))}
+                        </Select>
+                      ) : (
+                        <Select
+                          disabled={
+                            !types ||
+                            (currentGroup.role?.level ?? Infinity) <=
+                              item.role.level
+                          }
+                          loading={!types}
+                          defaultValue={item.role.id}
+                          value={item.role.id}
+                          style={{ width: '100%' }}
+                          onChange={(value: SelectValue) => {
+                            handleRoleChange(item, value as string);
+                          }}
+                        >
+                          {types?.map((type) => {
+                            return (
+                              <Option
+                                value={type.id}
+                                key={type.id}
+                                disabled={
+                                  (currentGroup.role?.level ?? Infinity) <=
+                                  type.level
+                                }
+                              >
+                                {type.name}
+                              </Option>
+                            );
+                          })}
+                        </Select>
+                      )
                     ) : (
                       <div className="result">
                         {item.status === INVITATION_STATUS.ALLOW ? (

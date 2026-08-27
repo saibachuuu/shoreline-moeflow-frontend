@@ -127,7 +127,7 @@ const slice = createSlice({
         } else {
           // 当还没有 myTranslation 时先创建一个，只用到里面的 content 参数，用于创建失败后 retry
           state.sources[index].myTranslation = {
-            sourceID: action.payload.sourceID,
+            sourceId: action.payload.sourceID,
             id: '',
             mt: false,
             content: action.payload.content,

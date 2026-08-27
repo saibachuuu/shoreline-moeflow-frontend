@@ -1,34 +1,34 @@
 import { css } from '@emotion/core';
 import classNames from 'classnames';
-import { useEffect, useState } from 'react';
 import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory, useLocation, useRouteMatch } from 'react-router-dom';
 import { Icon, TranslationProgress, MemberStats } from '@/components';
-import { ProjectWorkers } from '@/apis/project';
-import { PROJECT_PERMISSION, PROJECT_STATUS } from '@/constants';
+import {
+  PROJECT_PERMISSION,
+  PROJECT_STATUS,
+  normalizeProjectStatus,
+} from '@/constants';
 import { FC, Project } from '@/interfaces';
 import { AppState } from '@/store';
 import { resetFilesState } from '@/store/file/slice';
 import style from '@/style';
 import { cardActiveEffect, cardClickEffect, clickEffect } from '@/utils/style';
 import { can } from '@/utils/user';
+import { getMemberStatsPermissions } from '@/utils/memberStats';
 
-/** 项目列表元素的属性接口 */
 interface ProjectItemProps {
   from: 'team' | 'user';
-  project: Project | Project;
+  project: Project;
   className?: string;
 }
-/**
- * 项目列表元素
- */
+
 export const ProjectItem: FC<ProjectItemProps> = ({
   from,
   project,
   className,
 }) => {
-  const { formatMessage } = useIntl(); // i18n
+  const { formatMessage } = useIntl();
   const { url } = useRouteMatch();
   const location = useLocation();
   const history = useHistory();
@@ -36,32 +36,21 @@ export const ProjectItem: FC<ProjectItemProps> = ({
   const currentProjectSet = useSelector(
     (state: AppState) => state.projectSet.currentProjectSet,
   );
-  const [workers, setWorkers] = useState<ProjectWorkers>(project.workers || {});
-
-  useEffect(() => {
-    setWorkers(project.workers || {});
-  }, [project.workers]);
-
-  // 点击后跳转路径前缀
-  let urlPrefix = '';
-  if (from === 'team') {
-    urlPrefix = '/projects';
-  }
+  const status = normalizeProjectStatus(project.status);
+  const memberStatsPermissions = getMemberStatsPermissions(project, status);
+  const urlPrefix = from === 'team' ? '/projects' : '';
 
   const handleClick = () => {
     dispatch(resetFilesState());
-    if (project.status === PROJECT_STATUS.FINISHED) {
-      history.push(`${url + urlPrefix}/${project.id}/setting`);
+    if (can(project, PROJECT_PERMISSION.ACCESS)) {
+      history.push(`${url + urlPrefix}/${project.id}`);
     } else {
-      if (can(project, PROJECT_PERMISSION.ACCESS)) {
-        history.push(`${url + urlPrefix}/${project.id}`);
-      } else {
-        history.push(`${url + urlPrefix}/${project.id}/preview`);
-      }
+      history.push(`${url + urlPrefix}/${project.id}/preview`);
     }
   };
 
-  const handleSettingClick = () => {
+  const handleSettingClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
     history.push(`${url + urlPrefix}/${project.id}/setting`);
   };
 
@@ -72,8 +61,11 @@ export const ProjectItem: FC<ProjectItemProps> = ({
         'ProjectItem--active': location.pathname.includes(
           'projects/' + project.id,
         ),
+        'ProjectItem--completed': status === PROJECT_STATUS.COMPLETED,
+        'ProjectItem--cleared': status === PROJECT_STATUS.CLEARED,
       })}
       css={css`
+        position: relative;
         width: 100%;
         border-radius: ${style.borderRadiusBase};
         overflow: hidden;
@@ -81,6 +73,7 @@ export const ProjectItem: FC<ProjectItemProps> = ({
           box-shadow 100ms,
           border-color 100ms;
         border: 1px solid ${style.borderColorLight};
+        ${cardClickEffect()};
         background-color: ${style.backgroundColorLight};
         color: ${style.textColor};
         padding: 3px ${style.paddingBase - 5}px 0;
@@ -89,6 +82,36 @@ export const ProjectItem: FC<ProjectItemProps> = ({
         }
         &.ProjectItem--active {
           ${cardActiveEffect()};
+        }
+        &.ProjectItem--completed::after,
+        &.ProjectItem--cleared::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          z-index: 4;
+        }
+        &.ProjectItem--completed::after,
+        &.ProjectItem--cleared::after {
+          background: rgba(128, 128, 128, 0.22);
+        }
+        &.ProjectItem--cleared::before {
+          content: '';
+          position: absolute;
+          left: -8%;
+          top: 50%;
+          width: 116%;
+          height: 2px;
+          background: ${style.errorColor}d0;
+          box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
+          transform: rotate(-8deg);
+          transform-origin: center;
+          pointer-events: none;
+          z-index: 5;
+        }
+        .ProjectItem__Content {
+          position: relative;
+          z-index: 3;
         }
         .ProjectItem__Belong {
           width: 100%;
@@ -124,7 +147,6 @@ export const ProjectItem: FC<ProjectItemProps> = ({
           word-break: break-all;
           font-size: 14px;
           line-height: 20px;
-          box-sizing: content-box;
           margin: 5px 0;
         }
         .ProjectItem__ProjectSetTag {
@@ -156,88 +178,101 @@ export const ProjectItem: FC<ProjectItemProps> = ({
         .ProjectItem__BottomButtonIcon {
           margin-right: 3px;
         }
-        .ProjectItem__BottomButtonFinished {
-          .ProjectItem__BottomButtonIcon {
-            margin-right: 0;
-          }
-        }
-        ${cardClickEffect()};
       `}
       onClick={handleClick}
     >
-      {from === 'user' && (
-        <div className="ProjectItem__Belong">
-          <div className="ProjectItem__TeamName">{project.team.name}</div>
-          <Icon
-            className="ProjectItem__TeamToProjectSetIcon"
-            icon="angle-right"
-          />
-          <div className="ProjectItem__ProjectSetName">
-            {project.projectSet.default
-              ? formatMessage({ id: 'projectSet.default' })
-              : project.projectSet.name}
-          </div>
-        </div>
-      )}
-      <div className="ProjectItem__Name">
-        {from === 'team' &&
-          currentProjectSet &&
-          project.projectSet.id !== currentProjectSet.id && (
-            <span className="ProjectItem__ProjectSetTag">
+      <div className="ProjectItem__Content">
+        {from === 'user' && (
+          <div className="ProjectItem__Belong">
+            <div className="ProjectItem__TeamName">{project.team.name}</div>
+            <Icon
+              className="ProjectItem__TeamToProjectSetIcon"
+              icon="angle-right"
+            />
+            <div className="ProjectItem__ProjectSetName">
               {project.projectSet.default
                 ? formatMessage({ id: 'projectSet.default' })
                 : project.projectSet.name}
-            </span>
-          )}
-        {project.name}
-      </div>
-      <MemberStats
-        workers={workers}
-        projectId={project.id}
-        canEdit={can(project, PROJECT_PERMISSION.CHANGE)}
-        onWorkersUpdate={setWorkers}
-      />
-      <TranslationProgress
-        className="ProjectItem__TranslationProgressLine"
-        sourceCount={project.sourceCount * project.targetCount}
-        translatedSourceCount={project.translatedSourceCount}
-        checkedSourceCount={project.checkedSourceCount}
-        type="line"
-      />
-      <div className="ProjectItem__Bottom">
+            </div>
+          </div>
+        )}
+        <div className="ProjectItem__Name">
+          {from === 'team' &&
+            currentProjectSet &&
+            project.projectSet.id !== currentProjectSet.id && (
+              <span className="ProjectItem__ProjectSetTag">
+                {project.projectSet.default
+                  ? formatMessage({ id: 'projectSet.default' })
+                  : project.projectSet.name}
+              </span>
+            )}
+          {project.name}
+        </div>
+        <MemberStats
+          projectId={project.id}
+          teamId={project.team.id}
+          qualificationMode={project.team.workerQualificationMode}
+          members={project.memberSummary}
+          canEdit={memberStatsPermissions.canOpen}
+          canManageMembers={memberStatsPermissions.canManage}
+        />
         <TranslationProgress
-          className="ProjectItem__TranslationProgressText"
+          className="ProjectItem__TranslationProgressLine"
           sourceCount={project.sourceCount * project.targetCount}
           translatedSourceCount={project.translatedSourceCount}
           checkedSourceCount={project.checkedSourceCount}
-          type="text"
+          type="line"
         />
-        <div className="ProjectItem__BottomButtonWrapper">
-          {project.status === PROJECT_STATUS.FINISHED ? (
-            <div className="ProjectItem__BottomButton ProjectItem__BottomButtonFinished">
-              <Icon
-                className="ProjectItem__BottomButtonIcon"
-                icon={['far', 'kiss-wink-heart']}
-              />{' '}
-              {formatMessage({ id: 'project.finished' })}
-            </div>
-          ) : can(project, PROJECT_PERMISSION.ACCESS) ? (
-            <div
-              className="ProjectItem__BottomButton ProjectItem__BottomButtonSetting"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSettingClick();
-              }}
-            >
-              <Icon className="ProjectItem__BottomButtonIcon" icon="cog" />
-              {formatMessage({ id: 'site.setting' })}
-            </div>
-          ) : (
-            <div className="ProjectItem__BottomButton">
-              <Icon className="ProjectItem__BottomButtonIcon" icon="plus" />
-              {formatMessage({ id: 'site.join' })}
-            </div>
-          )}
+        <div className="ProjectItem__Bottom">
+          <TranslationProgress
+            className="ProjectItem__TranslationProgressText"
+            sourceCount={project.sourceCount * project.targetCount}
+            translatedSourceCount={project.translatedSourceCount}
+            checkedSourceCount={project.checkedSourceCount}
+            type="text"
+          />
+          <div className="ProjectItem__BottomButtonWrapper">
+            {status === PROJECT_STATUS.CLEARED ? (
+              <div className="ProjectItem__BottomButton">
+                <Icon
+                  className="ProjectItem__BottomButtonIcon"
+                  icon="times-circle"
+                />
+                {formatMessage({ id: 'project.finished' })}
+              </div>
+            ) : status === PROJECT_STATUS.COMPLETED ? (
+              can(project, PROJECT_PERMISSION.COMPLETE_PROJECT) ? (
+                <div
+                  className="ProjectItem__BottomButtonSetting"
+                  onClick={handleSettingClick}
+                >
+                  <Icon
+                    className="ProjectItem__BottomButtonIcon"
+                    icon="sync-alt"
+                  />
+                  恢复项目
+                </div>
+              ) : (
+                <div className="ProjectItem__BottomButton">
+                  <Icon className="ProjectItem__BottomButtonIcon" icon="eye" />
+                  {formatMessage({ id: 'project.finished' })}
+                </div>
+              )
+            ) : can(project, PROJECT_PERMISSION.ACCESS) ? (
+              <div
+                className="ProjectItem__BottomButtonSetting"
+                onClick={handleSettingClick}
+              >
+                <Icon className="ProjectItem__BottomButtonIcon" icon="cog" />
+                {formatMessage({ id: 'site.setting' })}
+              </div>
+            ) : (
+              <div className="ProjectItem__BottomButton">
+                <Icon className="ProjectItem__BottomButtonIcon" icon="plus" />
+                {formatMessage({ id: 'site.join' })}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

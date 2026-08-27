@@ -22,6 +22,7 @@ interface ImageSourceViewerProps {
   loading: boolean;
   className?: string;
   onHeightChange?: (height: number) => void;
+  readOnly?: boolean;
 }
 /**
  * 原文列表
@@ -33,6 +34,7 @@ export const ImageSourceViewer: FC<ImageSourceViewerProps> = ({
   loading,
   className,
   onHeightChange,
+  readOnly = false,
 }) => {
   const platform = useSelector((state: AppState) => state.site.platform);
   const isMobile = platform === 'mobile';
@@ -111,7 +113,7 @@ export const ImageSourceViewer: FC<ImageSourceViewerProps> = ({
       {/* TODO: 将这里的 Spin 改成占位符 */}
       {!loading && (
         <>
-          <TranslationSaveFailed sources={sources} targetID={targetID} />
+          {!readOnly && <TranslationSaveFailed sources={sources} targetID={targetID} />}
           {sources.length > 0 ? (
             <div className="ImageSourceViewer__List">
               <div
@@ -126,19 +128,21 @@ export const ImageSourceViewer: FC<ImageSourceViewerProps> = ({
                   userSelect: isDragging ? 'none' : 'auto',
                 }}
               >
-                <ImageSourceViewerModeControl />
+                <ImageSourceViewerModeControl readOnly={readOnly} />
               </div>
               <div className="ImageSourceViewer__Content">
                 {mode === 'source' && (
                   <ImageSourceViewerSource
                     sources={sources}
                     targetID={targetID}
+                    readOnly={readOnly}
                   />
                 )}
                 {mode === 'translator' && (
                   <ImageSourceViewerTranslator
                     sources={sources}
                     targetID={targetID}
+                    readOnly={readOnly}
                   />
                 )}
                 {mode === 'proofreader' && (
@@ -146,43 +150,60 @@ export const ImageSourceViewer: FC<ImageSourceViewerProps> = ({
                     file={file}
                     sources={sources}
                     targetID={targetID}
+                    readOnly={readOnly}
                   />
                 )}
                 {mode === 'god' && (
-                  <ImageSourceViewerGod sources={sources} targetID={targetID} />
+                  <ImageSourceViewerGod
+                    sources={sources}
+                    targetID={targetID}
+                    readOnly={readOnly}
+                  />
                 )}
               </div>
             </div>
           ) : isMobile ? (
             <div className="ImageSourceViewer__Empty">
-              <div>
-                {formatMessage({
-                  id: 'imageTranslator.sourceViewer.tapToMarkSource',
-                })}
-              </div>
-              <div>
-                {formatMessage({
-                  id: 'imageTranslator.sourceViewer.longTapToRemoveMark',
-                })}
-              </div>
+              {readOnly ? (
+                <div>{formatMessage({ id: 'imageTranslator.sourceViewer.readOnly' })}</div>
+              ) : (
+                <>
+                  <div>
+                    {formatMessage({
+                      id: 'imageTranslator.sourceViewer.tapToMarkSource',
+                    })}
+                  </div>
+                  <div>
+                    {formatMessage({
+                      id: 'imageTranslator.sourceViewer.longTapToRemoveMark',
+                    })}
+                  </div>
+                </>
+              )}
             </div>
           ) : (
             <div className="ImageSourceViewer__Empty">
-              <div>
-                {formatMessage({
-                  id: 'imageTranslator.sourceViewer.leftClickToMarkSource',
-                })}
-              </div>
-              <div>
-                {formatMessage({
-                  id: 'imageTranslator.sourceViewer.rightClickToMarkSource',
-                })}
-              </div>
-              <div>
-                {formatMessage({
-                  id: 'imageTranslator.sourceViewer.rightClickMarkToRemove',
-                })}
-              </div>
+              {readOnly ? (
+                <div>{formatMessage({ id: 'imageTranslator.sourceViewer.readOnly' })}</div>
+              ) : (
+                <>
+                  <div>
+                    {formatMessage({
+                      id: 'imageTranslator.sourceViewer.leftClickToMarkSource',
+                    })}
+                  </div>
+                  <div>
+                    {formatMessage({
+                      id: 'imageTranslator.sourceViewer.rightClickToMarkSource',
+                    })}
+                  </div>
+                  <div>
+                    {formatMessage({
+                      id: 'imageTranslator.sourceViewer.rightClickMarkToRemove',
+                    })}
+                  </div>
+                </>
+              )}
             </div>
           )}
         </>

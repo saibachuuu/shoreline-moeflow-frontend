@@ -12,6 +12,7 @@ export interface APIUser {
   avatar: string;
   hasAvatar: boolean;
   admin: boolean;
+  aliases?: string[];
   locale: {
     id: string;
     name: string;
@@ -25,8 +26,8 @@ export interface APIVCode {
   intro: string;
   info: string;
   expires: string;
-  wrong_count: string;
-  send_time: string;
+  wrongCount: string;
+  sendTime: string;
 }
 
 /** 获取用户列表的请求数据 */
@@ -53,6 +54,8 @@ const getUsers = ({
 interface EditUserData {
   name: string;
   signature: string;
+  locale: string;
+  aliases: string[];
 }
 /** 修改用户信息 */
 const editUser = ({

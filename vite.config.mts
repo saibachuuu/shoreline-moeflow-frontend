@@ -40,7 +40,7 @@ const apiProxy = bareBackendProxy;
 export default defineConfig({
   // root: 'src',
   build: {
-    sourcemap: true,
+    sourcemap: process.env.VITE_SOURCEMAP === 'true',
     outDir: path.join(__dirname, './build'),
     emptyOutDir: true,
     rollupOptions: {
@@ -102,7 +102,7 @@ export default defineConfig({
     react({
       jsxImportSource: '@emotion/core',
     }),
-    visualizer({}),
+    ...(process.env.VITE_ANALYZE === 'true' ? [visualizer({})] : []),
     // splitVendorChunkPlugin(),
   ],
   css: {

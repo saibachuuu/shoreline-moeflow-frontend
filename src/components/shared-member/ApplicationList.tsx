@@ -29,6 +29,7 @@ import { toLowerCamelCase } from '@/utils';
 import { formatGroupType } from '@/utils/i18n';
 import { clickEffect } from '@/utils/style';
 import { can } from '@/utils/user';
+import { projectMemberOperationId } from '@/utils/projectMembers';
 import { Spin } from '@/components';
 
 /** 申请管理页的属性接口 */
@@ -102,19 +103,113 @@ export const ApplicationList: FC<ApplicationListProps> = ({
     application: APIApplication;
     roleID: string;
   }) => {
+    const selectedRole = application.groupRoles.find(
+      (role) => role.id === roleID,
+    );
+    const systemCode = selectedRole?.systemCode;
+    if (!systemCode) {
+      message.error(
+        formatMessage({ id: 'site.invitation.identityTagNotRecognized' }),
+      );
+      return;
+    }
     setSpinningIDs((ids) => [application.id, ...ids]);
-    api.member
-      .editMember({
-        groupID: application.group.id,
-        groupType: application.group.groupType,
-        userID: application.user.id,
-        data: {
-          roleID,
-        },
-      })
-      .then((result) => {
-        const data = toLowerCamelCase(result.data);
-        message.success(data.message);
+    const update =
+      application.groupType === 'team'
+        ? api.member
+            .getTeamMembers({
+              teamID: application.group.id,
+              params: { status: 'active', limit: 1000 },
+            })
+            .then((result) => {
+              const member = result.data.find(
+                (item) => item.userId === application.user.id,
+              );
+              if (!member)
+                throw new Error(
+                  formatMessage({ id: 'site.invitation.memberNotFound' }),
+                );
+              const baseTag =
+                systemCode === 'creator' || systemCode === 'admin'
+                  ? systemCode
+                  : 'member';
+              return api.member.updateTeamMember({
+                teamID: application.group.id,
+                memberID: member.id,
+                data: { expectedVersion: member.version, baseTag },
+              });
+            })
+        : api.member
+            .getProjectMembers({
+              projectID: application.group.id,
+              params: { status: 'active', limit: 1000 },
+            })
+            .then((result) => {
+              const member = result.data.find(
+                (item) => item.userId === application.user.id,
+              );
+              if (!member)
+                throw new Error(
+                  formatMessage({ id: 'site.invitation.memberNotFound' }),
+                );
+              const roleTag =
+                {
+                  picture_editor: 'typesetter',
+                  coordinator: 'proofreader',
+                  supporter: 'translator',
+                }[systemCode] || systemCode;
+              const roleTags = new Set([
+                'creator',
+                'admin',
+                'proofreader',
+                'translator',
+                'typesetter',
+              ]);
+              const tags = [
+                ...member.tags.filter((tag) => !roleTags.has(tag)),
+                roleTag,
+              ];
+              return api.member.applyProjectMemberChanges({
+                projectID: application.group.id,
+                data: {
+                  operations: [
+                    {
+                      // Stable idempotency key: a retried approval must replay the
+                      // same operation instead of creating a second one.  The
+                      // payload fingerprint keeps two approvals of the same member
+                      // (different resulting tag sets) from sharing an id and being
+                      // swallowed by the backend idempotency layer.
+                      operationId: projectMemberOperationId(
+                        application.group.id,
+                        {
+                          id: member.memberId,
+                          userId: member.userId,
+                          displayName: member.displayName,
+                          tags: member.tags,
+                          status: member.status,
+                          version: member.version,
+                        },
+                        'update',
+                        {
+                          tags,
+                          displayName: member.displayName,
+                          status: member.status,
+                        },
+                      ),
+                      action: 'update',
+                      memberId: member.memberId,
+                      expectedMemberVersion: member.version,
+                      changes: { tags },
+                    },
+                  ],
+                },
+              });
+            });
+    update
+      .then(() => {
+        message.success(
+          formatMessage({ id: 'site.invitation.identityTagUpdated' }),
+        );
         // 修改数据
         setItems((items) => {
           return items.map((item) => {
@@ -125,7 +220,7 @@ export const ApplicationList: FC<ApplicationListProps> = ({
             ) {
               return {
                 ...item,
-                userRole: data.role,
+                userRole: selectedRole,
               };
             }
             return item;
@@ -133,7 +228,12 @@ export const ApplicationList: FC<ApplicationListProps> = ({
         });
       })
       .catch((error) => {
-        error.default();
+        if (error?.default) error.default();
+        else
+          message.error(
+            error?.message ||
+              formatMessage({ id: 'site.invitation.identityTagUpdateFailed' }),
+          );
       })
       .finally(() => {
         setSpinningIDs((ids) => ids.filter((id) => id !== application.id));
@@ -315,8 +415,8 @@ export const ApplicationList: FC<ApplicationListProps> = ({
                         flex: 1 0;
                         text-align: center;
                         margin-left: ${style.paddingBase / 2}px;
-                        border: 1px solid #eeeeee;
-                        border-radius: 8px;
+                        border: 1px solid ${style.borderColorLight};
+                        border-radius: ${style.borderRadiusBase};
                         color: ${style.textColorSecondary};
                       }
                       .ApplicationList__Button {
