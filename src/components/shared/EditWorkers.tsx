@@ -81,6 +81,14 @@ export const EditWorkers = ({
   onCancel,
 }: EditWorkersProps) => {
   const { formatMessage } = useIntl();
+
+  /** 将 PROJECT_WORKER_ROLES 的职位名本地化，未知职位保留原文 */
+  const projectRoleLabel = (roleKey: string) => {
+    const found = PROJECT_WORKER_ROLES.find((item) => item.key === roleKey);
+    return found
+      ? formatMessage({ id: `project.workerRole.${found.key}` })
+      : roleKey;
+  };
   const history = useHistory();
   const location = useLocation();
   const [original] = useState(() => members.map(toDraft));
@@ -248,8 +256,7 @@ export const EditWorkers = ({
 
   const selfMember = draft.find((member) => member.userId === currentUserId);
   const canLeave = canLeaveProjectFromQuickMenu(selfMember, currentUserId);
-  const roleLabel =
-    PROJECT_WORKER_ROLES.find((item) => item.key === role)?.label || role;
+  const roleLabel = projectRoleLabel(role);
 
   const canAssignRole = (
     member: Pick<ProjectMemberDraft, 'userId'> & {
@@ -321,9 +328,7 @@ export const EditWorkers = ({
         formatMessage(
           { id: 'site.editWorkers.noQualification' },
           {
-            role:
-              PROJECT_WORKER_ROLES.find((item) => item.key === roleKey)
-                ?.label || roleKey,
+            role: projectRoleLabel(roleKey),
           },
         ),
       );
@@ -408,9 +413,7 @@ export const EditWorkers = ({
         formatMessage(
           { id: 'site.editWorkers.noQualification' },
           {
-            role:
-              PROJECT_WORKER_ROLES.find((item) => item.key === roleKey)
-                ?.label || roleKey,
+            role: projectRoleLabel(roleKey),
           },
         ),
       );
@@ -569,9 +572,7 @@ export const EditWorkers = ({
         formatMessage(
           { id: 'site.editWorkers.noQualification' },
           {
-            role:
-              PROJECT_WORKER_ROLES.find((item) => item.key === roleKey)
-                ?.label || roleKey,
+            role: projectRoleLabel(roleKey),
           },
         ),
       );
@@ -704,9 +705,7 @@ export const EditWorkers = ({
         setSimpleWords((current) => ({ ...current, [roleKey]: '' }));
       }
     };
-    const rowRoleLabel =
-      PROJECT_WORKER_ROLES.find((item) => item.key === roleKey)?.label ||
-      roleKey;
+    const rowRoleLabel = projectRoleLabel(roleKey);
     const candidates = joinedCandidatesFor(roleKey);
     return (
       <div className="EditWorkers__Results">
@@ -1246,7 +1245,7 @@ export const EditWorkers = ({
                       }}
                     />
                     <span className="EditWorkersSimple__RoleName">
-                      {item.label}
+                      {projectRoleLabel(item.key)}
                     </span>
                     <span className="EditWorkers__JobCount">
                       {
@@ -1385,7 +1384,7 @@ export const EditWorkers = ({
                         JOB_COLORS[item.key] || style.textColorSecondary,
                     }}
                   />
-                  <span className="EditWorkers__JobName">{item.label}</span>
+                  <span className="EditWorkers__JobName">{projectRoleLabel(item.key)}</span>
                   <span className="EditWorkers__JobCount">
                     {
                       draft.filter(

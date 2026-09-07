@@ -114,7 +114,9 @@ const ProjectSetting: FC<ProjectSettingProps> = ({ project }) => {
           <Route path={`${path}/target`}>
             {isCompleted ? <ProjectFinishedTip /> : <ProjectSettingTarget />}
           </Route>
-          <Route path={`${path}/role`}>自定义角色【施工中】</Route>
+          <Route path={`${path}/role`}>
+            {formatMessage({ id: 'project.customRole' })}
+          </Route>
         </Switch>
       }
     />

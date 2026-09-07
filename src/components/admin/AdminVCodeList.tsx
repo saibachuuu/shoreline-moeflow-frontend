@@ -2,6 +2,7 @@ import { css } from '@emotion/core';
 import { Table, TablePaginationConfig } from 'antd';
 import classNames from 'classnames';
 import React, { useEffect, useState } from 'react';
+import { useIntl } from 'react-intl';
 import apis from '@/apis';
 import { APIVCode } from '@/apis/user';
 import { FC } from '@/interfaces';
@@ -16,6 +17,7 @@ interface AdminVCodeListProps {
  * 验证码列表
  */
 export const AdminVCodeList: FC<AdminVCodeListProps> = ({ className }) => {
+  const { formatMessage } = useIntl();
   const [data, setData] = useState<APIVCode[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -38,30 +40,33 @@ export const AdminVCodeList: FC<AdminVCodeListProps> = ({ className }) => {
 
   const columns = [
     {
-      title: '类型介绍',
+      title: formatMessage({ id: 'admin.vcodeType' }),
       dataIndex: 'intro',
       key: 'intro',
     },
     {
-      title: '验证码',
+      title: formatMessage({ id: 'admin.vcode' }),
       dataIndex: 'content',
       key: 'content',
     },
     {
-      title: '验证码信息',
+      title: formatMessage({ id: 'admin.vcodeInfo' }),
       dataIndex: 'info',
       key: 'info',
     },
     {
-      title: '过期时间',
+      title: formatMessage({ id: 'admin.vcodeExpired' }),
       dataIndex: 'expires',
       key: 'expires',
       render: (_: any, record: APIVCode) =>
-        (dayjs.utc().isAfter(dayjs.utc(record.expires)) ? '[已过期] ' : '') +
+        (dayjs.utc().isAfter(dayjs.utc(record.expires))
+          ? formatMessage({ id: 'admin.vcodeExpiredTag' })
+          : '') +
+
         dayjs.utc(record.expires).local().format('lll'),
     },
     {
-      title: '生成时间',
+      title: formatMessage({ id: 'admin.vcodeGenerated' }),
       dataIndex: 'sendTime',
       key: 'sendTime',
     },

@@ -1,5 +1,6 @@
 import { css } from '@emotion/core';
 import React, { useEffect, useState } from 'react';
+import { useIntl } from 'react-intl';
 import store from 'store';
 import { FC } from '@/interfaces';
 import style from '@/style';
@@ -16,6 +17,7 @@ export const QuickCharacterButtons: FC<QuickCharacterButtonsProps> = ({
   disabled = false,
   onInsert,
 }) => {
+  const { formatMessage } = useIntl();
   const [visible, setVisible] = useState(() =>
     store.get(STORAGE_KEY, false),
   );
@@ -50,7 +52,7 @@ export const QuickCharacterButtons: FC<QuickCharacterButtonsProps> = ({
         `}
       >
         <button type="button" onClick={() => setVisible(true)}>
-           显示符号工具
+          {formatMessage({ id: 'quickChar.showSymbolTools' })}
         </button>
       </div>
     );
@@ -93,8 +95,8 @@ export const QuickCharacterButtons: FC<QuickCharacterButtonsProps> = ({
         <button
           type="button"
           key={character}
-          title={`插入 ${character}`}
-          aria-label={`插入 ${character}`}
+          title={formatMessage({ id: 'quickChar.insert' }, { character })}
+          aria-label={formatMessage({ id: 'quickChar.insert' }, { character })}
           disabled={disabled}
           onClick={() => onInsert(character)}
         >
@@ -108,7 +110,7 @@ export const QuickCharacterButtons: FC<QuickCharacterButtonsProps> = ({
           margin-left: auto;
         `}
       >
-         隐藏符号工具
+        {formatMessage({ id: 'quickChar.hideSymbolTools' })}
       </button>
     </div>
   );

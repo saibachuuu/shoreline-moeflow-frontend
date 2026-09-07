@@ -43,12 +43,19 @@ export const ProjectImportForm: FC<ProjectImportFormProps> = ({
   const handleImport = async () => {
     setImporting(true);
     if (importFileList) {
-      setImportStatuses(importFileList.map((file) => `${file.name} 排队中`));
+      setImportStatuses(
+        importFileList.map((file) =>
+          formatMessage({ id: 'projectImport.queuing' }, { name: file.name }),
+        ),
+      );
       for (let i = 0; i < importFileList.length; i++) {
         const file = importFileList[i];
         setImportStatuses(
           produce((draft) => {
-            draft[i] = `${file.name}：解压中...`;
+            draft[i] = formatMessage(
+              { id: 'projectImport.extracting' },
+              { name: file.name },
+            );
           }),
         );
         let project, labelplus;
@@ -71,7 +78,10 @@ export const ProjectImportForm: FC<ProjectImportFormProps> = ({
         if (project && labelplus) {
           setImportStatuses(
             produce((draft) => {
-              draft[i] = `${file.name}：创建项目...`;
+              draft[i] = formatMessage(
+                { id: 'projectImport.creatingProject' },
+                { name: file.name },
+              );
             }),
           );
           api.project
@@ -97,7 +107,10 @@ export const ProjectImportForm: FC<ProjectImportFormProps> = ({
                   const filename = entry.filename.replace('images/', '');
                   setImportStatuses(
                     produce((draft) => {
-                      draft[i] = `${file.name}：上传 "${filename}" 中...`;
+                      draft[i] = formatMessage(
+                        { id: 'projectImport.uploading' },
+                        { name: file.name, filename },
+                      );
                     }),
                   );
                   const image = await writer.getData();
@@ -108,7 +121,12 @@ export const ProjectImportForm: FC<ProjectImportFormProps> = ({
                       file: image,
                     })
                     .catch((error) => {
-                      message.error(`${file.name}：${filename} 上传失败`);
+                      message.error(
+                        formatMessage(
+                          { id: 'projectImport.uploadFailed' },
+                          { name: file.name, filename },
+                        ),
+                      );
                     });
                 }
               }
@@ -116,7 +134,10 @@ export const ProjectImportForm: FC<ProjectImportFormProps> = ({
               // 导入成功
               setImportStatuses(
                 produce((draft) => {
-                  draft[i] = `${file.name}：项目导入成功！`;
+                  draft[i] = formatMessage(
+                    { id: 'projectImport.importSuccess' },
+                    { name: file.name },
+                  );
                 }),
               );
               dispatch(
@@ -129,12 +150,20 @@ export const ProjectImportForm: FC<ProjectImportFormProps> = ({
               dispatch(resetProjectsState());
             })
             .catch((error) => {
-              message.error(`${file.name} 导入失败`);
+              message.error(
+                formatMessage(
+                  { id: 'projectImport.importFailed' },
+                  { name: file.name },
+                ),
+              );
             });
         } else {
           setImportStatuses(
             produce((draft) => {
-              draft[i] = `${file.name}：格式不正确`;
+              draft[i] = formatMessage(
+                { id: 'projectImport.invalidFormat' },
+                { name: file.name },
+              );
             }),
           );
         }

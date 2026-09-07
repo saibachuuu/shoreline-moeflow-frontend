@@ -366,7 +366,9 @@ export const ProjectList: FC<ProjectListProps> = ({
               `}
             >
               <div className="WorkerSearch__Row">
-                <span className="WorkerSearch__Label">查询模式</span>
+                <span className="WorkerSearch__Label">
+                  {formatMessage({ id: 'project.workerSearchMode' })}
+                </span>
                 <Select
                   className="WorkerSearch__Control"
                   size="small"
@@ -381,13 +383,17 @@ export const ProjectList: FC<ProjectListProps> = ({
                   }}
                 >
                   <Select.Option value="search-project-name">
-                    项目名搜索
+                    {formatMessage({ id: 'project.workerSearchProjectName' })}
                   </Select.Option>
-                  <Select.Option value="search-worker">成员搜索</Select.Option>
+                  <Select.Option value="search-worker">
+                    {formatMessage({ id: 'project.workerSearchWorker' })}
+                  </Select.Option>
                 </Select>
               </div>
               <div className="WorkerSearch__Row">
-                <span className="WorkerSearch__Label">范围</span>
+                <span className="WorkerSearch__Label">
+                  {formatMessage({ id: 'project.workerSearchRange' })}
+                </span>
                 <Select
                   className="WorkerSearch__Control"
                   size="small"
@@ -415,7 +421,9 @@ export const ProjectList: FC<ProjectListProps> = ({
               </div>
               {searchMode === 'search-worker' && (
                 <div className="WorkerSearch__Row">
-                  <span className="WorkerSearch__Label">限定职位</span>
+                  <span className="WorkerSearch__Label">
+                    {formatMessage({ id: 'project.workerSearchRole' })}
+                  </span>
                   <Select
                     className="WorkerSearch__Control"
                     size="small"
@@ -424,10 +432,14 @@ export const ProjectList: FC<ProjectListProps> = ({
                       setSearchRole(value as ProjectWorkerRole | '')
                     }
                   >
-                    <Select.Option value="">任何职位</Select.Option>
+                    <Select.Option value="">
+                      {formatMessage({ id: 'project.workerSearchAnyRole' })}
+                    </Select.Option>
                     {PROJECT_WORKER_ROLES.map((role) => (
                       <Select.Option key={role.key} value={role.key}>
-                        {role.label}
+                        {formatMessage({
+                          id: `project.workerRole.${role.key}`,
+                        })}
                       </Select.Option>
                     ))}
                   </Select>
@@ -437,7 +449,7 @@ export const ProjectList: FC<ProjectListProps> = ({
                 <div className="WorkerSearch__Row">
                   <Button size="small" onClick={handleWorkerSearchClear}>
                     <Icon icon="times" />
-                    清除搜索
+                    {formatMessage({ id: 'project.workerSearchClear' })}
                   </Button>
                 </div>
               )}
@@ -460,12 +472,20 @@ export const ProjectList: FC<ProjectListProps> = ({
             >
               <Icon icon="user-check" style={{ color: style.primaryColor }} />
               <span>
-                正按人员搜索
-                {searchRole
-                  ? PROJECT_WORKER_ROLES.find((r) => r.key === searchRole)
-                      ?.label
-                  : '任何职位'}
-                （已选 {selectedProjectSetIDs.length} 个项目集）
+                {formatMessage(
+                  { id: 'project.searchingByRole' },
+                  {
+                    role: searchRole
+                      ? formatMessage({
+                          id: `project.workerRole.${searchRole}`,
+                        })
+                      : formatMessage({ id: 'project.workerSearchAnyRole' }),
+                    projectSets: formatMessage(
+                      { id: 'project.selectedProjectSets' },
+                      { count: selectedProjectSetIDs.length },
+                    ),
+                  },
+                )}
               </span>
               <span
                 css={css`

@@ -250,7 +250,7 @@ export const ProjectItem: FC<ProjectItemProps> = ({
                     className="ProjectItem__BottomButtonIcon"
                     icon="sync-alt"
                   />
-                  恢复项目
+                  {formatMessage({ id: 'projectItem.restore' })}
                 </div>
               ) : (
                 <div className="ProjectItem__BottomButton">

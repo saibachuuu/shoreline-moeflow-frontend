@@ -230,7 +230,8 @@ export const FileList: FC<FileListProps> = ({
           .then((result) => {
             // TODO 自动刷新实现后删除此备注
             message.success(
-              result.data.message + '（请稍后刷新页面查看进度）',
+              result.data.message +
+                formatMessage({ id: 'fileList.refreshLater' }),
               2
             );
           })

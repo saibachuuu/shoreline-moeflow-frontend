@@ -82,7 +82,7 @@ export const AdminSiteSetting: FC<AdminSiteSettingProps> = ({ className }) => {
         setLoadError(
           (error?.data?.message as string) ||
             (error?.message as string) ||
-            '加载失败',
+            formatMessage({ id: 'adminSite.loadFailed' }),
         );
       })
       .finally(() => {
@@ -158,7 +158,7 @@ export const AdminSiteSetting: FC<AdminSiteSettingProps> = ({ className }) => {
           message={loadError}
           description={
             <div>
-              站点设置加载失败，若持续出现请检查登录状态（重新登录）后重试。
+              {formatMessage({ id: 'adminSite.loadFailedRetry' })}
               <Button
                 size="small"
                 style={{ marginLeft: 12 }}
@@ -167,7 +167,7 @@ export const AdminSiteSetting: FC<AdminSiteSettingProps> = ({ className }) => {
                   setReloadToken((value) => value + 1);
                 }}
               >
-                重试
+                {formatMessage({ id: 'adminSite.retry' })}
               </Button>
             </div>
           }

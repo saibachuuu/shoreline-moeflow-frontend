@@ -231,7 +231,7 @@ export const OutputList: FC<OutputListProps> = ({
             rel: 'noopener noreferrer',
           }}
         >
-          下载 PS 脚本
+          {formatMessage({ id: 'output.downloadPsScript' })}
         </Button>
       </div>
       <div className="OutputList__Tip">

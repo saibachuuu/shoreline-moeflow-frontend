@@ -90,7 +90,7 @@ export const TeamInsightProjectList: FC<TeamInsightProjectListProps> = ({
         teamID,
       })
       .then(() => {
-        message.success('导出任务创建成功，您可以关闭页面稍后前来下载。');
+        message.success(formatMessage({ id: 'teamInsight.exportCreated' }));
         refresh();
       })
       .catch((error) => {
@@ -102,7 +102,7 @@ export const TeamInsightProjectList: FC<TeamInsightProjectListProps> = ({
   };
 
   const createOutputs = ({ projectID }: { projectID: string }) => {
-    message.success('导出中，请稍后...');
+    message.success(formatMessage({ id: 'teamInsight.exporting' }));
     setOutputing(true);
     setOutputingProjectID(projectID);
     apis
@@ -207,10 +207,10 @@ export const TeamInsightProjectList: FC<TeamInsightProjectListProps> = ({
       {status !== 'failure' && (
         <Popconfirm
           placement="bottom"
-          title={'确认批量开始导出团队的所有项目的 zip 吗？'}
+          title={formatMessage({ id: 'teamInsight.confirmBatchExport' })}
           onConfirm={() => createTeamOutputs({ teamID: team.id })}
-          okText="开始吧～"
-          cancelText="不了"
+          okText={formatMessage({ id: 'teamInsight.start' })}
+          cancelText={formatMessage({ id: 'teamInsight.cancel' })}
         >
           <div className="TeamInsightProjectList__OutputTeamProjectButton">
             <Icon
@@ -218,7 +218,7 @@ export const TeamInsightProjectList: FC<TeamInsightProjectListProps> = ({
               className="TeamInsightProjectList__OutputTeamProjectButtonIcon"
             />
             <span className="TeamInsightProjectList__OutputTeamProjectButtonText">
-              批量开始导出团队所有项目 zip
+              {formatMessage({ id: 'teamInsight.batchExport' })}
             </span>
           </div>
         </Popconfirm>
@@ -342,7 +342,7 @@ export const TeamInsightProjectList: FC<TeamInsightProjectListProps> = ({
                       createOutputs({ projectID: record.project.id });
                     }}
                   >
-                    导出所有语言 zip
+                    {formatMessage({ id: 'teamInsight.exportAllLanguages' })}
                   </Button>
                   {(record.outputs || []).map((output) => (
                     <div>

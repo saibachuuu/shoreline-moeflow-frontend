@@ -109,7 +109,7 @@ export const UserEditForm: FC<UserEditFormProps> = ({ className }) => {
         >
           <Input />
         </FormItem>
-        <FormItem label="站点别名">
+        <FormItem label={formatMessage({ id: 'userEdit.siteAlias' })}>
           <div className="UserEditForm__AliasField">
             <div className="UserEditForm__Aliases">
               {aliases.map((alias) => (
@@ -132,7 +132,7 @@ export const UserEditForm: FC<UserEditFormProps> = ({ className }) => {
                 event.preventDefault();
                 addAlias();
               }}
-              placeholder="输入后回车添加"
+              placeholder={formatMessage({ id: 'userEdit.enterToAdd' })}
             />
           </div>
         </FormItem>

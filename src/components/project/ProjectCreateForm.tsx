@@ -355,10 +355,10 @@ export const ProjectCreateForm: FC<ProjectCreateFormProps> = ({
         </FormItem>
       </Form>
       <Modal
-        title="注意事项"
+        title={formatMessage({ id: 'project.createNoticeTitle' })}
         open={isModalVisible}
         onOk={handleOk}
-        okText="我承诺不上传以上内容"
+        okText={formatMessage({ id: 'project.createNoticeOk' })}
         onCancel={handleCancel}
         css={css`
           .ProjectCreateForm__ModalContent {
@@ -376,31 +376,36 @@ export const ProjectCreateForm: FC<ProjectCreateFormProps> = ({
         `}
       >
         <div className="ProjectCreateForm__ModalContent">
+          <p>{formatMessage({ id: 'project.createNoticeIntro1' })}</p>
+          <p>{formatMessage({ id: 'project.createNoticeIntro2' })}</p>
           <p>
-            感谢各位翻译组无私的付出，本站建立的目的是为了能让各组内工作交流更加便捷。
-          </p>
-          <p>
-            本站架设于中国，并且站长也是中国公民，所以必须遵守中国的相关法律。
-          </p>
-          <p>
-            遂在此请求各位请勿在{formatMessage({ id: 'site.name' })}
-            上传以下内容，以免导致封站，无法继续为大家提供服务，感谢您的理解！
+            {formatMessage(
+              { id: 'project.createNoticeIntro3' },
+              { sitename: formatMessage({ id: 'site.name' }) },
+            )}
           </p>
           <ol>
             <li>
-              任何类型的色情内容。
+              {formatMessage({ id: 'project.createNoticeItem1' })}
               <ul>
                 <li>
-                  包括不限于各类
-                  <strong>有遮挡或无遮挡</strong>
-                  的描绘性行为、生殖器、胸部或臀部的内容。
+                  {formatMessage(
+                    { id: 'project.createNoticeItem1Sub' },
+                    {
+                      cov: (
+                        <strong>
+                          {formatMessage({ id: 'project.coveredUncovered' })}
+                        </strong>
+                      )
+                    },
+                  )}
                 </li>
               </ul>
             </li>
-            <li>任何类型的煽动暴力、宣扬恐怖主义的内容。</li>
-            <li>任何类型的含有恐怖、血腥场景的内容。</li>
-            <li>任何类型的侵犯他人合法权益的内容。</li>
-            <li>违反中华人民共和国法律法规的内容。</li>
+            <li>{formatMessage({ id: 'project.createNoticeItem2' })}</li>
+            <li>{formatMessage({ id: 'project.createNoticeItem3' })}</li>
+            <li>{formatMessage({ id: 'project.createNoticeItem4' })}</li>
+            <li>{formatMessage({ id: 'project.createNoticeItem5' })}</li>
           </ol>
         </div>
       </Modal>

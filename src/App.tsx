@@ -171,6 +171,10 @@ const App: React.FC = () => {
           [data-theme='dark'] .ant-form-item-required::before {
             color: #ff8f9c;
           }
+          /* antd FormItem 的 extra 提示文案自带浅黑颜色，暗黑下需改为浅色 */
+          [data-theme='dark'] .ant-form-item-extra {
+            color: rgba(255, 255, 255, 0.65);
+          }
           [data-theme='dark'] .ant-modal-content,
           [data-theme='dark'] .ant-modal-header {
             background-color: #1f1f24;

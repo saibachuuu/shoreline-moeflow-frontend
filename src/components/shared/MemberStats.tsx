@@ -3,6 +3,7 @@ import { message } from 'antd';
 import classNames from 'classnames';
 import { createPortal } from 'react-dom';
 import { useEffect, useRef, useState } from 'react';
+import { useIntl } from 'react-intl';
 import { useSelector } from 'react-redux';
 import { Icon, Tooltip, EditWorkers } from '@/components';
 import { api } from '@/apis';
@@ -46,6 +47,7 @@ export const MemberStats: FC<MemberStatsProps> = ({
   className,
   onMembersUpdate,
 }) => {
+  const { formatMessage } = useIntl();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const normalizeMember = (
@@ -122,7 +124,7 @@ export const MemberStats: FC<MemberStatsProps> = ({
       });
       await refreshMembers();
       setOpen(false);
-      message.success('项目成员已更新');
+      message.success(formatMessage({ id: 'memberStats.updated' }));
     } catch (error: any) {
       // The batch endpoint stops at the first failed operation. Refreshing here
       // keeps already committed operations visible before the next attempt.
@@ -207,11 +209,33 @@ export const MemberStats: FC<MemberStatsProps> = ({
       {PROJECT_WORKER_DISPLAY_ROLES.map((role) => {
         const roleMembers = getMembersForRole(role.key);
         const invitedRoleMembers = getMembersForRole(role.key, 'invited');
+        const roleLabel = formatMessage({
+          id: `project.workerRole.${role.key}`,
+        });
         const roleSummary = roleMembers.length
-          ? `${role.label}：${roleMembers.map((member) => member.displayName).join('、')}`
+          ? formatMessage(
+              { id: 'memberStats.roleSummary' },
+              {
+                role: roleLabel,
+                members: roleMembers
+                  .map((member) => member.displayName)
+                  .join('、'),
+              },
+            )
           : invitedRoleMembers.length
-            ? `${role.label}（邀请中）：${invitedRoleMembers.map((member) => member.displayName).join('、')}`
-            : `暂无${role.label}人员`;
+            ? formatMessage(
+                { id: 'memberStats.roleSummaryInvited' },
+                {
+                  role: roleLabel,
+                  members: invitedRoleMembers
+                    .map((member) => member.displayName)
+                    .join('、'),
+                },
+              )
+            : formatMessage(
+                { id: 'memberStats.roleSummaryNone' },
+                { role: roleLabel },
+              );
         return (
           <Tooltip key={role.key} overlay={roleSummary}>
             <span className="MemberStats__Role">
@@ -232,11 +256,13 @@ export const MemberStats: FC<MemberStatsProps> = ({
           ref={buttonRef}
           className="MemberStats__Button MemberStats__Edit"
           onClick={openEditor}
-          title="编辑项目成员"
+          title={formatMessage({ id: 'memberStats.editTitle' })}
+
           role="button"
           tabIndex={0}
         >
-          <Icon icon="pencil-alt" spin={loading} /> 编辑
+          <Icon icon="pencil-alt" spin={loading} />{' '}
+          {formatMessage({ id: 'memberStats.edit' })}
         </span>
       )}
       {open &&
