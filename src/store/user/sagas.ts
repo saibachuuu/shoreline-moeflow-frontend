@@ -24,11 +24,15 @@ function* getUserInfoAsync(action: ReturnType<typeof setUserToken>) {
     // 清除 Store 用户信息
     yield put(setUserInfo(initialState));
   } else {
-    // 设置 Axios Authorization 头
-    instance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    // 设置 Cookie token
-    if (!action.payload.refresh) {
-      setToken(token, action.payload.rememberMe);
+    try {
+      // 设置 Axios Authorization 头
+      instance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      // 设置 Cookie token
+      if (!action.payload.refresh) {
+        setToken(token, action.payload.rememberMe);
+      }
+    } catch (error) {
+      console.error('[user/sagas] Failed to persist token or set headers:', error);
     }
     // 获取并记录用户信息到 Store
     try {

@@ -1,7 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { combineReducers } from 'redux';
 import createSagaMiddleware from 'redux-saga';
-import { all } from 'redux-saga/effects';
+import { all, call, delay, spawn } from 'redux-saga/effects';
 import siteReducer from './site/slice';
 import teamReducer from './team/slice';
 import teamSaga from './team/sagas';
@@ -33,13 +33,29 @@ const rootReducer = combineReducers({
 });
 
 function* rootSaga() {
-  yield all([
-    userSaga(),
-    teamSaga(),
-    projectSetSaga(),
-    projectSaga(),
-    sourceSaga(),
-  ]);
+  const sagas = [
+    userSaga,
+    teamSaga,
+    projectSetSaga,
+    projectSaga,
+    sourceSaga,
+  ];
+
+  yield all(
+    sagas.map((saga) =>
+      spawn(function* () {
+        while (true) {
+          try {
+            yield call(saga);
+            break;
+          } catch (error) {
+            console.error('[rootSaga] Child saga crashed with error:', error);
+            yield delay(1000);
+          }
+        }
+      }),
+    ),
+  );
 }
 export type AppState = ReturnType<typeof rootReducer>;
 
