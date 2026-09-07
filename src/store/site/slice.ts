@@ -56,10 +56,10 @@ const slice = createSlice({
       state.imageTranslatorAutoFocusInput = action.payload;
     },
     setImageTranslatorImageDarkness(state, action: PayloadAction<number>) {
-      state.imageTranslatorImageDarkness = Math.min(
-        99,
-        Math.max(0, action.payload),
-      );
+      const val = Number(action.payload);
+      state.imageTranslatorImageDarkness = Number.isFinite(val)
+        ? Math.min(99, Math.max(0, val))
+        : 0;
     },
   },
 });

@@ -103,7 +103,8 @@ export const imageTranslatorSettingsStorage = {
     return {
       autoFocusInput: settings.autoFocusInput === true,
       imageDarkness:
-        typeof settings.imageDarkness === 'number'
+        typeof settings.imageDarkness === 'number' &&
+        Number.isFinite(settings.imageDarkness)
           ? Math.min(99, Math.max(0, settings.imageDarkness))
           : 0,
     };

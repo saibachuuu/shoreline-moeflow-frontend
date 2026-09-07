@@ -1153,7 +1153,8 @@ export const EditWorkers = ({
           ${clickEffect()};
         }
         .EditWorkers__MemberNameInput {
-          width: 120px;
+          flex: 1 1 auto;
+          min-width: 0;
         }
         .EditWorkers__SelfActions {
           display: flex;

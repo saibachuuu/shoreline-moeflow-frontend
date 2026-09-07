@@ -66,11 +66,13 @@ const App: React.FC = () => {
       <Global
         styles={css`
           :root {
+            --image-darkness: 0;
             ${Object.entries(lightThemeVars)
               .map(([key, value]) => `--${key}: ${value};`)
               .join('\n')}
           }
           [data-theme='dark'] {
+            --image-darkness: 0;
             ${Object.entries(darkThemeVars)
               .map(([key, value]) => `--${key}: ${value};`)
               .join('\n')}

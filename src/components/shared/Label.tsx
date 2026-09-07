@@ -134,11 +134,15 @@ export const Label: FC<LabelProps> = ({
           top: ${numberTop - numberSize / 2 - arrowHeight - 10}px;
           left: ${numberSize / 2 + 7}px;
           width: 220px;
+          pointer-events: none;
+          z-index: 10;
         }
         .Label__Content {
-          background-color: #fff;
+          background-color: ${style.backgroundColorLight};
+          color: ${style.textColor};
+          border: 1px solid ${style.borderColorLight};
           border-radius: ${style.borderRadiusSm};
-          box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+          box-shadow: ${style.boxShadowBase};
           padding: 3px 5px;
           white-space: pre-wrap;
           word-break: break-all;
