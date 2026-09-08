@@ -18,6 +18,7 @@ import {
 import style from '@/style';
 import { FC, UserTeam } from '@/interfaces';
 import { can } from '@/utils/user';
+import { formatPermissionLabel } from '@/utils/identityLabels';
 import { toLowerCamelCase } from '@/utils';
 import copy from 'copy-to-clipboard';
 import { AvatarUpload } from '@/components/shared/AvatarUpload';
@@ -107,15 +108,10 @@ export const TeamSettingBase: FC<TeamSettingBaseProps> = ({ className }) => {
   const addArchiveKey = () => {
     const key = newArchiveKey.trim();
     if (!key) {
-      message.warning(
-        formatMessage({ id: 'site.archiveApiKeyEmptyTip' }),
-      );
+      message.warning(formatMessage({ id: 'site.archiveApiKeyEmptyTip' }));
       return;
     }
-    saveArchiveKeys([
-      ...(currentTeam.archiveApiKeys || []),
-      { key },
-    ]);
+    saveArchiveKeys([...(currentTeam.archiveApiKeys || []), { key }]);
     setNewArchiveKey('');
   };
 
@@ -284,7 +280,9 @@ export const TeamSettingBase: FC<TeamSettingBaseProps> = ({ className }) => {
           <ContentItem>
             <div className="permissions">
               {(currentTeam.effectivePermissions || []).map((permission) => (
-                <Tag key={permission}>{permission}</Tag>
+                <Tag key={permission}>
+                  {formatPermissionLabel(formatMessage, permission)}
+                </Tag>
               ))}
             </div>
           </ContentItem>
@@ -422,7 +420,9 @@ export const TeamSettingBase: FC<TeamSettingBaseProps> = ({ className }) => {
                 <Input
                   className="TeamSettingBase__ApiUrlInput"
                   value={archiveApiUrlInput}
-                  onChange={(event) => setArchiveApiUrlInput(event.target.value)}
+                  onChange={(event) =>
+                    setArchiveApiUrlInput(event.target.value)
+                  }
                   placeholder={formatMessage({
                     id: 'site.archiveApiUrlPlaceholder',
                   })}
@@ -441,9 +441,7 @@ export const TeamSettingBase: FC<TeamSettingBaseProps> = ({ className }) => {
               </div>
               {(currentTeam.archiveApiKeys || []).map((key) => (
                 <div key={key.id} className="TeamSettingBase__KeyItem">
-                  <Tag className="TeamSettingBase__KeyTail">
-                    {key.keyTail}
-                  </Tag>
+                  <Tag className="TeamSettingBase__KeyTail">{key.keyTail}</Tag>
                   <span className="TeamSettingBase__KeyRemark">
                     {key.remark || key.keyTail}
                   </span>

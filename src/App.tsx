@@ -247,11 +247,20 @@ const App: React.FC = () => {
           [data-theme='dark'] .ant-select-item-option-active {
             background-color: rgba(255, 255, 255, 0.08);
           }
+          /* 选中项：antd 对 selected / disabled.selected 额外给了 #f5f5f5
+             浅色背景（规则不带 :not(disabled)），必须显式覆盖，否则暗黑下
+             当前项目集等禁用选中项会变成浅底浅字不可读。 */
+          [data-theme='dark'] .ant-select-item-option-selected,
           [data-theme='dark']
-            .ant-select-item-option-selected:not(
-              .ant-select-item-option-disabled
-            ) {
+            .ant-select-item-option-disabled.ant-select-item-option-selected {
             background-color: rgba(255, 101, 124, 0.15);
+          }
+          /* 禁用项文字调暗，与可选中的项区分开 */
+          [data-theme='dark'] .ant-select-item-option-disabled,
+          [data-theme='dark']
+            .ant-select-item-option-disabled
+            .ant-select-item-option-content {
+            color: rgba(255, 255, 255, 0.35);
           }
           [data-theme='dark'] .ant-select-selection-item {
             background-color: #26262a;
@@ -508,6 +517,14 @@ const App: React.FC = () => {
 
           .ant-badge-count {
             background-color: ${style.primaryColor};
+          }
+
+          /* 默认 Tag（无颜色）：antd 暗黑下仍用 #fafafa 白底，需改为深色；
+             带颜色的 Tag（ant-tag-xxx）自带背景，这里排除以免覆盖。 */
+          [data-theme='dark'] .ant-tag:not([class*='ant-tag-']) {
+            background-color: #26262a;
+            border-color: #383840;
+            color: rgba(255, 255, 255, 0.85);
           }
 
           /* == 手机版 == */

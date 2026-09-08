@@ -30,6 +30,7 @@ import style from '../../style';
 import { toLowerCamelCase } from '@/utils';
 import { can } from '@/utils/user';
 import { projectMemberOperationId } from '@/utils/projectMembers';
+import { formatPermissionLabel } from '@/utils/identityLabels';
 import { ProjectEditForm } from './ProjectEditForm';
 
 interface ProjectSettingBaseProps {
@@ -215,7 +216,9 @@ export const ProjectSettingBase: FC<ProjectSettingBaseProps> = ({
             {(currentProject.effectivePermissions || [])
               .slice(0, 4)
               .map((permission) => (
-                <Tag key={permission}>{permission}</Tag>
+                <Tag key={permission}>
+                  {formatPermissionLabel(formatMessage, permission)}
+                </Tag>
               ))}
           </div>
           <Button
@@ -230,7 +233,9 @@ export const ProjectSettingBase: FC<ProjectSettingBaseProps> = ({
           <ContentItem>
             <div>
               {(currentProject.effectivePermissions || []).map((permission) => (
-                <Tag key={permission}>{permission}</Tag>
+                <Tag key={permission}>
+                  {formatPermissionLabel(formatMessage, permission)}
+                </Tag>
               ))}
             </div>
           </ContentItem>
