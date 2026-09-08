@@ -104,8 +104,6 @@
   "project.notAllowApplyTipTitle": "This item is closed for joining.",
   "project.notAllowApplyTip": "Please contact the administrator of the team or project \"{project}\" to invite you.",
   "project.applyConfirm": "Are you sure you want to join the project \"{project}\"?",
-  "project.working": "Working",
-  "project.workingUsers": "{count} users working",
   "application.reason": "Application message",
   "application.reasonLabel": "Please provide an application message for \"{name}\":",
   "team.applyConfirm": "Are you sure you want to join the team \"{team}\"?",
@@ -726,5 +724,12 @@
   "projectImport.invalidFormat": "{name}: invalid format",
   "quickChar.insert": "Insert {character}",
   "project.searchingByRole": "Searching by {role} (selected {projectSets})",
-  "project.selectedProjectSets": "{count} project sets"
+  "project.selectedProjectSets": "{count} project sets",
+  "project.editingSingle": "{name} editing",
+  "project.editingMultiple": "{names} editing",
+  "project.editingMany": "{name} & {others} others editing",
+  "project.editingCount": "{count} people editing",
+  "project.editingSomeone": "Someone",
+  "project.editingNamesDelimiter": ", ",
+  "project.workingUsers": "{count} users working"
 }

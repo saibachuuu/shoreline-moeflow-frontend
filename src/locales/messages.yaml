@@ -2207,3 +2207,25 @@ project.searchingByRole:
 project.selectedProjectSets:
   zhCn: "{count} 个项目集"
   en: "{count} project sets"
+project.editingSingle:
+  zhCn: "{name} 编辑中"
+  en: "{name} editing"
+project.editingMultiple:
+  zhCn: "{names} 编辑中"
+  en: "{names} editing"
+project.editingMany:
+  zhCn: "{name}等 {count} 人 编辑中"
+  en: "{name} & {others} others editing"
+project.editingCount:
+  zhCn: "{count} 人 编辑中"
+  en: "{count} people editing"
+project.editingSomeone:
+  zhCn: 有人
+  en: Someone
+project.editingNamesDelimiter:
+  zhCn: "、"
+  en: ", "
+project.workingUsers:
+  zhCn: "{count} 人正在工作中"
+  en: "{count} users working"
+

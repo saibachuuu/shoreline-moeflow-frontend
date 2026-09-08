@@ -1,5 +1,6 @@
 import { css } from '@emotion/core';
 import classNames from 'classnames';
+import { useMemo } from 'react';
 import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory, useLocation, useRouteMatch } from 'react-router-dom';
@@ -44,6 +45,42 @@ export const ProjectItem: FC<ProjectItemProps> = ({
   const isWorking = Boolean(presence && presence.userCount > 0);
   const memberStatsPermissions = getMemberStatsPermissions(project, status);
   const urlPrefix = from === 'team' ? '/projects' : '';
+
+  const editingText = useMemo(() => {
+    if (!presence || presence.userCount <= 0) {
+      return '';
+    }
+    const users = presence.users || [];
+    const delimiter = formatMessage({ id: 'project.editingNamesDelimiter' });
+    const someone = formatMessage({ id: 'project.editingSomeone' });
+
+    if (users.length === 1) {
+      return formatMessage(
+        { id: 'project.editingSingle' },
+        { name: users[0].name || someone },
+      );
+    }
+    if (users.length === 2 && presence.userCount === 2) {
+      return formatMessage(
+        { id: 'project.editingMultiple' },
+        { names: users.map((u) => u.name || someone).join(delimiter) },
+      );
+    }
+    if (presence.userCount >= 2 && users.length > 0) {
+      return formatMessage(
+        { id: 'project.editingMany' },
+        {
+          name: users[0].name || someone,
+          count: presence.userCount,
+          others: presence.userCount - 1,
+        },
+      );
+    }
+    return formatMessage(
+      { id: 'project.editingCount' },
+      { count: presence.userCount },
+    );
+  }, [presence, formatMessage]);
 
   const handleClick = () => {
     dispatch(resetFilesState());
@@ -93,10 +130,16 @@ export const ProjectItem: FC<ProjectItemProps> = ({
           border: 1.5px solid ${style.primaryColor};
           box-shadow: 0 0 10px ${style.primaryColor}38;
         }
+        .ProjectItem__WorkingBar {
+          display: flex;
+          align-items: center;
+          margin-top: 4px;
+          margin-bottom: 2px;
+        }
         .ProjectItem__WorkingBadge {
           display: inline-flex;
           align-items: center;
-          margin-left: 8px;
+          max-width: 100%;
           padding: 1px 7px;
           border-radius: 10px;
           background-color: ${style.primaryColor}18;
@@ -105,18 +148,24 @@ export const ProjectItem: FC<ProjectItemProps> = ({
           font-size: 11px;
           line-height: 16px;
           font-weight: 500;
-          vertical-align: middle;
         }
         .ProjectItem__WorkingDot {
+          flex: none;
           width: 6px;
           height: 6px;
           border-radius: 50%;
           background-color: ${style.primaryColor};
-          margin-right: 4px;
+          margin-right: 5px;
           display: inline-block;
           animation: workingPulse 1.4s infinite ease-in-out;
         }
+        .ProjectItem__WorkingText {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
         .ProjectItem__WorkingEllipsis {
+          flex: none;
           display: inline-flex;
           margin-left: 1px;
           font-family: monospace;
@@ -219,7 +268,7 @@ export const ProjectItem: FC<ProjectItemProps> = ({
           word-break: break-all;
           font-size: 14px;
           line-height: 20px;
-          margin: 5px 0;
+          margin: 4px 0 6px;
         }
         .ProjectItem__ProjectSetTag {
           flex: none;
@@ -268,6 +317,39 @@ export const ProjectItem: FC<ProjectItemProps> = ({
             </div>
           </div>
         )}
+        {isWorking && (
+          <div className="ProjectItem__WorkingBar">
+            <Tooltip
+              title={
+                <div>
+                  <div style={{ fontWeight: 'bold', marginBottom: 2 }}>
+                    {formatMessage(
+                      { id: 'project.workingUsers' },
+                      { count: presence!.userCount },
+                    )}
+                  </div>
+                  <div>
+                    {presence!.users
+                      .map((u) => u.name)
+                      .join(
+                        formatMessage({ id: 'project.editingNamesDelimiter' }),
+                      )}
+                  </div>
+                </div>
+              }
+            >
+              <div className="ProjectItem__WorkingBadge">
+                <span className="ProjectItem__WorkingDot" />
+                <span className="ProjectItem__WorkingText">{editingText}</span>
+                <span className="ProjectItem__WorkingEllipsis">
+                  <span className="ProjectItem__Dot ProjectItem__Dot--1">.</span>
+                  <span className="ProjectItem__Dot ProjectItem__Dot--2">.</span>
+                  <span className="ProjectItem__Dot ProjectItem__Dot--3">.</span>
+                </span>
+              </div>
+            </Tooltip>
+          </div>
+        )}
         <div className="ProjectItem__Name">
           {from === 'team' &&
             currentProjectSet &&
@@ -279,33 +361,6 @@ export const ProjectItem: FC<ProjectItemProps> = ({
               </span>
             )}
           {project.name}
-          {isWorking && (
-            <Tooltip
-              title={
-                <div>
-                  <div style={{ fontWeight: 'bold', marginBottom: 2 }}>
-                    {formatMessage(
-                      { id: 'project.workingUsers' },
-                      { count: presence!.userCount },
-                    )}
-                  </div>
-                  <div>
-                    {presence!.users.map((u) => u.name).join('、')}
-                  </div>
-                </div>
-              }
-            >
-              <span className="ProjectItem__WorkingBadge">
-                <span className="ProjectItem__WorkingDot" />
-                <span>{formatMessage({ id: 'project.working' })}</span>
-                <span className="ProjectItem__WorkingEllipsis">
-                  <span className="ProjectItem__Dot ProjectItem__Dot--1">.</span>
-                  <span className="ProjectItem__Dot ProjectItem__Dot--2">.</span>
-                  <span className="ProjectItem__Dot ProjectItem__Dot--3">.</span>
-                </span>
-              </span>
-            </Tooltip>
-          )}
         </div>
         <MemberStats
           projectId={project.id}
