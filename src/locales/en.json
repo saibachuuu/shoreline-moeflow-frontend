@@ -731,5 +731,6 @@
   "project.editingCount": "{count} people editing",
   "project.editingSomeone": "Someone",
   "project.editingNamesDelimiter": ", ",
-  "project.workingUsers": "{count} users working"
+  "project.workingUsers": "{count} users working",
+  "project.syncedRecentChanges": "Synced {count} recent change(s)"
 }

@@ -30,6 +30,9 @@ const slice = createSlice({
     clearProjects(state) {
       state.projects = [];
     },
+    setProjects(state, action: PayloadAction<Project[]>) {
+      state.projects = action.payload;
+    },
     createProject(
       state,
       action: PayloadAction<{ project: Project; unshift?: boolean }>,
@@ -93,6 +96,7 @@ const slice = createSlice({
 
 export const {
   clearProjects,
+  setProjects,
   createProject,
   editProject,
   deleteProject,

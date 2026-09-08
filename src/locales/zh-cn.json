@@ -731,5 +731,6 @@
   "project.editingCount": "{count} 人 编辑中",
   "project.editingSomeone": "有人",
   "project.editingNamesDelimiter": "、",
-  "project.workingUsers": "{count} 人正在工作中"
+  "project.workingUsers": "{count} 人正在工作中",
+  "project.syncedRecentChanges": "已同步刚发生的 {count} 项更改"
 }

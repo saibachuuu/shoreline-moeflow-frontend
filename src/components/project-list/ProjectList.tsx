@@ -1,5 +1,5 @@
 import { css } from '@emotion/core';
-import { Button, Select } from 'antd';
+import { Button, message, Select } from 'antd';
 import { CancelToken } from 'axios';
 import classNames from 'classnames';
 import React, { useEffect, useRef, useState } from 'react';
@@ -15,6 +15,7 @@ import { AppState } from '@/store';
 import {
   clearProjects,
   createProject,
+  setProjects,
   resetProjectsState,
   setProjectsState,
 } from '@/store/project/slice';
@@ -22,6 +23,7 @@ import style from '@/style';
 import { toLowerCamelCase } from '@/utils';
 import { clickEffect } from '@/utils/style';
 import { buildTeamProjectSearchParams } from '@/utils/projectSearch';
+import { calculateProjectChanges } from '@/utils/projectDiff';
 import {
   PROJECT_WORKER_ROLES,
   ProjectWorkerRole,
@@ -178,6 +180,24 @@ export const ProjectList: FC<ProjectListProps> = ({
     return [...activeList, ...normalList];
   }, [projects, activePresenceMap]);
 
+  const projectsRef = useRef<Project[]>(projects);
+  projectsRef.current = projects;
+
+  const loadingRef = useRef<boolean>(loading);
+  loadingRef.current = loading;
+
+  const hasLoadedOnceRef = useRef(false);
+
+  const currentQueryRef = useRef<{
+    page: number;
+    pageSize: number;
+    word?: string;
+  }>({
+    page: defaultPage || 1,
+    pageSize: isMobile ? 10 : 15,
+    word: defaultWord || '',
+  });
+
   /** 获取元素 */
   const handleChange = ({
     page,
@@ -191,6 +211,8 @@ export const ProjectList: FC<ProjectListProps> = ({
     cancelToken: CancelToken;
   }) => {
     setLoading(true);
+    hasLoadedOnceRef.current = false;
+    currentQueryRef.current = { page, pageSize, word };
     dispatch(clearProjects());
     if (from === 'user') {
       return api
@@ -209,11 +231,14 @@ export const ProjectList: FC<ProjectListProps> = ({
           // 设置数量
           setTotal(result.headers['x-pagination-count']);
           setLoading(false);
+          hasLoadedOnceRef.current = true;
+          const formattedProjects: Project[] = [];
           for (const project of result.data) {
             const camelProject = toLowerCamelCase(project);
             camelProject.status = normalizeProjectStatus(camelProject.status);
-            dispatch(createProject({ project: camelProject }));
+            formattedProjects.push(camelProject);
           }
+          dispatch(setProjects(formattedProjects));
         })
         .catch((error) => {
           // 如果是 cancel 的请求，则不取消 loading 状态，因为肯定有下一个请求
@@ -245,11 +270,14 @@ export const ProjectList: FC<ProjectListProps> = ({
           // 设置数量
           setTotal(result.headers['x-pagination-count']);
           setLoading(false);
+          hasLoadedOnceRef.current = true;
+          const formattedProjects: Project[] = [];
           for (const project of result.data) {
             const camelProject = toLowerCamelCase(project);
             camelProject.status = normalizeProjectStatus(camelProject.status);
-            dispatch(createProject({ project: camelProject }));
+            formattedProjects.push(camelProject);
           }
+          dispatch(setProjects(formattedProjects));
         })
         .catch((error) => {
           // 如果是 cancel 的请求，则不取消 loading 状态，因为肯定有下一个请求
@@ -260,6 +288,116 @@ export const ProjectList: FC<ProjectListProps> = ({
         });
     }
   };
+
+  // 处于项目集内时，定时静默轮询当前页的项目列表更新（无论第几页，无论是否工作中）
+  useEffect(() => {
+    if (from !== 'team' || !currentTeam || !currentProjectSet) {
+      return;
+    }
+
+    let isSubscribed = true;
+    let isPolling = false;
+
+    const pollProjectList = () => {
+      if (
+        typeof document !== 'undefined' &&
+        document.visibilityState === 'hidden'
+      ) {
+        return;
+      }
+      // 如果正在进行首次或分页加载，或者上一次轮询未完成，则跳过本次
+      if (loadingRef.current || isPolling || !hasLoadedOnceRef.current) {
+        return;
+      }
+
+      const { page, pageSize, word } = currentQueryRef.current;
+      const params = buildTeamProjectSearchParams({
+        page,
+        limit: pageSize,
+        status,
+        searchMode,
+        searchRole,
+        word,
+        currentProjectSetID: currentProjectSet.id,
+        selectedProjectSetIDs,
+      });
+
+      isPolling = true;
+
+      api
+        .getTeamProjects({
+          teamID: currentTeam.id,
+          params,
+        })
+        .then((result) => {
+          if (!isSubscribed) return;
+          // 若在请求返回期间用户触发了前端操作导致 loading，则丢弃本次轮询结果以防竞态
+          if (loadingRef.current) return;
+
+          const newTotal = Number(result.headers['x-pagination-count']);
+          const newProjects: Project[] = [];
+          for (const project of result.data) {
+            const camelProject = toLowerCamelCase(project);
+            camelProject.status = normalizeProjectStatus(camelProject.status);
+            newProjects.push(camelProject);
+          }
+
+          const currentProjects = projectsRef.current || [];
+          const diff = calculateProjectChanges(currentProjects, newProjects);
+
+          if (diff.changeCount > 0) {
+            setTotal(newTotal);
+            dispatch(setProjects(newProjects));
+            message.info({
+              content: formatMessage(
+                { id: 'project.syncedRecentChanges' },
+                { count: diff.changeCount },
+              ),
+              key: 'project-list-sync-notice',
+            });
+          }
+        })
+        .catch(() => {})
+        .finally(() => {
+          isPolling = false;
+        });
+    };
+
+    const interval = setInterval(pollProjectList, 10000);
+
+    const handleVisibilityChange = () => {
+      if (
+        typeof document !== 'undefined' &&
+        document.visibilityState === 'visible'
+      ) {
+        pollProjectList();
+      }
+    };
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+    }
+
+    return () => {
+      isSubscribed = false;
+      clearInterval(interval);
+      if (typeof document !== 'undefined') {
+        document.removeEventListener(
+          'visibilitychange',
+          handleVisibilityChange,
+        );
+      }
+    };
+  }, [
+    from,
+    currentTeam?.id,
+    currentProjectSet?.id,
+    status,
+    searchMode,
+    searchRole,
+    selectedProjectSetIDs,
+    formatMessage,
+    dispatch,
+  ]);
 
   const handleWorkerSearchToggle = () => {
     setShowWorkerSearch((v) => !v);

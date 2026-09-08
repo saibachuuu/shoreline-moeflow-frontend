@@ -2228,4 +2228,8 @@ project.editingNamesDelimiter:
 project.workingUsers:
   zhCn: "{count} 人正在工作中"
   en: "{count} users working"
+project.syncedRecentChanges:
+  zhCn: "已同步刚发生的 {count} 项更改"
+  en: "Synced {count} recent change(s)"
+
 
