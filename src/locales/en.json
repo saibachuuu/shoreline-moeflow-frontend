@@ -104,6 +104,8 @@
   "project.notAllowApplyTipTitle": "This item is closed for joining.",
   "project.notAllowApplyTip": "Please contact the administrator of the team or project \"{project}\" to invite you.",
   "project.applyConfirm": "Are you sure you want to join the project \"{project}\"?",
+  "project.working": "Working",
+  "project.workingUsers": "{count} users working",
   "application.reason": "Application message",
   "application.reasonLabel": "Please provide an application message for \"{name}\":",
   "team.applyConfirm": "Are you sure you want to join the team \"{team}\"?",

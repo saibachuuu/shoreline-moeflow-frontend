@@ -10,7 +10,7 @@ import { EmptyTip, Icon, List } from '@/components';
 import { ProjectItem } from './ProjectItem';
 import api, { resultTypes } from '@/apis';
 import { PROJECT_STATUS, normalizeProjectStatus } from '@/constants';
-import { FC, UserProjectSet } from '@/interfaces';
+import { FC, UserProjectSet, Project } from '@/interfaces';
 import { AppState } from '@/store';
 import {
   clearProjects,
@@ -22,7 +22,12 @@ import style from '@/style';
 import { toLowerCamelCase } from '@/utils';
 import { clickEffect } from '@/utils/style';
 import { buildTeamProjectSearchParams } from '@/utils/projectSearch';
-import { PROJECT_WORKER_ROLES, ProjectWorkerRole } from '@/apis/project';
+import {
+  PROJECT_WORKER_ROLES,
+  ProjectWorkerRole,
+  ProjectActivePresence,
+  getTeamActivePresence,
+} from '@/apis/project';
 
 /** 项目列表的属性接口 */
 interface ProjectListProps {
@@ -100,6 +105,78 @@ export const ProjectList: FC<ProjectListProps> = ({
       .then((result) => setAvailableProjectSets(toLowerCamelCase(result.data)))
       .catch((error) => error.default());
   }, [currentTeam]);
+
+  const [activePresenceMap, setActivePresenceMap] = useState<
+    Record<string, ProjectActivePresence>
+  >({});
+
+  // 轮询团队下所有项目的在线/工作活跃状态（实时性）
+  useEffect(() => {
+    if (from !== 'team' || !currentTeam) {
+      return;
+    }
+
+    let isSubscribed = true;
+
+    const fetchActivePresence = () => {
+      if (
+        typeof document !== 'undefined' &&
+        document.visibilityState === 'hidden'
+      ) {
+        return;
+      }
+      getTeamActivePresence({ teamID: currentTeam.id })
+        .then((result) => {
+          if (!isSubscribed) return;
+          const camelData = toLowerCamelCase(result.data);
+          setActivePresenceMap(camelData.activeProjects || {});
+        })
+        .catch(() => {});
+    };
+
+    fetchActivePresence();
+    const interval = setInterval(fetchActivePresence, 6000);
+
+    const handleVisibilityChange = () => {
+      if (
+        typeof document !== 'undefined' &&
+        document.visibilityState === 'visible'
+      ) {
+        fetchActivePresence();
+      }
+    };
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+    }
+
+    return () => {
+      isSubscribed = false;
+      clearInterval(interval);
+      if (typeof document !== 'undefined') {
+        document.removeEventListener(
+          'visibilitychange',
+          handleVisibilityChange,
+        );
+      }
+    };
+  }, [from, currentTeam?.id]);
+
+  const sortedProjects = React.useMemo(() => {
+    if (!activePresenceMap || Object.keys(activePresenceMap).length === 0) {
+      return projects;
+    }
+    const activeList: Project[] = [];
+    const normalList: Project[] = [];
+    for (const p of projects) {
+      const presence = activePresenceMap[p.id] || p.activePresence;
+      if (presence && presence.userCount > 0) {
+        activeList.push(p);
+      } else {
+        normalList.push(p);
+      }
+    }
+    return [...activeList, ...normalList];
+  }, [projects, activePresenceMap]);
 
   /** 获取元素 */
   const handleChange = ({
@@ -256,10 +333,18 @@ export const ProjectList: FC<ProjectListProps> = ({
       onChange={handleChange}
       loading={loading}
       total={total}
-      items={projects}
+      items={sortedProjects}
       itemHeight={200}
       minPageSize={isMobile ? 10 : 15}
-      itemCreater={(project) => <ProjectItem from={from} project={project} />}
+      itemCreater={(project) => (
+        <ProjectItem
+          from={from}
+          project={project}
+          activePresence={
+            activePresenceMap[project.id] || project.activePresence
+          }
+        />
+      )}
       emptyTipCreater={() => {
         if (status === PROJECT_STATUS.NORMAL) {
           if (from === 'user') {

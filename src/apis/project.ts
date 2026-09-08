@@ -43,8 +43,22 @@ export interface APIProject {
   statusVersion?: number;
   effectivePermissions?: string[];
   memberSummary?: APIProjectMemberSummary[];
-  /** 导出 translations.txt 时人员名单的植入页序号（1=第一页，-1=最后一页；null=未设置）。 */
   staffListPage?: number | null;
+  activePresence?: ProjectActivePresence | null;
+}
+
+export interface ActivePresenceUser {
+  id: string;
+  name: string;
+  avatar?: string;
+  action?: string;
+  lastHeartbeat?: string;
+}
+
+export interface ProjectActivePresence {
+  projectId: string;
+  userCount: number;
+  users: ActivePresenceUser[];
 }
 
 export type ProjectTag =
@@ -414,6 +428,77 @@ const dismissArchiveImportTask = ({
     ...configs,
   });
 
+/** 上报项目工作心跳 */
+export const postProjectHeartbeat = ({
+  projectID,
+  action = 'working',
+  configs,
+}: {
+  projectID: string;
+  action?: string;
+  configs?: AxiosRequestConfig;
+}) =>
+  request<{
+    message: string;
+    projectId: string;
+    activeUsers: ActivePresenceUser[];
+  }>({
+    method: 'POST',
+    url: `/v1/projects/${projectID}/presence/heartbeat`,
+    data: { action },
+    ...configs,
+  });
+
+/** 离开项目工作状态 */
+export const postProjectLeave = ({
+  projectID,
+  configs,
+}: {
+  projectID: string;
+  configs?: AxiosRequestConfig;
+}) =>
+  request<{
+    message: string;
+    projectId: string;
+  }>({
+    method: 'POST',
+    url: `/v1/projects/${projectID}/presence/leave`,
+    ...configs,
+  });
+
+/** 获取项目当前活跃人员 */
+export const getProjectPresence = ({
+  projectID,
+  configs,
+}: {
+  projectID: string;
+  configs?: AxiosRequestConfig;
+}) =>
+  request<{
+    projectId: string;
+    activeUsers: ActivePresenceUser[];
+  }>({
+    method: 'GET',
+    url: `/v1/projects/${projectID}/presence`,
+    ...configs,
+  });
+
+/** 获取团队下所有正在工作的项目及成员 */
+export const getTeamActivePresence = ({
+  teamID,
+  configs,
+}: {
+  teamID: string;
+  configs?: AxiosRequestConfig;
+}) =>
+  request<{
+    activeProjects: Record<string, ProjectActivePresence>;
+  }>({
+    method: 'GET',
+    url: `/v1/teams/${teamID}/projects/active-presence`,
+    ...configs,
+  });
+
 export default {
   getUserProjects,
   getTeamProjects,
@@ -429,4 +514,8 @@ export default {
   importFromArchive,
   getArchiveImportTask,
   dismissArchiveImportTask,
+  postProjectHeartbeat,
+  postProjectLeave,
+  getProjectPresence,
+  getTeamActivePresence,
 };

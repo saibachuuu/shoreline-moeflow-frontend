@@ -25,7 +25,7 @@ import style from '../style';
 import { toLowerCamelCase } from '@/utils';
 import { getCancelToken } from '@/utils/api';
 import { imageTranslatorSettingsStorage } from '@/utils/storage';
-import { useTitle } from '@/hooks';
+import { useProjectHeartbeat, useTitle } from '@/hooks';
 import { ImageTranslatorSettingMouse } from '@/components/project-file';
 import { ImageTranslatorSettingHotKey } from '@/components/project-file';
 import { GetFileReturn } from '@/apis/file';
@@ -67,6 +67,10 @@ const ImageTranslator: FC = () => {
     (state: AppState) => state.project.currentProject,
   );
   const projectReadOnly = normalizeProjectStatus(currentProject?.status) !== PROJECT_STATUS.NORMAL;
+
+  useProjectHeartbeat(file?.projectId || currentProject?.id, {
+    action: 'translating',
+  });
 
   useTitle({ prefix: file?.name }, [file?.name]); // 设置标题
 

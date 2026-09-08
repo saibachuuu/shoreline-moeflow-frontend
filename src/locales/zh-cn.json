@@ -104,6 +104,8 @@
   "project.notAllowApplyTipTitle": "此项目关闭了申请加入",
   "project.notAllowApplyTip": "请联系项目 “{project}” 的管理员，通过邀请加入的方式加入此项目。",
   "project.applyConfirm": "您确定要加入项目 “{project}” 吗？",
+  "project.working": "工作中",
+  "project.workingUsers": "{count} 人正在工作中",
   "application.reason": "申请理由",
   "application.reasonLabel": "申请需要管理员审核，请输入加入 “{name}” 的申请理由：",
   "team.applyConfirm": "您确定要加入团队 “{team}” 吗？",
