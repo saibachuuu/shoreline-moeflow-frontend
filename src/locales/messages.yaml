@@ -2231,5 +2231,24 @@ project.workingUsers:
 project.syncedRecentChanges:
   zhCn: "已同步刚发生的 {count} 项更改"
   en: "Synced {count} recent change(s)"
+project.action.staff:
+  zhCn: 成员列表
+  en: member list
+project.action.setting:
+  zhCn: 项目信息
+  en: project settings
+project.action.translation:
+  zhCn: 翻译文本
+  en: translation
+project.editingSingleWithAction:
+  zhCn: "{name} 正编辑 {target}"
+  en: "{name} editing {target}"
+project.editingMultipleWithAction:
+  zhCn: "{names} 正编辑 {target}"
+  en: "{names} editing {target}"
+project.editingManyWithAction:
+  zhCn: "{name}等 {count} 人 正编辑 {target}"
+  en: "{name} & {others} others editing {target}"
+
 
 

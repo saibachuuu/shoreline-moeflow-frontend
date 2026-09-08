@@ -69,7 +69,7 @@ const ImageTranslator: FC = () => {
   const projectReadOnly = normalizeProjectStatus(currentProject?.status) !== PROJECT_STATUS.NORMAL;
 
   useProjectHeartbeat(file?.projectId || currentProject?.id, {
-    action: 'translating',
+    action: 'translation',
   });
 
   useTitle({ prefix: file?.name }, [file?.name]); // 设置标题

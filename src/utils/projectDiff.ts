@@ -65,11 +65,11 @@ export const isProjectModified = (oldP: Project, newP: Project): boolean => {
   if (oldPresCount !== newPresCount) return true;
   if (oldPresCount > 0) {
     const oldUsers = (oldPres?.users || [])
-      .map((u) => `${u.id}:${u.name}`)
+      .map((u) => `${u.id}:${u.name}:${u.action || ''}`)
       .sort()
       .join(',');
     const newUsers = (newPres?.users || [])
-      .map((u) => `${u.id}:${u.name}`)
+      .map((u) => `${u.id}:${u.name}:${u.action || ''}`)
       .sort()
       .join(',');
     if (oldUsers !== newUsers) return true;

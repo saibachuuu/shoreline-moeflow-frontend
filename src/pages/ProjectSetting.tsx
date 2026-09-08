@@ -2,7 +2,7 @@ import { css } from '@emotion/core';
 import { useIntl } from 'react-intl';
 import { useSelector } from 'react-redux';
 import { useDispatch } from 'react-redux';
-import { Redirect, Route, Switch, useRouteMatch } from 'react-router-dom';
+import { Redirect, Route, Switch, useLocation, useRouteMatch } from 'react-router-dom';
 import {
   ApplicationList,
   DashboardBox,
@@ -13,7 +13,7 @@ import {
   Spin,
 } from '@/components';
 import { PROJECT_PERMISSION, PROJECT_STATUS, normalizeProjectStatus } from '@/constants';
-import { useTitle } from '@/hooks';
+import { useProjectHeartbeat, useTitle } from '@/hooks';
 import { FC, Project } from '@/interfaces';
 import { AppState } from '@/store';
 import { can } from '@/utils/user';
@@ -34,6 +34,7 @@ const ProjectSetting: FC<ProjectSettingProps> = ({ project }) => {
   const dispatch = useDispatch();
   useTitle(); // 设置标题
   const { path, url } = useRouteMatch();
+  const location = useLocation();
   const platform = useSelector((state: AppState) => state.site.platform);
   const currentProject = useSelector(
     (state: AppState) => state.project.currentProject,
@@ -41,6 +42,11 @@ const ProjectSetting: FC<ProjectSettingProps> = ({ project }) => {
   const isMobile = platform === 'mobile';
   const status = normalizeProjectStatus(currentProject?.status);
   const isCompleted = status === PROJECT_STATUS.COMPLETED;
+
+  const isMemberTab = location.pathname.includes('/setting/member');
+  useProjectHeartbeat(project?.id || currentProject?.id, {
+    action: isMemberTab ? 'staff' : 'setting',
+  });
 
   const nav = currentProject && (
     <NavTabs>

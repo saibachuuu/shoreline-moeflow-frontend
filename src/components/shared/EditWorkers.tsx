@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useIntl } from 'react-intl';
 import { useHistory, useLocation } from 'react-router-dom';
 import { Avatar, Icon, Tooltip } from '@/components';
+import { useProjectHeartbeat } from '@/hooks';
 import { api } from '@/apis';
 import { APIProjectMember, PROJECT_WORKER_ROLES } from '@/apis/project';
 import { APIUser } from '@/apis/user';
@@ -81,6 +82,7 @@ export const EditWorkers = ({
   onCancel,
 }: EditWorkersProps) => {
   const { formatMessage } = useIntl();
+  useProjectHeartbeat(projectId, { action: 'staff' });
 
   /** 将 PROJECT_WORKER_ROLES 的职位名本地化，未知职位保留原文 */
   const projectRoleLabel = (roleKey: string) => {

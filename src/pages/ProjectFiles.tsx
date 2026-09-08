@@ -5,7 +5,7 @@ import { useIntl } from 'react-intl';
 import { useSelector } from 'react-redux';
 import { FileList, Icon, ListItem } from '@/components';
 import { IMPORT_FROM_LABELPLUS_STATUS, PROJECT_STATUS, normalizeProjectStatus } from '@/constants';
-import { useProjectHeartbeat, useTitle } from '@/hooks';
+import { useTitle } from '@/hooks';
 import { FC, Project, Target } from '@/interfaces';
 import { AppState } from '@/store';
 import style from '../style';
@@ -28,7 +28,6 @@ interface ProjectFilesProps {
 const ProjectFiles: FC<ProjectFilesProps> = ({ project }) => {
   const { formatMessage } = useIntl(); // i18n
   useTitle(); // 设置标题
-  useProjectHeartbeat(project?.id, { action: 'viewing_files' });
   const platform = useSelector((state: AppState) => state.site.platform);
   const isMobile = platform === 'mobile';
   const [targets, setTargets] = useState<Target[]>([]);

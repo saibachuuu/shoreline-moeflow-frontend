@@ -46,6 +46,20 @@ export const ProjectItem: FC<ProjectItemProps> = ({
   const memberStatsPermissions = getMemberStatsPermissions(project, status);
   const urlPrefix = from === 'team' ? '/projects' : '';
 
+  const getActionTarget = (action?: string): string => {
+    if (!action) return '';
+    if (action === 'staff' || action === 'member_list') {
+      return formatMessage({ id: 'project.action.staff' });
+    }
+    if (action === 'setting' || action === 'project_info') {
+      return formatMessage({ id: 'project.action.setting' });
+    }
+    if (action === 'translation' || action === 'translating') {
+      return formatMessage({ id: 'project.action.translation' });
+    }
+    return '';
+  };
+
   const editingText = useMemo(() => {
     if (!presence || presence.userCount <= 0) {
       return '';
@@ -55,22 +69,55 @@ export const ProjectItem: FC<ProjectItemProps> = ({
     const someone = formatMessage({ id: 'project.editingSomeone' });
 
     if (users.length === 1) {
+      const name = users[0].name || someone;
+      const target = getActionTarget(users[0].action);
+      if (target) {
+        return formatMessage(
+          { id: 'project.editingSingleWithAction' },
+          { name, target },
+        );
+      }
       return formatMessage(
         { id: 'project.editingSingle' },
-        { name: users[0].name || someone },
+        { name },
       );
     }
     if (users.length === 2 && presence.userCount === 2) {
+      const names = users.map((u) => u.name || someone).join(delimiter);
+      const target1 = getActionTarget(users[0].action);
+      const target2 = getActionTarget(users[1].action);
+      if (target1 && target1 === target2) {
+        return formatMessage(
+          { id: 'project.editingMultipleWithAction' },
+          { names, target: target1 },
+        );
+      }
       return formatMessage(
         { id: 'project.editingMultiple' },
-        { names: users.map((u) => u.name || someone).join(delimiter) },
+        { names },
       );
     }
     if (presence.userCount >= 2 && users.length > 0) {
+      const firstName = users[0].name || someone;
+      const firstTarget = getActionTarget(users[0].action);
+      const allSameTarget =
+        Boolean(firstTarget) &&
+        users.every((u) => getActionTarget(u.action) === firstTarget);
+      if (allSameTarget) {
+        return formatMessage(
+          { id: 'project.editingManyWithAction' },
+          {
+            name: firstName,
+            count: presence.userCount,
+            others: presence.userCount - 1,
+            target: firstTarget,
+          },
+        );
+      }
       return formatMessage(
         { id: 'project.editingMany' },
         {
-          name: users[0].name || someone,
+          name: firstName,
           count: presence.userCount,
           others: presence.userCount - 1,
         },
@@ -330,7 +377,10 @@ export const ProjectItem: FC<ProjectItemProps> = ({
                   </div>
                   <div>
                     {presence!.users
-                      .map((u) => u.name)
+                      .map((u) => {
+                        const target = getActionTarget(u.action);
+                        return target ? `${u.name} (${target})` : u.name;
+                      })
                       .join(
                         formatMessage({ id: 'project.editingNamesDelimiter' }),
                       )}
