@@ -40,9 +40,12 @@ export const isMemberSummaryEqual = (
 };
 
 /**
- * Check if a single project's visible attributes have changed.
+ * Check if a single project's own content has changed (presence excluded).
  */
-export const isProjectModified = (oldP: Project, newP: Project): boolean => {
+export const isProjectContentModified = (
+  oldP: Project,
+  newP: Project,
+): boolean => {
   if (oldP.name !== newP.name) return true;
   if (oldP.status !== newP.status) return true;
   if (
@@ -56,8 +59,16 @@ export const isProjectModified = (oldP: Project, newP: Project): boolean => {
   if (!isMemberSummaryEqual(oldP.memberSummary, newP.memberSummary)) {
     return true;
   }
+  return false;
+};
 
-  // Active presence (working state) comparison
+/**
+ * Check if a single project's active presence (editing status) has changed.
+ */
+export const isProjectPresenceModified = (
+  oldP: Project,
+  newP: Project,
+): boolean => {
   const oldPres = oldP.activePresence;
   const newPres = newP.activePresence;
   const oldPresCount = oldPres ? oldPres.userCount : 0;
@@ -74,12 +85,20 @@ export const isProjectModified = (oldP: Project, newP: Project): boolean => {
       .join(',');
     if (oldUsers !== newUsers) return true;
   }
-
   return false;
 };
 
+/**
+ * Check if a single project's visible attributes have changed.
+ */
+export const isProjectModified = (oldP: Project, newP: Project): boolean =>
+  isProjectContentModified(oldP, newP) || isProjectPresenceModified(oldP, newP);
+
 export interface ProjectChangesResult {
+  /** 所有可见变化（含编辑状态），用于决定是否刷新列表数据 */
   changeCount: number;
+  /** 项目内容/顺序变化（不含编辑状态），用于决定是否弹出同步提醒 */
+  contentChangeCount: number;
   addedIds: string[];
   removedIds: string[];
   modifiedIds: string[];
@@ -96,6 +115,7 @@ export const calculateProjectChanges = (
   if (!oldList || oldList.length === 0) {
     return {
       changeCount: 0,
+      contentChangeCount: 0,
       addedIds: [],
       removedIds: [],
       modifiedIds: [],
@@ -115,14 +135,20 @@ export const calculateProjectChanges = (
 
   const addedIds: string[] = [];
   const modifiedIds: string[] = [];
+  const contentModifiedIds: string[] = [];
   const removedIds: string[] = [];
 
   for (const [id, newProject] of newMap.entries()) {
     const oldProject = oldMap.get(id);
     if (!oldProject) {
       addedIds.push(id);
-    } else if (isProjectModified(oldProject, newProject)) {
-      modifiedIds.push(id);
+    } else {
+      if (isProjectModified(oldProject, newProject)) {
+        modifiedIds.push(id);
+      }
+      if (isProjectContentModified(oldProject, newProject)) {
+        contentModifiedIds.push(id);
+      }
     }
   }
 
@@ -142,8 +168,16 @@ export const calculateProjectChanges = (
     totalChanges = 1;
   }
 
+  // 不含编辑状态的变化数：仅编辑状态变化时不弹同步提醒
+  let contentChanges =
+    addedIds.length + removedIds.length + contentModifiedIds.length;
+  if (contentChanges === 0 && orderChanged) {
+    contentChanges = 1;
+  }
+
   return {
     changeCount: totalChanges,
+    contentChangeCount: contentChanges,
     addedIds,
     removedIds,
     modifiedIds,

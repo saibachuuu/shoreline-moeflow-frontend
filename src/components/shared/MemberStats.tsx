@@ -259,7 +259,6 @@ export const MemberStats: FC<MemberStatsProps> = ({
           className="MemberStats__Button MemberStats__Edit"
           onClick={openEditor}
           title={formatMessage({ id: 'memberStats.editTitle' })}
-
           role="button"
           tabIndex={0}
         >
@@ -271,7 +270,12 @@ export const MemberStats: FC<MemberStatsProps> = ({
         rect &&
         createPortal(
           <div
-            onClick={() => setOpen(false)}
+            onClick={(event) => {
+              // 弹窗虽然通过 portal 挂在 body 上，但在 React 树里仍是项目卡片的
+              // 子节点；不阻止冒泡会触发卡片的跳转（回到项目浏览页）。
+              event.stopPropagation();
+              setOpen(false);
+            }}
             css={css`
               position: fixed;
               inset: 0;

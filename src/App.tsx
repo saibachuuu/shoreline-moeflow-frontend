@@ -17,6 +17,9 @@ import { api } from './apis';
 import { setCustomSiteTitle, ThemeMode } from './store/site/slice';
 import { toLowerCamelCase } from './utils';
 
+/** 构建时由 vite define 注入，用于在页面角落辨识是否加载了最新构建 */
+declare const __BETA_BUILD__: string;
+
 // 公共的页面
 const publicPaths = [
   routes.index,
@@ -105,7 +108,11 @@ const App: React.FC = () => {
             background-color: #202025 !important;
             border-right-color: #2e2e34 !important;
           }
-          [data-theme='dark'] .Dashboard__ListItem .ListItem__Top .ListItem__TopLeft .ListItem__Logo {
+          [data-theme='dark']
+            .Dashboard__ListItem
+            .ListItem__Top
+            .ListItem__TopLeft
+            .ListItem__Logo {
             background-color: #26262a !important;
             border-color: #383840 !important;
           }
@@ -128,7 +135,9 @@ const App: React.FC = () => {
           [data-theme='dark'] .FileUploadProgress__Progress {
             background: #2e2e38 !important;
           }
-          [data-theme='dark'] .TranslationProgress--noSource .TranslationProgress__LineBase {
+          [data-theme='dark']
+            .TranslationProgress--noSource
+            .TranslationProgress__LineBase {
             background: repeating-linear-gradient(
               45deg,
               #22222a,
@@ -187,7 +196,9 @@ const App: React.FC = () => {
           [data-theme='dark'] .ant-modal-confirm-body .ant-modal-confirm-title {
             color: rgba(255, 255, 255, 0.85);
           }
-          [data-theme='dark'] .ant-modal-confirm-body .ant-modal-confirm-content {
+          [data-theme='dark']
+            .ant-modal-confirm-body
+            .ant-modal-confirm-content {
             color: rgba(255, 255, 255, 0.65);
           }
           [data-theme='dark'] .ant-dropdown-menu,
@@ -236,7 +247,10 @@ const App: React.FC = () => {
           [data-theme='dark'] .ant-select-item-option-active {
             background-color: rgba(255, 255, 255, 0.08);
           }
-          [data-theme='dark'] .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+          [data-theme='dark']
+            .ant-select-item-option-selected:not(
+              .ant-select-item-option-disabled
+            ) {
             background-color: rgba(255, 101, 124, 0.15);
           }
           [data-theme='dark'] .ant-select-selection-item {
@@ -255,10 +269,14 @@ const App: React.FC = () => {
             border-color: #383840;
             color: rgba(255, 255, 255, 0.85);
           }
-          [data-theme='dark'] .ant-select-multiple .ant-select-selection-item-remove {
+          [data-theme='dark']
+            .ant-select-multiple
+            .ant-select-selection-item-remove {
             color: rgba(255, 255, 255, 0.45);
           }
-          [data-theme='dark'] .ant-select-multiple .ant-select-selection-item-remove:hover {
+          [data-theme='dark']
+            .ant-select-multiple
+            .ant-select-selection-item-remove:hover {
             color: rgba(255, 255, 255, 0.85);
           }
           [data-theme='dark'] .ant-btn {
@@ -276,7 +294,8 @@ const App: React.FC = () => {
             border-color: #383840;
             color: rgba(255, 255, 255, 0.85);
           }
-          [data-theme='dark'] .ant-radio-button-wrapper:not(:first-child)::before {
+          [data-theme='dark']
+            .ant-radio-button-wrapper:not(:first-child)::before {
             background-color: #383840;
           }
           [data-theme='dark'] .ant-radio-button-wrapper:hover,
@@ -288,7 +307,8 @@ const App: React.FC = () => {
             border-color: var(--primary-color);
             color: #fff;
           }
-          [data-theme='dark'] .ant-radio-button-wrapper-checked:not(:first-child)::before {
+          [data-theme='dark']
+            .ant-radio-button-wrapper-checked:not(:first-child)::before {
             background-color: var(--primary-color);
           }
 
@@ -317,7 +337,9 @@ const App: React.FC = () => {
           [data-theme='dark'] .ant-tabs-tab {
             color: rgba(255, 255, 255, 0.65);
           }
-          [data-theme='dark'] .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+          [data-theme='dark']
+            .ant-tabs-tab.ant-tabs-tab-active
+            .ant-tabs-tab-btn {
             color: var(--primary-color);
           }
           [data-theme='dark'] .ant-divider {
@@ -371,19 +393,33 @@ const App: React.FC = () => {
             border-color: #383840;
             color: rgba(255, 255, 255, 0.85);
           }
-          [data-theme='dark'] .ant-pagination-prev:hover .ant-pagination-item-link,
-          [data-theme='dark'] .ant-pagination-next:hover .ant-pagination-item-link {
+          [data-theme='dark']
+            .ant-pagination-prev:hover
+            .ant-pagination-item-link,
+          [data-theme='dark']
+            .ant-pagination-next:hover
+            .ant-pagination-item-link {
             border-color: var(--primary-color);
             color: var(--primary-color);
           }
-          [data-theme='dark'] .ant-pagination-disabled .ant-pagination-item-link,
-          [data-theme='dark'] .ant-pagination-disabled:hover .ant-pagination-item-link {
+          [data-theme='dark']
+            .ant-pagination-disabled
+            .ant-pagination-item-link,
+          [data-theme='dark']
+            .ant-pagination-disabled:hover
+            .ant-pagination-item-link {
             background-color: #1f1f24;
             border-color: #2e2e34;
             color: rgba(255, 255, 255, 0.25);
           }
-          [data-theme='dark'] .ant-pagination-jump-prev .ant-pagination-item-container .ant-pagination-item-ellipsis,
-          [data-theme='dark'] .ant-pagination-jump-next .ant-pagination-item-container .ant-pagination-item-ellipsis {
+          [data-theme='dark']
+            .ant-pagination-jump-prev
+            .ant-pagination-item-container
+            .ant-pagination-item-ellipsis,
+          [data-theme='dark']
+            .ant-pagination-jump-next
+            .ant-pagination-item-container
+            .ant-pagination-item-ellipsis {
             color: rgba(255, 255, 255, 0.45);
           }
           [data-theme='dark'] .ant-pagination-simple-pager input {
@@ -391,7 +427,10 @@ const App: React.FC = () => {
             border-color: #383840;
             color: rgba(255, 255, 255, 0.85);
           }
-          [data-theme='dark'] .ant-pagination-simple .ant-pagination-simple-pager input:hover {
+          [data-theme='dark']
+            .ant-pagination-simple
+            .ant-pagination-simple-pager
+            input:hover {
             border-color: var(--primary-color);
           }
           [data-theme='dark'] .ant-pagination-options-quick-jumper input {
@@ -406,19 +445,38 @@ const App: React.FC = () => {
             color: rgba(255, 255, 255, 0.85);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
           }
-          [data-theme='dark'] .ant-message .ant-message-notice-content .anticon {
+          [data-theme='dark']
+            .ant-message
+            .ant-message-notice-content
+            .anticon {
             color: rgba(255, 255, 255, 0.85);
           }
-          [data-theme='dark'] .ant-message .ant-message-notice-content .ant-message-success .anticon {
+          [data-theme='dark']
+            .ant-message
+            .ant-message-notice-content
+            .ant-message-success
+            .anticon {
             color: #52c41a;
           }
-          [data-theme='dark'] .ant-message .ant-message-notice-content .ant-message-error .anticon {
+          [data-theme='dark']
+            .ant-message
+            .ant-message-notice-content
+            .ant-message-error
+            .anticon {
             color: #f5222d;
           }
-          [data-theme='dark'] .ant-message .ant-message-notice-content .ant-message-warning .anticon {
+          [data-theme='dark']
+            .ant-message
+            .ant-message-notice-content
+            .ant-message-warning
+            .anticon {
             color: #faad14;
           }
-          [data-theme='dark'] .ant-message .ant-message-notice-content .ant-message-info .anticon {
+          [data-theme='dark']
+            .ant-message
+            .ant-message-notice-content
+            .ant-message-info
+            .anticon {
             color: #1890ff;
           }
 
@@ -537,6 +595,28 @@ const App: React.FC = () => {
           </Route>
         </Switch>
       )}
+      <div
+        className="App__BetaBuild"
+        css={css`
+          position: fixed;
+          right: 6px;
+          bottom: 6px;
+          z-index: 10000;
+          padding: 1px 6px;
+          border-radius: 6px;
+          font-size: 11px;
+          line-height: 16px;
+          font-family: monospace;
+          color: ${style.textColorSecondary};
+          background: ${style.backgroundColorLight};
+          border: 1px solid ${style.borderColorLight};
+          opacity: 0.8;
+          pointer-events: none;
+          user-select: none;
+        `}
+      >
+        {typeof __BETA_BUILD__ === 'string' ? __BETA_BUILD__ : 'beta'}
+      </div>
     </>
   );
 };

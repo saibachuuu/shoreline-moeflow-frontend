@@ -163,23 +163,6 @@ export const ProjectList: FC<ProjectListProps> = ({
     };
   }, [from, currentTeam?.id]);
 
-  const sortedProjects = React.useMemo(() => {
-    if (!activePresenceMap || Object.keys(activePresenceMap).length === 0) {
-      return projects;
-    }
-    const activeList: Project[] = [];
-    const normalList: Project[] = [];
-    for (const p of projects) {
-      const presence = activePresenceMap[p.id] || p.activePresence;
-      if (presence && presence.userCount > 0) {
-        activeList.push(p);
-      } else {
-        normalList.push(p);
-      }
-    }
-    return [...activeList, ...normalList];
-  }, [projects, activePresenceMap]);
-
   const projectsRef = useRef<Project[]>(projects);
   projectsRef.current = projects;
 
@@ -348,10 +331,13 @@ export const ProjectList: FC<ProjectListProps> = ({
           if (diff.changeCount > 0) {
             setTotal(newTotal);
             dispatch(setProjects(newProjects));
+          }
+          // 仅编辑状态变化时不弹提醒；项目顺序/内容变化才提醒
+          if (diff.contentChangeCount > 0) {
             message.info({
               content: formatMessage(
                 { id: 'project.syncedRecentChanges' },
-                { count: diff.changeCount },
+                { count: diff.contentChangeCount },
               ),
               key: 'project-list-sync-notice',
             });
@@ -471,7 +457,7 @@ export const ProjectList: FC<ProjectListProps> = ({
       onChange={handleChange}
       loading={loading}
       total={total}
-      items={sortedProjects}
+      items={projects}
       itemHeight={200}
       minPageSize={isMobile ? 10 : 15}
       itemCreater={(project) => (

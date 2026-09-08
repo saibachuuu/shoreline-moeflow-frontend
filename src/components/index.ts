@@ -55,6 +55,7 @@ export { TeamSettingBase } from './team/TeamSettingBase';
 export { Tooltip } from './shared/Tooltip';
 export { TranslationProgress } from './shared/TranslationProgress';
 export { MemberStats } from './shared/MemberStats';
+export { EditingStatusBadge } from './shared/EditingStatusBadge';
 export { EditWorkers } from './shared/EditWorkers';
 export { TypeRadioGroup } from './shared-form/TypeRadioGroup';
 export { UserEmailEditForm } from './shared-form/UserEmailEditForm';

@@ -3,7 +3,7 @@ import { Input, Modal, Spin, message } from 'antd';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useIntl } from 'react-intl';
 import { useHistory, useLocation } from 'react-router-dom';
-import { Avatar, Icon, Tooltip } from '@/components';
+import { Avatar, EditingStatusBadge, Icon, Tooltip } from '@/components';
 import { useProjectHeartbeat } from '@/hooks';
 import { api } from '@/apis';
 import { APIProjectMember, PROJECT_WORKER_ROLES } from '@/apis/project';
@@ -82,7 +82,7 @@ export const EditWorkers = ({
   onCancel,
 }: EditWorkersProps) => {
   const { formatMessage } = useIntl();
-  useProjectHeartbeat(projectId, { action: 'staff' });
+  const { presence } = useProjectHeartbeat(projectId, { action: 'staff' });
 
   /** 将 PROJECT_WORKER_ROLES 的职位名本地化，未知职位保留原文 */
   const projectRoleLabel = (roleKey: string) => {
@@ -1001,6 +1001,12 @@ export const EditWorkers = ({
           align-items: center;
           gap: 6px;
         }
+        .EditWorkers__Presence {
+          display: flex;
+          align-items: center;
+          margin: -2px 0 8px;
+          min-height: 18px;
+        }
         .EditWorkers__ModeBtn {
           display: inline-flex;
           align-items: center;
@@ -1359,6 +1365,11 @@ export const EditWorkers = ({
           </Tooltip>
         </span>
       </div>
+      {presence.userCount > 0 && (
+        <div className="EditWorkers__Presence">
+          <EditingStatusBadge presence={presence} />
+        </div>
+      )}
       <div className="EditWorkers__Body">
         {simpleMode ? (
           <div className="EditWorkersSimple">
@@ -1407,7 +1418,9 @@ export const EditWorkers = ({
                           });
                           const isSiteUser = Boolean(member.userId);
                           const userAliases =
-                            isSiteUser && userInfo ? userInfo.aliases || [] : [];
+                            isSiteUser && userInfo
+                              ? userInfo.aliases || []
+                              : [];
                           const displayAliases = userAliases.filter(
                             (a) => a && a !== main && a !== note,
                           );
@@ -1553,7 +1566,9 @@ export const EditWorkers = ({
                         JOB_COLORS[item.key] || style.textColorSecondary,
                     }}
                   />
-                  <span className="EditWorkers__JobName">{projectRoleLabel(item.key)}</span>
+                  <span className="EditWorkers__JobName">
+                    {projectRoleLabel(item.key)}
+                  </span>
                   <span className="EditWorkers__JobCount">
                     {
                       draft.filter(

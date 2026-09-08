@@ -17,6 +17,7 @@ import sourceSaga from './source/sagas';
 import hotKeyReducer from './hotKey/slice';
 import imageTranslatorReducer from './imageTranslator/slice';
 import translationReducer from './translation/slice';
+import presenceReducer from './presence/slice';
 
 // 组合各个 Reducers
 const rootReducer = combineReducers({
@@ -30,16 +31,11 @@ const rootReducer = combineReducers({
   hotKey: hotKeyReducer,
   imageTranslator: imageTranslatorReducer,
   translation: translationReducer,
+  presence: presenceReducer,
 });
 
 function* rootSaga() {
-  const sagas = [
-    userSaga,
-    teamSaga,
-    projectSetSaga,
-    projectSaga,
-    sourceSaga,
-  ];
+  const sagas = [userSaga, teamSaga, projectSetSaga, projectSaga, sourceSaga];
 
   yield all(
     sagas.map((saga) =>

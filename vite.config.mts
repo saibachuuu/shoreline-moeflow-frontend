@@ -6,7 +6,7 @@ import { antdLessVars, antdLessVarsM } from './src/style';
 import vitePluginImp from 'vite-plugin-imp';
 import { visualizer } from 'rollup-plugin-visualizer';
 import url from 'node:url';
-import tailwindcss from '@tailwindcss/vite'
+import tailwindcss from '@tailwindcss/vite';
 
 const ___dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const moeflowSrc = path.join(___dirname, './src');
@@ -35,6 +35,13 @@ const rewriteBackendProxy: ProxyOptions = {
 };
 
 const apiProxy = bareBackendProxy;
+
+/** 生成构建标识（本地时间），用于在页面角落辨识是否加载了最新构建 */
+function createBetaBuildLabel() {
+  const now = new Date();
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return `beta ${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
+}
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -74,6 +81,7 @@ export default defineConfig({
     'process.env.REACT_APP_BASE_URL': JSON.stringify(
       process.env.REACT_APP_BASE_URL ?? '/api/',
     ),
+    __BETA_BUILD__: JSON.stringify(createBetaBuildLabel()),
   },
   resolve: {
     alias: [

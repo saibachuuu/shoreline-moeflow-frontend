@@ -3,6 +3,7 @@ import { Project } from '@/interfaces';
 import {
   calculateProjectChanges,
   isMemberSummaryEqual,
+  isProjectContentModified,
   isProjectModified,
   serializeMemberSummary,
 } from './projectDiff';
@@ -28,7 +29,7 @@ const makeMockProject = (partial: Partial<Project> = {}): Project =>
     team: { id: 'team-1', name: 'Team 1' } as any,
     projectSet: { id: 'ps-1', name: 'PS 1' } as any,
     ...partial,
-  } as Project);
+  }) as Project;
 
 describe('projectDiff utils', () => {
   describe('memberSummary equality', () => {
@@ -40,19 +41,53 @@ describe('projectDiff utils', () => {
 
     it('considers same members in different order as equal', () => {
       const a = [
-        { memberId: 'm-1', displayName: 'Alice', tags: ['translator', 'proofreader'], status: 'active' },
-        { memberId: 'm-2', displayName: 'Bob', tags: ['cleaner'], status: 'active' },
+        {
+          memberId: 'm-1',
+          displayName: 'Alice',
+          tags: ['translator', 'proofreader'],
+          status: 'active',
+        },
+        {
+          memberId: 'm-2',
+          displayName: 'Bob',
+          tags: ['cleaner'],
+          status: 'active',
+        },
       ];
       const b = [
-        { memberId: 'm-2', displayName: 'Bob', tags: ['cleaner'], status: 'active' },
-        { memberId: 'm-1', displayName: 'Alice', tags: ['proofreader', 'translator'], status: 'active' },
+        {
+          memberId: 'm-2',
+          displayName: 'Bob',
+          tags: ['cleaner'],
+          status: 'active',
+        },
+        {
+          memberId: 'm-1',
+          displayName: 'Alice',
+          tags: ['proofreader', 'translator'],
+          status: 'active',
+        },
       ];
       expect(isMemberSummaryEqual(a, b)).toBe(true);
     });
 
     it('detects changes in tags or status', () => {
-      const a = [{ memberId: 'm-1', displayName: 'Alice', tags: ['translator'], status: 'active' }];
-      const b = [{ memberId: 'm-1', displayName: 'Alice', tags: ['proofreader'], status: 'active' }];
+      const a = [
+        {
+          memberId: 'm-1',
+          displayName: 'Alice',
+          tags: ['translator'],
+          status: 'active',
+        },
+      ];
+      const b = [
+        {
+          memberId: 'm-1',
+          displayName: 'Alice',
+          tags: ['proofreader'],
+          status: 'active',
+        },
+      ];
       expect(isMemberSummaryEqual(a, b)).toBe(false);
     });
   });
@@ -92,6 +127,23 @@ describe('projectDiff utils', () => {
         },
       });
       expect(isProjectModified(p1, p2)).toBe(true);
+      // 编辑状态不算内容变化
+      expect(isProjectContentModified(p1, p2)).toBe(false);
+    });
+
+    it('isProjectContentModified ignores presence but detects content', () => {
+      const base = makeMockProject({ activePresence: null });
+      const presenceOnly = makeMockProject({
+        activePresence: {
+          projectId: 'proj-1',
+          userCount: 1,
+          users: [{ id: 'u-1', name: 'Alice' }],
+        },
+      });
+      expect(isProjectContentModified(base, presenceOnly)).toBe(false);
+      expect(
+        isProjectContentModified(base, makeMockProject({ name: 'New' })),
+      ).toBe(true);
     });
   });
 
@@ -134,6 +186,30 @@ describe('projectDiff utils', () => {
       const res = calculateProjectChanges([p1, p2], [p2, p1]);
       expect(res.changeCount).toBe(1);
       expect(res.orderChanged).toBe(true);
+      // 顺序变化需要弹提醒
+      expect(res.contentChangeCount).toBe(1);
+    });
+
+    it('presence-only change refreshes data but does not notify', () => {
+      const p1 = makeMockProject({ activePresence: null });
+      const p2 = makeMockProject({
+        activePresence: {
+          projectId: 'proj-1',
+          userCount: 1,
+          users: [{ id: 'u-1', name: 'Alice' }],
+        },
+      });
+      const res = calculateProjectChanges([p1], [p2]);
+      expect(res.changeCount).toBe(1);
+      expect(res.contentChangeCount).toBe(0);
+    });
+
+    it('content change notifies', () => {
+      const p1 = makeMockProject({ id: '1', name: 'Old' });
+      const p2 = makeMockProject({ id: '1', name: 'New' });
+      const res = calculateProjectChanges([p1], [p2]);
+      expect(res.changeCount).toBe(1);
+      expect(res.contentChangeCount).toBe(1);
     });
   });
 });

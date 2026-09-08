@@ -4,7 +4,12 @@ import { useMemo } from 'react';
 import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory, useLocation, useRouteMatch } from 'react-router-dom';
-import { Icon, TranslationProgress, MemberStats, Tooltip } from '@/components';
+import {
+  EditingStatusBadge,
+  Icon,
+  TranslationProgress,
+  MemberStats,
+} from '@/components';
 import {
   PROJECT_PERMISSION,
   PROJECT_STATUS,
@@ -18,6 +23,10 @@ import style from '@/style';
 import { cardActiveEffect, cardClickEffect, clickEffect } from '@/utils/style';
 import { can } from '@/utils/user';
 import { getMemberStatsPermissions } from '@/utils/memberStats';
+import {
+  mergeProjectPresence,
+  resolveLocalAction,
+} from '@/utils/projectPresence';
 
 interface ProjectItemProps {
   from: 'team' | 'user';
@@ -41,93 +50,26 @@ export const ProjectItem: FC<ProjectItemProps> = ({
     (state: AppState) => state.projectSet.currentProjectSet,
   );
   const status = normalizeProjectStatus(project.status);
-  const presence = activePresence || project.activePresence;
-  const isWorking = Boolean(presence && presence.userCount > 0);
+  const currentUser = useSelector((state: AppState) => state.user);
+  // 本地手动记录的编辑状态：string=正在编辑，null=已离开，undefined=未记录
+  const localRecord = useSelector((state: AppState) =>
+    resolveLocalAction(state.presence.entries, project.id),
+  );
+  const serverPresence = activePresence || project.activePresence;
+  // 本地自己 + 服务器其他人，保证打开/离开窗口时卡片立即更新
+  const presence = useMemo(
+    () =>
+      mergeProjectPresence(
+        serverPresence,
+        project.id,
+        localRecord,
+        currentUser,
+      ),
+    [serverPresence, project.id, localRecord, currentUser],
+  );
+  const isWorking = presence.userCount > 0;
   const memberStatsPermissions = getMemberStatsPermissions(project, status);
   const urlPrefix = from === 'team' ? '/projects' : '';
-
-  const getActionTarget = (action?: string): string => {
-    if (!action) return '';
-    if (action === 'staff' || action === 'member_list') {
-      return formatMessage({ id: 'project.action.staff' });
-    }
-    if (action === 'setting' || action === 'project_info') {
-      return formatMessage({ id: 'project.action.setting' });
-    }
-    if (action === 'translation' || action === 'translating') {
-      return formatMessage({ id: 'project.action.translation' });
-    }
-    return '';
-  };
-
-  const editingText = useMemo(() => {
-    if (!presence || presence.userCount <= 0) {
-      return '';
-    }
-    const users = presence.users || [];
-    const delimiter = formatMessage({ id: 'project.editingNamesDelimiter' });
-    const someone = formatMessage({ id: 'project.editingSomeone' });
-
-    if (users.length === 1) {
-      const name = users[0].name || someone;
-      const target = getActionTarget(users[0].action);
-      if (target) {
-        return formatMessage(
-          { id: 'project.editingSingleWithAction' },
-          { name, target },
-        );
-      }
-      return formatMessage(
-        { id: 'project.editingSingle' },
-        { name },
-      );
-    }
-    if (users.length === 2 && presence.userCount === 2) {
-      const names = users.map((u) => u.name || someone).join(delimiter);
-      const target1 = getActionTarget(users[0].action);
-      const target2 = getActionTarget(users[1].action);
-      if (target1 && target1 === target2) {
-        return formatMessage(
-          { id: 'project.editingMultipleWithAction' },
-          { names, target: target1 },
-        );
-      }
-      return formatMessage(
-        { id: 'project.editingMultiple' },
-        { names },
-      );
-    }
-    if (presence.userCount >= 2 && users.length > 0) {
-      const firstName = users[0].name || someone;
-      const firstTarget = getActionTarget(users[0].action);
-      const allSameTarget =
-        Boolean(firstTarget) &&
-        users.every((u) => getActionTarget(u.action) === firstTarget);
-      if (allSameTarget) {
-        return formatMessage(
-          { id: 'project.editingManyWithAction' },
-          {
-            name: firstName,
-            count: presence.userCount,
-            others: presence.userCount - 1,
-            target: firstTarget,
-          },
-        );
-      }
-      return formatMessage(
-        { id: 'project.editingMany' },
-        {
-          name: firstName,
-          count: presence.userCount,
-          others: presence.userCount - 1,
-        },
-      );
-    }
-    return formatMessage(
-      { id: 'project.editingCount' },
-      { count: presence.userCount },
-    );
-  }, [presence, formatMessage]);
 
   const handleClick = () => {
     dispatch(resetFilesState());
@@ -182,74 +124,6 @@ export const ProjectItem: FC<ProjectItemProps> = ({
           align-items: center;
           margin-top: 4px;
           margin-bottom: 2px;
-        }
-        .ProjectItem__WorkingBadge {
-          display: inline-flex;
-          align-items: center;
-          max-width: 100%;
-          padding: 1px 7px;
-          border-radius: 10px;
-          background-color: ${style.primaryColor}18;
-          border: 1px solid ${style.primaryColor}38;
-          color: ${style.primaryColor};
-          font-size: 11px;
-          line-height: 16px;
-          font-weight: 500;
-        }
-        .ProjectItem__WorkingDot {
-          flex: none;
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background-color: ${style.primaryColor};
-          margin-right: 5px;
-          display: inline-block;
-          animation: workingPulse 1.4s infinite ease-in-out;
-        }
-        .ProjectItem__WorkingText {
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-        .ProjectItem__WorkingEllipsis {
-          flex: none;
-          display: inline-flex;
-          margin-left: 1px;
-          font-family: monospace;
-          letter-spacing: 0.5px;
-        }
-        .ProjectItem__Dot {
-          display: inline-block;
-          animation: dotBlink 1.4s infinite ease-in-out both;
-        }
-        .ProjectItem__Dot--1 {
-          animation-delay: 0s;
-        }
-        .ProjectItem__Dot--2 {
-          animation-delay: 0.2s;
-        }
-        .ProjectItem__Dot--3 {
-          animation-delay: 0.4s;
-        }
-        @keyframes dotBlink {
-          0%, 80%, 100% {
-            opacity: 0.2;
-            transform: translateY(0);
-          }
-          40% {
-            opacity: 1;
-            transform: translateY(-1.5px);
-          }
-        }
-        @keyframes workingPulse {
-          0%, 100% {
-            transform: scale(0.85);
-            opacity: 0.5;
-          }
-          50% {
-            transform: scale(1.25);
-            opacity: 1;
-          }
         }
         &.ProjectItem--completed::after,
         &.ProjectItem--cleared::after {
@@ -366,38 +240,7 @@ export const ProjectItem: FC<ProjectItemProps> = ({
         )}
         {isWorking && (
           <div className="ProjectItem__WorkingBar">
-            <Tooltip
-              title={
-                <div>
-                  <div style={{ fontWeight: 'bold', marginBottom: 2 }}>
-                    {formatMessage(
-                      { id: 'project.workingUsers' },
-                      { count: presence!.userCount },
-                    )}
-                  </div>
-                  <div>
-                    {presence!.users
-                      .map((u) => {
-                        const target = getActionTarget(u.action);
-                        return target ? `${u.name} (${target})` : u.name;
-                      })
-                      .join(
-                        formatMessage({ id: 'project.editingNamesDelimiter' }),
-                      )}
-                  </div>
-                </div>
-              }
-            >
-              <div className="ProjectItem__WorkingBadge">
-                <span className="ProjectItem__WorkingDot" />
-                <span className="ProjectItem__WorkingText">{editingText}</span>
-                <span className="ProjectItem__WorkingEllipsis">
-                  <span className="ProjectItem__Dot ProjectItem__Dot--1">.</span>
-                  <span className="ProjectItem__Dot ProjectItem__Dot--2">.</span>
-                  <span className="ProjectItem__Dot ProjectItem__Dot--3">.</span>
-                </span>
-              </div>
-            </Tooltip>
+            <EditingStatusBadge presence={presence} />
           </div>
         )}
         <div className="ProjectItem__Name">

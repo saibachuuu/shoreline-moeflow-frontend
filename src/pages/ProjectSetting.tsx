@@ -2,17 +2,28 @@ import { css } from '@emotion/core';
 import { useIntl } from 'react-intl';
 import { useSelector } from 'react-redux';
 import { useDispatch } from 'react-redux';
-import { Redirect, Route, Switch, useLocation, useRouteMatch } from 'react-router-dom';
+import {
+  Redirect,
+  Route,
+  Switch,
+  useLocation,
+  useRouteMatch,
+} from 'react-router-dom';
 import {
   ApplicationList,
   DashboardBox,
+  EditingStatusBadge,
   InvitationList,
   MemberList,
   NavTab,
   NavTabs,
   Spin,
 } from '@/components';
-import { PROJECT_PERMISSION, PROJECT_STATUS, normalizeProjectStatus } from '@/constants';
+import {
+  PROJECT_PERMISSION,
+  PROJECT_STATUS,
+  normalizeProjectStatus,
+} from '@/constants';
 import { useProjectHeartbeat, useTitle } from '@/hooks';
 import { FC, Project } from '@/interfaces';
 import { AppState } from '@/store';
@@ -21,6 +32,7 @@ import { ProjectFinishedTip } from '@/components/project/ProjectFinishedTip';
 import { ProjectSettingBase } from '@/components/project/ProjectSettingBase';
 import { ProjectSettingTarget } from '@/components/project/ProjectSettingTarget';
 import { editProject, setCurrentProject } from '@/store/project/slice';
+import style from '@/style';
 
 /** 团队设置页的属性接口 */
 interface ProjectSettingProps {
@@ -44,7 +56,7 @@ const ProjectSetting: FC<ProjectSettingProps> = ({ project }) => {
   const isCompleted = status === PROJECT_STATUS.COMPLETED;
 
   const isMemberTab = location.pathname.includes('/setting/member');
-  useProjectHeartbeat(project?.id || currentProject?.id, {
+  const { presence } = useProjectHeartbeat(project?.id || currentProject?.id, {
     action: isMemberTab ? 'staff' : 'setting',
   });
 
@@ -89,41 +101,74 @@ const ProjectSetting: FC<ProjectSettingProps> = ({ project }) => {
       // PC 版显示导航
       nav={!isMobile && nav}
       content={
-        <Switch>
-          {isMobile ? (
-            // 手机版导航单独为一个页面
-            <Route exact path={`${path}`}>
-              {nav}
-            </Route>
-          ) : (
-            // PC 版自动跳转到第一个导航
-            <Redirect exact from={`${path}`} to={`${path}/base`} />
+        <>
+          {presence.userCount > 0 && (
+            <div
+              css={css`
+                width: 100%;
+                max-width: ${style.contentMaxWidth}px;
+                padding: ${style.paddingBase}px ${style.paddingBase}px 0;
+              `}
+            >
+              <EditingStatusBadge presence={presence} />
+            </div>
           )}
-          <Route path={`${path}/base`}>
-            <ProjectSettingBase />
-          </Route>
-          <Route path={`${path}/member`}>
-            {isCompleted ? <ProjectFinishedTip /> : <MemberList groupType="project" currentGroup={currentProject} onProjectUpdated={(nextProject) => { dispatch(setCurrentProject(nextProject)); dispatch(editProject(nextProject)); }} />}
-          </Route>
-          <Route path={`${path}/application`}>
-            {isCompleted ? <ProjectFinishedTip /> : (
-              <ApplicationList
-                type="group"
-                groupType="project"
-                currentGroup={currentProject}
-              />
+          <Switch>
+            {isMobile ? (
+              // 手机版导航单独为一个页面
+              <Route exact path={`${path}`}>
+                {nav}
+              </Route>
+            ) : (
+              // PC 版自动跳转到第一个导航
+              <Redirect exact from={`${path}`} to={`${path}/base`} />
             )}
-          </Route>
-          <Route path={`${path}/invitation`}>
-            {isCompleted ? <ProjectFinishedTip /> : <InvitationList groupType="project" currentGroup={currentProject} />}
-          </Route>
-          <Route path={`${path}/target`}>
-            {isCompleted ? <ProjectFinishedTip /> : <ProjectSettingTarget />}
-          </Route>
-          <Route path={`${path}/role`}>
-            {formatMessage({ id: 'project.customRole' })}
-          </Route>
-        </Switch>
+            <Route path={`${path}/base`}>
+              <ProjectSettingBase />
+            </Route>
+            <Route path={`${path}/member`}>
+              {isCompleted ? (
+                <ProjectFinishedTip />
+              ) : (
+                <MemberList
+                  groupType="project"
+                  currentGroup={currentProject}
+                  onProjectUpdated={(nextProject) => {
+                    dispatch(setCurrentProject(nextProject));
+                    dispatch(editProject(nextProject));
+                  }}
+                />
+              )}
+            </Route>
+            <Route path={`${path}/application`}>
+              {isCompleted ? (
+                <ProjectFinishedTip />
+              ) : (
+                <ApplicationList
+                  type="group"
+                  groupType="project"
+                  currentGroup={currentProject}
+                />
+              )}
+            </Route>
+            <Route path={`${path}/invitation`}>
+              {isCompleted ? (
+                <ProjectFinishedTip />
+              ) : (
+                <InvitationList
+                  groupType="project"
+                  currentGroup={currentProject}
+                />
+              )}
+            </Route>
+            <Route path={`${path}/target`}>
+              {isCompleted ? <ProjectFinishedTip /> : <ProjectSettingTarget />}
+            </Route>
+            <Route path={`${path}/role`}>
+              {formatMessage({ id: 'project.customRole' })}
+            </Route>
+          </Switch>
+        </>
       }
     />
   ) : (
