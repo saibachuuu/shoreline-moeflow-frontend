@@ -298,3 +298,30 @@ export const teamSearchResultLabel = (
   );
   return { main: name, aliases: matched };
 };
+
+/**
+ * Format a project member's display text with their site aliases when the member
+ * is a registered site user. External members return only their display name.
+ */
+export const formatProjectMemberNameWithAliases = (
+  member: {
+    displayName?: string;
+    userId?: string | null;
+    user?: { name?: string; aliases?: string[] } | null;
+  },
+  separator: string = '、',
+): string => {
+  const isSiteUser = Boolean(member.userId || member.user);
+  const name = member.displayName || member.user?.name || '';
+  if (!isSiteUser) {
+    return name;
+  }
+  const aliases = (member.user?.aliases || []).filter(
+    (alias) => alias && alias !== name && alias !== member.user?.name,
+  );
+  if (aliases.length === 0) {
+    return name;
+  }
+  return `${name}（${aliases.join(separator)}）`;
+};
+

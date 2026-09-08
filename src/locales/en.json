@@ -702,6 +702,7 @@
   "userEdit.siteAlias": "Site Alias",
   "userEdit.enterToAdd": "Press Enter to Add",
   "fileList.refreshLater": "(Please refresh the page later to check progress)",
+  "project.workerRole.raw_provider": "Raw Provider",
   "project.workerRole.rawProvider": "Raw Provider",
   "project.workerRole.scanner": "Scanner",
   "project.workerRole.cropper": "Cropper",

@@ -702,6 +702,7 @@
   "userEdit.siteAlias": "站点别名",
   "userEdit.enterToAdd": "输入后回车添加",
   "fileList.refreshLater": "（请稍后刷新页面查看进度）",
+  "project.workerRole.raw_provider": "图源",
   "project.workerRole.rawProvider": "图源",
   "project.workerRole.scanner": "扫图",
   "project.workerRole.cropper": "裁切",

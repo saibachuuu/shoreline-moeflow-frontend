@@ -7,6 +7,7 @@ import {
   mergeExternalMemberWithoutTags,
   mergeMemberTag,
   mergeMemberWithoutTags,
+  formatProjectMemberNameWithAliases,
   normalizeSearchText,
   projectMemberDisplayLabel,
   projectMemberIdempotencyHeader,
@@ -396,3 +397,64 @@ describe('teamSearchResultLabel', () => {
     });
   });
 });
+
+describe('formatProjectMemberNameWithAliases', () => {
+  test('registered member with site aliases shows displayName and all aliases', () => {
+    expect(
+      formatProjectMemberNameWithAliases({
+        displayName: '笨羊',
+        userId: 'user-1',
+        user: { name: '笨羊', aliases: ['大笨羊', '小笨羊'] },
+      }),
+    ).toBe('笨羊（大笨羊、小笨羊）');
+  });
+
+  test('registered member without aliases shows only displayName', () => {
+    expect(
+      formatProjectMemberNameWithAliases({
+        displayName: '笨羊',
+        userId: 'user-1',
+        user: { name: '笨羊', aliases: [] },
+      }),
+    ).toBe('笨羊');
+  });
+
+  test('external member shows only displayName even if user is null or missing', () => {
+    expect(
+      formatProjectMemberNameWithAliases({
+        displayName: '外部画师',
+        userId: null,
+        user: null,
+      }),
+    ).toBe('外部画师');
+    expect(
+      formatProjectMemberNameWithAliases({
+        displayName: '外部画师',
+      }),
+    ).toBe('外部画师');
+  });
+
+  test('filters out aliases that duplicate displayName or username', () => {
+    expect(
+      formatProjectMemberNameWithAliases({
+        displayName: '大笨羊',
+        userId: 'user-1',
+        user: { name: '笨羊', aliases: ['大笨羊', '小笨羊'] },
+      }),
+    ).toBe('大笨羊（小笨羊）');
+  });
+
+  test('supports custom separator', () => {
+    expect(
+      formatProjectMemberNameWithAliases(
+        {
+          displayName: '笨羊',
+          userId: 'user-1',
+          user: { name: '笨羊', aliases: ['大笨羊', '小笨羊'] },
+        },
+        ', ',
+      ),
+    ).toBe('笨羊（大笨羊, 小笨羊）');
+  });
+});
+

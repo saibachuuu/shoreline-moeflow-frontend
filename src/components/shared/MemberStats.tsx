@@ -14,6 +14,7 @@ import {
 } from '@/apis/project';
 import {
   diffProjectMembers,
+  formatProjectMemberNameWithAliases,
   projectMemberIdempotencyHeader,
 } from '@/utils/projectMembers';
 import { FC } from '@/interfaces';
@@ -60,6 +61,7 @@ export const MemberStats: FC<MemberStatsProps> = ({
         'version' in member && Number.isInteger(member.version)
           ? member.version
           : Number.NaN,
+      user: member.user ?? null,
     }) as APIProjectMember;
   const [loadedMembers, setLoadedMembers] = useState<APIProjectMember[]>(
     members.map(normalizeMember),
@@ -218,7 +220,7 @@ export const MemberStats: FC<MemberStatsProps> = ({
               {
                 role: roleLabel,
                 members: roleMembers
-                  .map((member) => member.displayName)
+                  .map((member) => formatProjectMemberNameWithAliases(member))
                   .join('、'),
               },
             )
@@ -228,7 +230,7 @@ export const MemberStats: FC<MemberStatsProps> = ({
                 {
                   role: roleLabel,
                   members: invitedRoleMembers
-                    .map((member) => member.displayName)
+                    .map((member) => formatProjectMemberNameWithAliases(member))
                     .join('、'),
                 },
               )

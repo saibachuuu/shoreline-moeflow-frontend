@@ -2138,6 +2138,9 @@ userEdit.enterToAdd:
 fileList.refreshLater:
   zhCn: （请稍后刷新页面查看进度）
   en: (Please refresh the page later to check progress)
+project.workerRole.raw_provider:
+  zhCn: 图源
+  en: Raw Provider
 project.workerRole.rawProvider:
   zhCn: 图源
   en: Raw Provider

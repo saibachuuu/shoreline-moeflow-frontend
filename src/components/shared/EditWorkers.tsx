@@ -185,28 +185,94 @@ export const EditWorkers = ({
   const userInfoByUserId = useMemo(() => {
     const map = new Map<
       string,
-      { name: string; avatar?: string; hasAvatar?: boolean }
+      { name: string; avatar?: string; hasAvatar?: boolean; aliases: string[] }
     >();
+    const mergeUser = (
+      userId: string,
+      info: {
+        name: string;
+        avatar?: string;
+        hasAvatar?: boolean;
+        aliases?: string[];
+      },
+    ) => {
+      const existing = map.get(userId);
+      if (!existing) {
+        map.set(userId, {
+          name: info.name,
+          avatar: info.avatar,
+          hasAvatar: info.hasAvatar,
+          aliases: info.aliases || [],
+        });
+      } else {
+        if (!existing.name && info.name) existing.name = info.name;
+        if (!existing.avatar && info.avatar) existing.avatar = info.avatar;
+        if (existing.hasAvatar === undefined && info.hasAvatar !== undefined) {
+          existing.hasAvatar = info.hasAvatar;
+        }
+        if (
+          (!existing.aliases || existing.aliases.length === 0) &&
+          info.aliases?.length
+        ) {
+          existing.aliases = info.aliases;
+        }
+      }
+    };
+
     members.forEach((member) => {
-      if (member.userId && member.user?.name && !map.has(member.userId)) {
-        map.set(member.userId, {
-          name: member.user.name,
-          avatar: member.user.avatar,
-          hasAvatar: member.user.hasAvatar,
+      const uid = member.userId || member.user?.id;
+      if (uid) {
+        mergeUser(uid, {
+          name: member.user?.name || '',
+          avatar: member.user?.avatar,
+          hasAvatar: member.user?.hasAvatar,
+          aliases: member.user?.aliases,
         });
       }
     });
     teamMembers.forEach((teamMember) => {
-      if (teamMember.user?.name && !map.has(teamMember.userId)) {
-        map.set(teamMember.userId, {
-          name: teamMember.user.name,
-          avatar: teamMember.user.avatar,
-          hasAvatar: teamMember.user.hasAvatar,
+      const uid = teamMember.userId || teamMember.user?.id;
+      if (uid) {
+        mergeUser(uid, {
+          name: teamMember.user?.name || '',
+          avatar: teamMember.user?.avatar,
+          hasAvatar: teamMember.user?.hasAvatar,
+          aliases: teamMember.user?.aliases,
         });
       }
     });
+    results.forEach((result) => {
+      if ('user' in result && result.user) {
+        const uid = result.user.id || result.userId;
+        if (uid) {
+          mergeUser(uid, {
+            name: result.user.name,
+            avatar: result.user.avatar,
+            hasAvatar: result.user.hasAvatar,
+            aliases: result.user.aliases,
+          });
+        }
+      } else if (!('user' in result) && !('memberId' in result) && result.id) {
+        mergeUser(result.id, {
+          name: result.name,
+          avatar: result.avatar,
+          hasAvatar: result.hasAvatar,
+          aliases: result.aliases,
+        });
+      } else if ('memberId' in result) {
+        const uid = result.userId || result.user?.id;
+        if (uid) {
+          mergeUser(uid, {
+            name: result.user?.name || '',
+            avatar: result.user?.avatar,
+            hasAvatar: result.user?.hasAvatar,
+            aliases: result.user?.aliases,
+          });
+        }
+      }
+    });
     return map;
-  }, [members, teamMembers]);
+  }, [members, teamMembers, results]);
 
   // Search is role-scoped: typing queries the team, clicking a result adds that
   // registered member with the current role tag.  Empty input shows the joined
@@ -531,29 +597,44 @@ export const EditWorkers = ({
     );
   };
 
-  // What a search result row shows depends on which field matched: a query
-  // that hit the username shows just the username; one that hit an alias
-  // appends the matching alias.  Project-member (already joined) results
-  // always show their display name.
+  // Registered users display their primary name along with all of their site aliases.
+  // External members (no registered user) show only their display name.
   const searchResultDisplay = (
     member: APIProjectMember | TeamMember | APIUser,
-    query: string,
+    _query: string,
   ): { main: string; aliases: string[] } => {
     if ('memberId' in member) {
-      return { main: member.displayName, aliases: [] };
+      const isSiteUser = Boolean(member.userId || member.user);
+      const siteAliases = isSiteUser
+        ? member.user?.aliases ||
+          (member.userId ? userInfoByUserId.get(member.userId)?.aliases : []) ||
+          []
+        : [];
+      return {
+        main: member.displayName,
+        aliases: siteAliases.filter((a) => a && a !== member.displayName),
+      };
     }
     if ('user' in member) {
-      return teamSearchResultLabel(
-        member.user?.name || '',
-        [...(member.user?.aliases || []), ...(member.aliases || [])],
-        query,
-      );
+      const main = member.user?.name || '';
+      const siteAliases =
+        member.user?.aliases ||
+        (member.userId ? userInfoByUserId.get(member.userId)?.aliases : []) ||
+        [];
+      return {
+        main,
+        aliases: siteAliases.filter((a) => a && a !== main),
+      };
     }
-    return teamSearchResultLabel(
-      member.name || '',
-      member.aliases || [],
-      query,
-    );
+    const main = member.name || '';
+    const siteAliases =
+      member.aliases ||
+      (member.id ? userInfoByUserId.get(member.id)?.aliases : []) ||
+      [];
+    return {
+      main,
+      aliases: siteAliases.filter((a) => a && a !== main),
+    };
   };
 
   // Add the current role to an already-joined member (empty-input candidate).
@@ -774,6 +855,15 @@ export const EditWorkers = ({
               currentUserId,
               canManageMembers,
             );
+            const userInfo = member.userId
+              ? userInfoByUserId.get(member.userId)
+              : undefined;
+            const isSiteUser = Boolean(member.userId);
+            const userAliases =
+              isSiteUser && userInfo ? userInfo.aliases || [] : [];
+            const displayAliases = userAliases.filter(
+              (a) => a && a !== member.displayName,
+            );
             if (holdsRole) {
               return (
                 <div
@@ -782,6 +872,20 @@ export const EditWorkers = ({
                 >
                   <span>
                     {member.displayName}
+                    {displayAliases.length > 0 && (
+                      <span className="EditWorkers__ResultAlias">
+                        {formatMessage(
+                          { id: 'site.editWorkers.aliasGroup' },
+                          {
+                            aliases: displayAliases.join(
+                              formatMessage({
+                                id: 'site.editWorkers.aliasSeparator',
+                              }),
+                            ),
+                          },
+                        )}
+                      </span>
+                    )}
                     <span className="EditWorkers__CandidateBadge EditWorkers__CandidateBadge--held">
                       {formatMessage({ id: 'site.editWorkers.holdsRole' })}
                     </span>
@@ -817,6 +921,20 @@ export const EditWorkers = ({
                 >
                   <span>
                     {member.displayName}
+                    {displayAliases.length > 0 && (
+                      <span className="EditWorkers__ResultAlias">
+                        {formatMessage(
+                          { id: 'site.editWorkers.aliasGroup' },
+                          {
+                            aliases: displayAliases.join(
+                              formatMessage({
+                                id: 'site.editWorkers.aliasSeparator',
+                              }),
+                            ),
+                          },
+                        )}
+                      </span>
+                    )}
                     {invited && (
                       <span className="EditWorkers__CandidateBadge">
                         {formatMessage({ id: 'site.editWorkers.invited' })}
@@ -954,6 +1072,13 @@ export const EditWorkers = ({
           max-width: 100%;
         }
         .EditWorkersSimple__ChipName {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .EditWorkersSimple__ChipAlias {
+          color: ${style.textColorSecondary};
+          font-size: 11px;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
@@ -1135,6 +1260,11 @@ export const EditWorkers = ({
           color: ${style.textColorSecondary};
           font-size: 12px;
         }
+        .EditWorkers__MemberAlias {
+          color: ${style.textColorSecondary};
+          font-size: 12px;
+          margin-left: 2px;
+        }
         .EditWorkers__MemberActions {
           flex: none;
           display: inline-flex;
@@ -1273,18 +1403,41 @@ export const EditWorkers = ({
                             displayName: member.displayName,
                             user: userInfo ? { name: userInfo.name } : null,
                           });
+                          const isSiteUser = Boolean(member.userId);
+                          const userAliases =
+                            isSiteUser && userInfo ? userInfo.aliases || [] : [];
+                          const displayAliases = userAliases.filter(
+                            (a) => a && a !== main && a !== note,
+                          );
+                          const titleParts = [main];
+                          if (note) {
+                            titleParts.push(
+                              formatMessage(
+                                { id: 'site.editWorkers.noteEnclosed' },
+                                { note },
+                              ),
+                            );
+                          }
+                          if (displayAliases.length > 0) {
+                            titleParts.push(
+                              formatMessage(
+                                { id: 'site.editWorkers.aliasGroup' },
+                                {
+                                  aliases: displayAliases.join(
+                                    formatMessage({
+                                      id: 'site.editWorkers.aliasSeparator',
+                                    }),
+                                  ),
+                                },
+                              ),
+                            );
+                          }
+                          const chipTitle = titleParts.join('');
                           return (
                             <span
                               key={key}
                               className="EditWorkersSimple__Chip"
-                              title={
-                                note
-                                  ? formatMessage(
-                                      { id: 'site.editWorkers.memberWithNote' },
-                                      { name: main, note },
-                                    )
-                                  : main
-                              }
+                              title={chipTitle}
                             >
                               <Avatar
                                 type="user"
@@ -1298,6 +1451,20 @@ export const EditWorkers = ({
                               <span className="EditWorkersSimple__ChipName">
                                 {main}
                               </span>
+                              {displayAliases.length > 0 && (
+                                <span className="EditWorkersSimple__ChipAlias">
+                                  {formatMessage(
+                                    { id: 'site.editWorkers.aliasGroup' },
+                                    {
+                                      aliases: displayAliases.join(
+                                        formatMessage({
+                                          id: 'site.editWorkers.aliasSeparator',
+                                        }),
+                                      ),
+                                    },
+                                  )}
+                                </span>
+                              )}
                               {member.status === 'invited' && (
                                 <span className="EditWorkers__CandidateBadge">
                                   {formatMessage({
@@ -1456,8 +1623,38 @@ export const EditWorkers = ({
                     displayName: member.displayName,
                     user: userInfo ? { name: userInfo.name } : null,
                   });
+                  const isSiteUser = Boolean(member.userId);
+                  const userAliases =
+                    isSiteUser && userInfo ? userInfo.aliases || [] : [];
+                  const displayAliases = userAliases.filter(
+                    (a) => a && a !== main && a !== note,
+                  );
                   const nameEditable = canEditName(member);
                   const isEditingName = editingMemberKey === draftKey(member);
+                  const titleParts = [main];
+                  if (note) {
+                    titleParts.push(
+                      formatMessage(
+                        { id: 'site.editWorkers.noteEnclosed' },
+                        { note },
+                      ),
+                    );
+                  }
+                  if (displayAliases.length > 0) {
+                    titleParts.push(
+                      formatMessage(
+                        { id: 'site.editWorkers.aliasGroup' },
+                        {
+                          aliases: displayAliases.join(
+                            formatMessage({
+                              id: 'site.editWorkers.aliasSeparator',
+                            }),
+                          ),
+                        },
+                      ),
+                    );
+                  }
+                  const memberTitle = titleParts.join('');
                   return (
                     <div
                       key={key}
@@ -1492,14 +1689,7 @@ export const EditWorkers = ({
                       ) : (
                         <span
                           className="EditWorkers__MemberName"
-                          title={
-                            note
-                              ? formatMessage(
-                                  { id: 'site.editWorkers.memberWithNote' },
-                                  { name: main, note },
-                                )
-                              : main
-                          }
+                          title={memberTitle}
                         >
                           {main}
                           {note && (
@@ -1507,6 +1697,20 @@ export const EditWorkers = ({
                               {formatMessage(
                                 { id: 'site.editWorkers.noteEnclosed' },
                                 { note },
+                              )}
+                            </span>
+                          )}
+                          {displayAliases.length > 0 && (
+                            <span className="EditWorkers__MemberAlias">
+                              {formatMessage(
+                                { id: 'site.editWorkers.aliasGroup' },
+                                {
+                                  aliases: displayAliases.join(
+                                    formatMessage({
+                                      id: 'site.editWorkers.aliasSeparator',
+                                    }),
+                                  ),
+                                },
                               )}
                             </span>
                           )}

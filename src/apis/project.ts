@@ -88,6 +88,14 @@ export const PROJECT_WORKER_DISPLAY_ROLES = PROJECT_WORKER_ROLES.filter(
     r.key === 'typesetter',
 );
 
+export interface APIProjectMemberUser {
+  id: string;
+  name: string;
+  avatar?: string;
+  hasAvatar?: boolean;
+  aliases?: string[];
+}
+
 export interface APIProjectMemberSummary {
   /** Full member responses expose memberId; compact list responses use id and
    * are normalized before entering the editor. */
@@ -99,22 +107,14 @@ export interface APIProjectMemberSummary {
   tags: string[];
   status: 'active' | 'invited' | 'removed';
   isOwner?: boolean;
-}
-
-export interface APIProjectMemberUser {
-  id: string;
-  name: string;
-  avatar?: string;
-  hasAvatar?: boolean;
-  aliases?: string[];
+  /** Site identity of a registered member; null for external members. */
+  user?: APIProjectMemberUser | null;
 }
 
 export interface APIProjectMember extends APIProjectMemberSummary {
   projectId: string;
   effectivePermissions?: string[];
   version: number;
-  /** Site identity of a registered member; null for external members. */
-  user?: APIProjectMemberUser | null;
 }
 
 /** 获取团队的项目列表的请求数据 */
