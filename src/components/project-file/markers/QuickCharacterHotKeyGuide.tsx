@@ -18,6 +18,8 @@ export const QuickCharacterHotKeyGuide: FC<QuickCharacterHotKeyGuideProps> = ({
 }) => {
   const { formatMessage } = useIntl();
 
+  const mode = useSelector((state: AppState) => state.imageTranslator.mode);
+  const isProofreadOrGodMode = mode === 'proofreader' || mode === 'god';
   const quickCharacters = useSelector(
     (state: AppState) => state.imageTranslator.quickCharacters,
   );
@@ -33,6 +35,9 @@ export const QuickCharacterHotKeyGuide: FC<QuickCharacterHotKeyGuideProps> = ({
   const goNextPageOptions = useSelector(
     (state: AppState) => state.hotKey.goNextPage,
   );
+  const sendProofreadDraftOptions = useSelector(
+    (state: AppState) => state.hotKey.sendProofreadDraft,
+  );
 
   const mappedSymbols = quickCharacters.filter(
     (item) => item.hotKey && item.hotKey.key,
@@ -43,6 +48,8 @@ export const QuickCharacterHotKeyGuide: FC<QuickCharacterHotKeyGuideProps> = ({
       .filter((opt): opt is HotKeyOption => Boolean(opt && opt.key))
       .map((opt) => getHotKeyDisplayName(opt));
   };
+  const sendHotKeyNames = formatOptions(sendProofreadDraftOptions);
+  const hotKeyDisplay = sendHotKeyNames.length > 0 ? sendHotKeyNames[0] : '';
 
   const navHotKeys = [
     {
@@ -65,8 +72,16 @@ export const QuickCharacterHotKeyGuide: FC<QuickCharacterHotKeyGuideProps> = ({
       label: formatMessage({ id: 'hotKey.goNextPage' }),
       keys: formatOptions(goNextPageOptions),
     },
+    ...(isProofreadOrGodMode
+      ? [
+          {
+            id: 'sendProofreadDraft',
+            label: formatMessage({ id: 'hotKey.sendProofreadDraft' }),
+            keys: sendHotKeyNames,
+          },
+        ]
+      : []),
   ];
-
   const mouseActions = [
     {
       label: formatMessage({ id: 'mouse.addInLabel' }),
@@ -285,7 +300,14 @@ export const QuickCharacterHotKeyGuide: FC<QuickCharacterHotKeyGuideProps> = ({
             line-height: 1.4;
           `}
         >
-          {formatMessage({ id: 'quickChar.guideFooterTip' })}
+          {isProofreadOrGodMode
+            ? hotKeyDisplay
+              ? formatMessage(
+                  { id: 'quickChar.proofreadFeedbackGuideTip' },
+                  { hotKey: `[${hotKeyDisplay}]` },
+                )
+              : formatMessage({ id: 'quickChar.proofreadFeedbackGuideTipNoKey' })
+            : formatMessage({ id: 'quickChar.guideFooterTip' })}
         </div>
       </div>
     </div>

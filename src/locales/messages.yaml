@@ -836,9 +836,33 @@ imageTranslator.sourceViewer.rightClickMarkToRemove:
 imageTranslator.sourceViewer.readOnly:
   zhCn: 当前项目为只读状态
   en: This project is read-only
+imageTranslator.sendProofreadDraft:
+  zhCn: 向翻译寄送校对稿
+  en: Send Proofread Draft to Translators
+imageTranslator.ccMyself:
+  zhCn: 为我自己抄送一份
+  en: CC a copy to myself
+imageTranslator.sendProofreadDraftTip:
+  zhCn: 将挑出校对有所更改的页码并高亮更改的标签，生成邮件发送给项目成员列表中“翻译”栏所有用户的邮箱。
+  en: Picks out pages with proofread changes, highlights modified labels, and emails all translators in the project member list.
+imageTranslator.sendingProofreadDraft:
+  zhCn: 正在生成校对邮件并寄送给翻译...
+  en: Generating proofread email and sending to translators...
+imageTranslator.sendProofreadDraftSuccess:
+  zhCn: 校对稿已成功发送至翻译邮箱
+  en: Proofread draft has been sent to translators' email
+imageTranslator.sendProofreadDraftConfirmTitle:
+  zhCn: 向翻译寄送校对稿
+  en: Send Proofread Draft to Translators
+imageTranslator.sendProofreadDraftConfirmContent:
+  zhCn: 确定向项目中所有翻译成员寄送校对稿吗？系统将挑出校对有所更改的页码并高亮更改的标签生成邮件发送。
+  en: Are you sure you want to send the proofread draft to all translators in this project? An email will be generated with changed pages and highlighted labels.
 site.noPermission:
   zhCn: 没有权限
   en: No permission
+site.confirm:
+  zhCn: 确认
+  en: Confirm
 project.export:
   zhCn: 导出
   en: Export
@@ -1102,6 +1126,9 @@ hotKey.goPrevPage:
 hotKey.goNextPage:
   zhCn: 下一页
   en: Next Page
+hotKey.sendProofreadDraft:
+  zhCn: 向翻译寄送校对稿
+  en: Send Proofread Draft
 mouse.function:
   zhCn: 功能
   en: Operation
@@ -2168,6 +2195,12 @@ quickChar.hotKeyGuideTitle:
 quickChar.guideFooterTip:
   zhCn: 可进入左上角设置页查看、修改详情
   en: Open settings in the top-left corner to view and modify details
+quickChar.proofreadFeedbackGuideTip:
+  zhCn: 按下{hotKey}或进入设置以将校对稿反馈至翻译
+  en: Press {hotKey} or enter settings to send proofread feedback to translators
+quickChar.proofreadFeedbackGuideTipNoKey:
+  zhCn: 进入设置以将校对稿反馈至翻译
+  en: Enter settings to send proofread feedback to translators
 teamInsight.exportCreated:
   zhCn: 导出任务创建成功，您可以关闭页面稍后前来下载。
   en: Export task created. You can close this page and come back later to download.

@@ -39,6 +39,9 @@ export const ImageTranslatorSettingHotKey: FC<
   const goNextPageHotKeyOptions = useSelector(
     (state: AppState) => state.hotKey.goNextPage,
   );
+  const sendProofreadDraftHotKeyOptions = useSelector(
+    (state: AppState) => state.hotKey.sendProofreadDraft,
+  );
 
   const handleHotKeyChange = ({
     name,
@@ -175,6 +178,21 @@ export const ImageTranslatorSettingHotKey: FC<
         hotKey={goNextPageHotKeyOptions[1]}
         onHotKeyChange={(hotKey) => {
           handleHotKeyChange({ name: 'goNextPage', index: 1, hotKey });
+        }}
+      />
+      <div className="ImageTranslatorSettingHotKey__Label">
+        {formatMessage({ id: 'hotKey.sendProofreadDraft' })}
+      </div>
+      <HotKeyRecorder
+        hotKey={sendProofreadDraftHotKeyOptions[0]}
+        onHotKeyChange={(hotKey) => {
+          handleHotKeyChange({ name: 'sendProofreadDraft', index: 0, hotKey });
+        }}
+      />
+      <HotKeyRecorder
+        hotKey={sendProofreadDraftHotKeyOptions[1]}
+        onHotKeyChange={(hotKey) => {
+          handleHotKeyChange({ name: 'sendProofreadDraft', index: 1, hotKey });
         }}
       />
     </div>

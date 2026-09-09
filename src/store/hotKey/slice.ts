@@ -26,6 +26,9 @@ export const getDefaultHotKey = ({
       goPrevPage: [
         { key: 'ArrowLeft', meta: true, ignoreKeyboardElement: false },
       ],
+      sendProofreadDraft: [
+        { key: 'KeyP', alt: true, ignoreKeyboardElement: false },
+      ],
     },
     windows: {
       focusNextSource: [
@@ -41,6 +44,9 @@ export const getDefaultHotKey = ({
       goPrevPage: [
         { key: 'ArrowLeft', ctrl: true, ignoreKeyboardElement: false },
       ],
+      sendProofreadDraft: [
+        { key: 'KeyP', alt: true, ignoreKeyboardElement: false },
+      ],
     },
   };
   if (osName === 'macos') {
@@ -55,6 +61,7 @@ export interface HotKeyState {
   focusPrevSource: (HotKeyOption | undefined)[];
   goNextPage: (HotKeyOption | undefined)[];
   goPrevPage: (HotKeyOption | undefined)[];
+  sendProofreadDraft: (HotKeyOption | undefined)[];
 }
 
 export const hotKeyInitialState: HotKeyState = {
@@ -62,6 +69,7 @@ export const hotKeyInitialState: HotKeyState = {
   focusPrevSource: [],
   goNextPage: [],
   goPrevPage: [],
+  sendProofreadDraft: [],
 };
 
 const slice = createSlice({

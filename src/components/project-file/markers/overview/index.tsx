@@ -4,6 +4,7 @@ import React from 'react';
 import { FC, Source as ISource } from '@/interfaces';
 import style from '@/style';
 import { Source } from './Source';
+import { QuickCharacterHotKeyGuide } from '../QuickCharacterHotKeyGuide';
 
 /** 全能模式的属性接口 */
 interface ImageSourceViewerGodProps {
@@ -25,8 +26,15 @@ export const ImageSourceViewerGod: FC<ImageSourceViewerGodProps> = ({
     <div
       className={classNames(['ImageSourceViewerGod', className])}
       css={css`
+        position: relative;
         height: 100%;
-        overflow-y: auto;
+        overflow: hidden;
+        .ImageSourceViewerGod__Sources {
+          position: relative;
+          z-index: 1;
+          height: 100%;
+          overflow-y: auto;
+        }
         .ImageSourceViewerGod__Source {
           display: flex;
           border-bottom: 3px solid ${style.borderColorLight};
@@ -47,7 +55,9 @@ export const ImageSourceViewerGod: FC<ImageSourceViewerGodProps> = ({
         }
       `}
     >
-      {sources.map((source, index) => {
+      <QuickCharacterHotKeyGuide />
+      <div className="ImageSourceViewerGod__Sources">
+        {sources.map((source, index) => {
         return (
           <Source
             className="ImageSourceViewerGod__Source"
@@ -61,7 +71,8 @@ export const ImageSourceViewerGod: FC<ImageSourceViewerGodProps> = ({
             readOnly={readOnly}
           />
         );
-      })}
+        })}
+      </div>
     </div>
   );
 };

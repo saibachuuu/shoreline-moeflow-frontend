@@ -499,6 +499,32 @@ export const getTeamActivePresence = ({
     ...configs,
   });
 
+/** 向翻译寄送校对稿 */
+export const sendProofreadDraft = ({
+  projectID,
+  targetID,
+  ccMyself = true,
+  fileID,
+  configs,
+}: {
+  projectID: string;
+  targetID: string;
+  ccMyself?: boolean;
+  fileID?: string;
+  configs?: AxiosRequestConfig;
+}) =>
+  request<{
+    message: string;
+    recipients: string[];
+    changedPagesCount: number;
+    changedLabelsCount: number;
+  }>({
+    method: 'POST',
+    url: `/v1/projects/${projectID}/targets/${targetID}/send-proofread-draft`,
+    data: toUnderScoreCase({ ccMyself, fileID }),
+    ...configs,
+  });
+
 export default {
   getUserProjects,
   getTeamProjects,
@@ -518,4 +544,5 @@ export default {
   postProjectLeave,
   getProjectPresence,
   getTeamActivePresence,
+  sendProofreadDraft,
 };

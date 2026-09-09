@@ -1,5 +1,5 @@
 import { css, Global } from '@emotion/core';
-import { Divider, Modal, Slider, Switch } from 'antd';
+import { Button, Checkbox, Divider, message, Modal, Slider, Switch } from 'antd';
 import { useEffect, useState } from 'react';
 import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
@@ -70,6 +70,76 @@ const ImageTranslator: FC = () => {
     (state: AppState) => state.project.currentProject,
   );
   const projectReadOnly = normalizeProjectStatus(currentProject?.status) !== PROJECT_STATUS.NORMAL;
+  const [ccMyself, setCcMyself] = useState<boolean>(() => {
+    const saved = localStorage.getItem('proofread_draft_cc_myself');
+    return saved === null ? true : saved === 'true';
+  });
+  const [sendingProofreadDraft, setSendingProofreadDraft] = useState(false);
+
+  const handleSendProofreadDraft = async (overrideCc?: boolean) => {
+    if (!currentProject || !targetID) return;
+    const effectiveCc = overrideCc !== undefined ? overrideCc : ccMyself;
+    setSendingProofreadDraft(true);
+    const hideLoading = message.loading(
+      formatMessage({ id: 'imageTranslator.sendingProofreadDraft' }),
+      0,
+    );
+    try {
+      const res = await api.project.sendProofreadDraft({
+        projectID: currentProject.id,
+        targetID,
+        ccMyself: effectiveCc,
+      });
+      hideLoading();
+      message.success(
+        res.data.message ||
+          formatMessage({ id: 'imageTranslator.sendProofreadDraftSuccess' }),
+      );
+    } catch (err: unknown) {
+      hideLoading();
+      if (err && typeof err === 'object') {
+        if ('default' in err && typeof err.default === 'function') {
+          err.default();
+          return;
+        }
+        if ('message' in err && typeof err.message === 'string') {
+          message.error(err.message);
+          return;
+        }
+      }
+      message.error(formatMessage({ id: 'site.networkError' }));
+    } finally {
+      setSendingProofreadDraft(false);
+    }
+  };
+
+  const confirmSendProofreadDraft = () => {
+    let currentCc = ccMyself;
+    Modal.confirm({
+      title: formatMessage({ id: 'imageTranslator.sendProofreadDraftConfirmTitle' }),
+      content: (
+        <div>
+          <p style={{ marginBottom: 12 }}>
+            {formatMessage({ id: 'imageTranslator.sendProofreadDraftConfirmContent' })}
+          </p>
+          <Checkbox
+            defaultChecked={currentCc}
+            onChange={(e) => {
+              currentCc = e.target.checked;
+              setCcMyself(e.target.checked);
+              localStorage.setItem('proofread_draft_cc_myself', String(e.target.checked));
+            }}
+          >
+            {formatMessage({ id: 'imageTranslator.ccMyself' })}
+          </Checkbox>
+        </div>
+      ),
+      okText: formatMessage({ id: 'site.confirm' }),
+      cancelText: formatMessage({ id: 'site.cancel' }),
+      onOk: () => handleSendProofreadDraft(currentCc),
+    });
+  };
+
 
   useProjectHeartbeat(file?.projectId || currentProject?.id, {
     action: 'translation',
@@ -82,6 +152,7 @@ const ImageTranslator: FC = () => {
     sources,
     focusedSourceID,
     autoFocusInput,
+    confirmSendProofreadDraft,
   );
   // 翻译器尺寸
   const [imageTranslatorSize, setImageTranslatorSize] = useState({
@@ -298,6 +369,69 @@ const ImageTranslator: FC = () => {
             `}
           />
         </div>
+        <Divider />
+        <div
+          css={css`
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 16px;
+            flex-wrap: wrap;
+          `}
+        >
+          <div
+            css={css`
+              display: flex;
+              flex-direction: column;
+              gap: 4px;
+            `}
+          >
+            <span
+              css={css`
+                font-weight: 500;
+                color: ${style.textColor};
+              `}
+            >
+              {formatMessage({ id: 'imageTranslator.sendProofreadDraft' })}
+            </span>
+            <span
+              css={css`
+                font-size: 12px;
+                color: ${style.textColorSecondary};
+              `}
+            >
+              {formatMessage({ id: 'imageTranslator.sendProofreadDraftTip' })}
+            </span>
+          </div>
+          <div
+            css={css`
+              display: flex;
+              align-items: center;
+              gap: 12px;
+            `}
+          >
+            <Checkbox
+              checked={ccMyself}
+              onChange={(e) => {
+                setCcMyself(e.target.checked);
+                localStorage.setItem(
+                  'proofread_draft_cc_myself',
+                  String(e.target.checked),
+                );
+              }}
+            >
+              {formatMessage({ id: 'imageTranslator.ccMyself' })}
+            </Checkbox>
+            <Button
+              type="primary"
+              loading={sendingProofreadDraft}
+              onClick={() => handleSendProofreadDraft()}
+            >
+              {formatMessage({ id: 'imageTranslator.sendProofreadDraft' })}
+            </Button>
+          </div>
+        </div>
         {isMobile ? (
           formatMessage({ id: 'imageTranslator.mouseHotkeySettingUnavailable' })
         ) : (
@@ -318,6 +452,7 @@ function useImageTranslatorHotkeys(
   sources: Source[],
   focusedSourceID: string | null,
   autoFocusInput: boolean,
+  onSendProofreadDraft?: () => void,
 ) {
   const dispatch = useDispatch();
   const focusNextSource = () => {
@@ -424,6 +559,35 @@ function useImageTranslatorHotkeys(
     focusPrevSource,
     [focusedSourceID, sources.length, autoFocusInput],
   );
+  // 快捷键 - 向翻译寄送校对稿
+  const mode = useSelector((state: AppState) => state.imageTranslator.mode);
+  const isProofreadOrGodMode = mode === 'proofreader' || mode === 'god';
+  const sendProofreadDraftHotKeyOptions = useSelector(
+    (state: AppState) => state.hotKey.sendProofreadDraft,
+  );
+  useHotKey(
+    {
+      disabled:
+        !isProofreadOrGodMode ||
+        !onSendProofreadDraft ||
+        !Boolean(sendProofreadDraftHotKeyOptions?.[0]),
+      ...sendProofreadDraftHotKeyOptions?.[0],
+    },
+    () => onSendProofreadDraft?.(),
+    [isProofreadOrGodMode, onSendProofreadDraft],
+  );
+  useHotKey(
+    {
+      disabled:
+        !isProofreadOrGodMode ||
+        !onSendProofreadDraft ||
+        !Boolean(sendProofreadDraftHotKeyOptions?.[1]),
+      ...sendProofreadDraftHotKeyOptions?.[1],
+    },
+    () => onSendProofreadDraft?.(),
+    [isProofreadOrGodMode, onSendProofreadDraft],
+  );
+
 
   // 快捷键 - 当 ImageViewer 未加载完成是，忽略所有快捷键
   useHotKey(
