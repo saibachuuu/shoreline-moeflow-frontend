@@ -91,6 +91,14 @@ export const ImageSelect: FC<ImageSelectProps> = ({
     getImages({ page: 1, replace: true });
     // eslint-disable-next-line
   }, [currentProject?.id]);
+  useEffect(() => {
+    if (dropdownVisible && images) {
+      const activeIndex = images.findIndex((image) => image.id === value);
+      if (activeIndex > -1) {
+        menuDomRef.current?.scrollTo({ top: itemHeight * activeIndex });
+      }
+    }
+  }, [dropdownVisible, images, value]);
 
   useClickAway(domRef, () => {
     setDropdownVisible(false);
@@ -104,6 +112,7 @@ export const ImageSelect: FC<ImageSelectProps> = ({
         .ImageSelect__Button {
           padding: 0 10px;
           line-height: 40px;
+          color: ${style.textColorLighter};
           ${clickEffect(
             css`
               background-color: ${style.widgetButtonHoverBackgroundColor};
@@ -125,6 +134,7 @@ export const ImageSelect: FC<ImageSelectProps> = ({
           max-height: ${isMobile ? '200px' : '300px'};
           overflow: hidden;
           box-shadow: ${style.boxShadowBase};
+          border: 1px solid ${style.borderColorLight};
         }
         .ImageSelect__MenuWrapper--active {
           opacity: 1;
@@ -133,9 +143,21 @@ export const ImageSelect: FC<ImageSelectProps> = ({
         .ImageSelect__Menu {
           width: 100%;
           flex-direction: column;
-          background-color: rgba(255, 255, 255, 0.9);
+          background-color: ${style.backgroundColorLight};
           overflow-x: hidden;
           overflow-y: auto;
+          scrollbar-width: thin;
+          scrollbar-color: ${style.borderColorLight} transparent;
+          &::-webkit-scrollbar {
+            width: 6px;
+          }
+          &::-webkit-scrollbar-thumb {
+            background: ${style.borderColorLight};
+            border-radius: 3px;
+          }
+          &::-webkit-scrollbar-track {
+            background: transparent;
+          }
         }
         .ImageSelect__MenuItem {
           padding: 0 15px;
@@ -145,6 +167,7 @@ export const ImageSelect: FC<ImageSelectProps> = ({
           text-overflow: ellipsis;
           overflow: hidden;
           white-space: nowrap;
+          color: ${style.textColor};
           ${clickEffect(
             css`
               background-color: ${style.widgetButtonHoverBackgroundColor};
@@ -156,6 +179,8 @@ export const ImageSelect: FC<ImageSelectProps> = ({
         }
         .ImageSelect__MenuItem--active {
           background-color: ${style.widgetButtonActiveBackgroundColor};
+          color: ${style.textColor};
+          font-weight: 500;
         }
         .ImageSelect__MenuLoadMoreButton {
           padding: 0 15px;
@@ -164,12 +189,14 @@ export const ImageSelect: FC<ImageSelectProps> = ({
           transition: none;
           border-radius: 0;
           border-width: 0;
+          background-color: transparent !important;
+          color: ${style.textColor} !important;
           ${clickEffect(
             css`
-              background-color: ${style.widgetButtonHoverBackgroundColor};
+              background-color: ${style.widgetButtonHoverBackgroundColor} !important;
             `,
             css`
-              color: ${style.widgetButtonActiveColor};
+              color: ${style.widgetButtonActiveColor} !important;
             `,
           )};
         }

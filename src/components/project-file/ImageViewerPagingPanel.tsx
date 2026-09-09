@@ -139,17 +139,17 @@ export const ImageViewerPagingPanel: FC<ImageViewerPagingPanelProps> = ({
             font-size: 14px;
             ${clearClickEffect()};
             cursor: not-allowed;
-            color: rgba(172, 172, 172, 0.36);
+            color: ${style.textColorSecondaryLighter};
             &:active {
-              color: rgba(172, 172, 172, 0.36);
+              color: ${style.textColorSecondaryLighter};
             }
           }
           .ImageViewerPagingPanel__Button--disabled {
             ${clearClickEffect()};
             cursor: not-allowed;
-            color: rgba(172, 172, 172, 0.36);
+            color: ${style.textColorSecondaryLighter};
             &:active {
-              color: rgba(172, 172, 172, 0.36);
+              color: ${style.textColorSecondaryLighter};
             }
           }
         }
