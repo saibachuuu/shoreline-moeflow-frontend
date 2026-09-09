@@ -40,6 +40,9 @@ const App: React.FC = () => {
   const imageDarkness = useSelector(
     (state: AppState) => state.site.imageTranslatorImageDarkness,
   );
+  const showBetaBadge = useSelector(
+    (state: AppState) => state.site.showBetaBadge,
+  );
 
   useEffect(() => {
     api.siteSetting
@@ -657,28 +660,30 @@ const App: React.FC = () => {
           </Route>
         </Switch>
       )}
-      <div
-        className="App__BetaBuild"
-        css={css`
-          position: fixed;
-          right: 6px;
-          bottom: 6px;
-          z-index: 10000;
-          padding: 1px 6px;
-          border-radius: 6px;
-          font-size: 11px;
-          line-height: 16px;
-          font-family: monospace;
-          color: ${style.textColorSecondary};
-          background: ${style.backgroundColorLight};
-          border: 1px solid ${style.borderColorLight};
-          opacity: 0.8;
-          pointer-events: none;
-          user-select: none;
-        `}
-      >
-        {typeof __BETA_BUILD__ === 'string' ? __BETA_BUILD__ : 'beta'}
-      </div>
+      {showBetaBadge && (
+        <div
+          className="App__BetaBuild"
+          css={css`
+            position: fixed;
+            right: 6px;
+            bottom: 6px;
+            z-index: 10000;
+            padding: 1px 6px;
+            border-radius: 6px;
+            font-size: 11px;
+            line-height: 16px;
+            font-family: monospace;
+            color: ${style.textColorSecondary};
+            background: ${style.backgroundColorLight};
+            border: 1px solid ${style.borderColorLight};
+            opacity: 0.8;
+            pointer-events: none;
+            user-select: none;
+          `}
+        >
+          {typeof __BETA_BUILD__ === 'string' ? __BETA_BUILD__ : 'beta'}
+        </div>
+      )}
     </>
   );
 };

@@ -20,7 +20,12 @@ import { FC } from '@/interfaces';
 import { toLowerCamelCase } from '@/utils';
 import { Form } from '@/components/shared-form/Form';
 import { FormItem } from '@/components/shared-form/FormItem';
-import { setCustomSiteTitle } from '@/store/site/slice';
+import {
+  setCustomSiteTitle,
+  setShowBetaBadge,
+  SHOW_BETA_BADGE_KEY,
+  getInitialShowBetaBadge,
+} from '@/store/site/slice';
 
 function textareaToArray(textarea: string): string[] {
   return textarea.trim() === ''
@@ -65,6 +70,7 @@ export const AdminSiteSetting: FC<AdminSiteSettingProps> = ({ className }) => {
     whitelistEmails: string;
     autoJoinTeamIds: string;
     partnerSearchTeamIds: string;
+    showBetaBadge?: boolean;
   }
 
   const formDataFromAPI = (
@@ -73,6 +79,7 @@ export const AdminSiteSetting: FC<AdminSiteSettingProps> = ({ className }) => {
     // 后端 auto_join_team_ids 经 toLowerCamelCase 的 _id 特例转成
     // autoJoinTeamIds（小写 d），与表单字段名保持一致。
     return {
+      showBetaBadge: getInitialShowBetaBadge(),
       ...data,
       whitelistEmails: arrayToTextarea(data.whitelistEmails ?? []),
       autoJoinTeamIds: arrayToTextarea(data.autoJoinTeamIds ?? []),
@@ -112,17 +119,24 @@ export const AdminSiteSetting: FC<AdminSiteSettingProps> = ({ className }) => {
   }, [loadSiteSetting, reloadToken]);
 
   const handleFinish = (values: APISiteSettingFormData) => {
+    const { showBetaBadge, ...apiValues } = values;
+    if (typeof showBetaBadge === 'boolean') {
+      try {
+        localStorage.setItem(SHOW_BETA_BADGE_KEY, String(showBetaBadge));
+      } catch {}
+      dispatch(setShowBetaBadge(showBetaBadge));
+    }
     api.siteSetting
       .editSiteSetting({
         data: {
-          ...values,
-          whitelistEmails: textareaToArray(values.whitelistEmails),
-          autoJoinTeamIds: textareaToArray(values.autoJoinTeamIds),
-          partnerSearchEnabled: !!values.partnerSearchEnabled,
-          partnerSearchTeamIds: textareaToArray(values.partnerSearchTeamIds),
+          ...apiValues,
+          whitelistEmails: textareaToArray(apiValues.whitelistEmails),
+          autoJoinTeamIds: textareaToArray(apiValues.autoJoinTeamIds),
+          partnerSearchEnabled: !!apiValues.partnerSearchEnabled,
+          partnerSearchTeamIds: textareaToArray(apiValues.partnerSearchTeamIds),
           partnerSearchRateLimitSeconds:
-            Number(values.partnerSearchRateLimitSeconds) || 0,
-          partnerSearchMaxLimit: Number(values.partnerSearchMaxLimit) || 20,
+            Number(apiValues.partnerSearchRateLimitSeconds) || 0,
+          partnerSearchMaxLimit: Number(apiValues.partnerSearchMaxLimit) || 20,
         },
       })
       .then((result) => {
@@ -210,6 +224,21 @@ export const AdminSiteSetting: FC<AdminSiteSettingProps> = ({ className }) => {
         <Spin />
       ) : (
         <Form form={form} onFinish={handleFinish} autoComplete="off">
+        <FormItem
+          label={formatMessage({ id: 'site.setting.showBetaBadge' })}
+          name="showBetaBadge"
+          valuePropName="checked"
+          tooltip={formatMessage({ id: 'site.setting.showBetaBadgeTip' })}
+        >
+          <Switch
+            onChange={(checked) => {
+              try {
+                localStorage.setItem(SHOW_BETA_BADGE_KEY, String(checked));
+              } catch {}
+              dispatch(setShowBetaBadge(checked));
+            }}
+          />
+        </FormItem>
         <FormItem
           label={formatMessage({ id: 'site.setting.enableWhitelist' })}
           name="enableWhitelist"

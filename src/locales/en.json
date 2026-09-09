@@ -75,6 +75,8 @@
   "site.setting.partnerSearchRateLimitSecondsTip": "Only one request is allowed per n seconds for the same IP/client. Set to 0 for no limit",
   "site.setting.partnerSearchMaxLimit": "Max Results Per Query",
   "site.setting.partnerSearchMaxLimitTip": "Maximum number of projects returned per query by the external partner search API",
+  "site.setting.showBetaBadge": "Show Beta Badge",
+  "site.setting.showBetaBadgeTip": "Whether to display the beta version badge in the bottom-right corner (stored locally in this browser only, does not affect others).",
   "site.setting.enableWhitelist": "Enable Registration Whitelist",
   "site.setting.whitelistEmails": "Register Whitelist Email",
   "site.setting.whitelistEmailsTip": "Once the whitelist is enabled, only emails in the whitelist can register. Existing accounts are not affected (one email per line).",

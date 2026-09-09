@@ -234,6 +234,12 @@ site.setting.partnerSearchMaxLimit:
 site.setting.partnerSearchMaxLimitTip:
   zhCn: 外部撞车查询单次最多可获取的项目数量
   en: Maximum number of projects returned per query by the external partner search API
+site.setting.showBetaBadge:
+  zhCn: 显示右下角测试标识
+  en: Show Beta Badge
+site.setting.showBetaBadgeTip:
+  zhCn: 是否在页面右下角显示 beta 版本标识（该选项仅存储于当前浏览器本地，不影响其他用户）
+  en: Whether to display the beta version badge in the bottom-right corner (stored locally in this browser only, does not affect others).
 site.setting.enableWhitelist:
   zhCn: 启用注册白名单
   en: Enable Registration Whitelist

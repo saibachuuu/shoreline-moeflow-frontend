@@ -3,6 +3,16 @@ import { OSName, Platform } from '@/interfaces';
 import { RuntimeConfig } from '@/configs';
 
 export type ThemeMode = 'light' | 'dark';
+export const SHOW_BETA_BADGE_KEY = 'moeflow_show_beta_badge';
+
+export function getInitialShowBetaBadge(): boolean {
+  try {
+    const saved = localStorage.getItem(SHOW_BETA_BADGE_KEY);
+    return saved === 'true';
+  } catch {
+    return false;
+  }
+}
 
 export interface SiteState {
   osName: OSName;
@@ -14,6 +24,7 @@ export interface SiteState {
   themeMode: ThemeMode;
   imageTranslatorAutoFocusInput: boolean;
   imageTranslatorImageDarkness: number;
+  showBetaBadge: boolean;
 }
 
 const initialState: SiteState = {
@@ -26,6 +37,7 @@ const initialState: SiteState = {
   themeMode: 'light',
   imageTranslatorAutoFocusInput: false,
   imageTranslatorImageDarkness: 0,
+  showBetaBadge: getInitialShowBetaBadge(),
 };
 const slice = createSlice({
   name: 'site',
@@ -61,6 +73,9 @@ const slice = createSlice({
         ? Math.min(99, Math.max(0, val))
         : 0;
     },
+    setShowBetaBadge(state, action: PayloadAction<boolean>) {
+      state.showBetaBadge = action.payload;
+    },
   },
 });
 
@@ -74,5 +89,6 @@ export const {
   setThemeMode,
   setImageTranslatorAutoFocusInput,
   setImageTranslatorImageDarkness,
+  setShowBetaBadge,
 } = slice.actions;
 export default slice.reducer;

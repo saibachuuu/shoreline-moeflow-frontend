@@ -75,6 +75,8 @@
   "site.setting.partnerSearchRateLimitSecondsTip": "同一 IP/客户端在 n 秒内仅允许查询一次，填 0 表示不限流",
   "site.setting.partnerSearchMaxLimit": "单次返回结果条数上限",
   "site.setting.partnerSearchMaxLimitTip": "外部撞车查询单次最多可获取的项目数量",
+  "site.setting.showBetaBadge": "显示右下角测试标识",
+  "site.setting.showBetaBadgeTip": "是否在页面右下角显示 beta 版本标识（该选项仅存储于当前浏览器本地，不影响其他用户）",
   "site.setting.enableWhitelist": "启用注册白名单",
   "site.setting.whitelistEmails": "注册白名单邮箱",
   "site.setting.whitelistEmailsTip": "启用白名单后，只有白名单中的邮箱才能注册，不影响已注册的账号（每个邮箱一行）",
