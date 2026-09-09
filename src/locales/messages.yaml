@@ -2138,6 +2138,36 @@ quickChar.showSymbolTools:
 quickChar.hideSymbolTools:
   zhCn: 隐藏符号工具
   en: Hide Symbol Tools
+quickChar.symbolSettingTitle:
+  zhCn: 符号输入器设置
+  en: Symbol Inputter Settings
+quickChar.symbolSettingDesc:
+  zhCn: 可自定义每个按钮的符号与快捷键（默认前 12 个符号对应 Alt + Q/W/E/R/A/S/D/F/Z/X/C/V）
+  en: Customize symbols and shortcuts for each button (first 12 symbols default to Alt + Q/W/E/R/A/S/D/F/Z/X/C/V)
+quickChar.restoreDefault:
+  zhCn: 恢复默认
+  en: Restore Defaults
+quickChar.confirmRestore:
+  zhCn: 确定要将所有符号和快捷键恢复为默认设置吗？
+  en: Are you sure you want to restore all symbols and shortcuts to default settings?
+quickChar.symbolPlaceholder:
+  zhCn: 符号
+  en: Symbol
+quickChar.insertWithHotkey:
+  zhCn: 插入 {character}（{hotKey}）
+  en: Insert {character} ({hotKey})
+quickChar.mouseGuideTitle:
+  zhCn: 鼠标操作
+  en: Mouse Operations
+quickChar.navHotKeyGuideTitle:
+  zhCn: 常用快捷键
+  en: Common Hotkeys
+quickChar.hotKeyGuideTitle:
+  zhCn: 符号快捷键
+  en: Symbol Shortcuts
+quickChar.guideFooterTip:
+  zhCn: 可进入左上角设置页查看、修改详情
+  en: Open settings in the top-left corner to view and modify details
 teamInsight.exportCreated:
   zhCn: 导出任务创建成功，您可以关闭页面稍后前来下载。
   en: Export task created. You can close this page and come back later to download.

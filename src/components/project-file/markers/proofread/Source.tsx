@@ -114,6 +114,8 @@ const SourceWithoutRef: React.ForwardRefRenderFunction<
       })}
       css={css`
         position: relative;
+        z-index: 1;
+        background-color: ${style.backgroundColorLight};
         display: flex;
         border-bottom: 1px solid ${style.borderColorBase};
         border-left: 5px solid ${style.primaryColorLightest};

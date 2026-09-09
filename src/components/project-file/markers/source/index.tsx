@@ -15,6 +15,7 @@ import { getBestTranslation } from '@/utils/source';
 import { clickEffect, hover } from '@/utils/style';
 import { can } from '@/utils/user';
 import { QuickCharacterButtons } from '../QuickCharacterButtons';
+import { QuickCharacterHotKeyGuide } from '../QuickCharacterHotKeyGuide';
 import { insertCharacterAtSelection } from '../quickCharacters';
 
 interface ImageSourceViewerSourceProps {
@@ -131,12 +132,23 @@ export const ImageSourceViewerSource: FC<ImageSourceViewerSourceProps> = ({
       css={css`
         height: 100%;
 
-        .ImageSourceViewerTranslator__Translations {
+        .ImageSourceViewerTranslator__TranslationsWrapper {
+          position: relative;
           height: calc(100% - ${bottomHeight}px);
+          overflow: hidden;
+        }
+
+        .ImageSourceViewerTranslator__Translations {
+          position: relative;
+          z-index: 1;
+          height: 100%;
           overflow-y: auto;
         }
 
         .ImageSourceViewerTranslator__Translation {
+          position: relative;
+          z-index: 1;
+          background-color: ${style.backgroundColorLight};
           display: flex;
           padding: 4px 5px;
           border-left: 5px solid ${style.borderColorLight};
@@ -270,7 +282,9 @@ export const ImageSourceViewerSource: FC<ImageSourceViewerSourceProps> = ({
         }
       `}
     >
-      <div className="ImageSourceViewerTranslator__Translations">
+      <div className="ImageSourceViewerTranslator__TranslationsWrapper">
+        <QuickCharacterHotKeyGuide />
+        <div className="ImageSourceViewerTranslator__Translations">
         {myTranslations.map((myTranslation, i) => {
           const source = sources[i];
           const othersBestTranslation = othersBestTranslations[i];
@@ -376,6 +390,7 @@ export const ImageSourceViewerSource: FC<ImageSourceViewerSourceProps> = ({
             </div>
           );
         })}
+        </div>
       </div>
       {focusedSourceIndex > -1 && (
         <div className="ImageSourceViewerTranslator__Bottom">

@@ -43,6 +43,15 @@ export const getModifierKeyDisplayName = (modifierKey: ModifierKey): string => {
   }
   return osKeyName;
 };
+export const formatKeyDisplayName = (key: string): string => {
+  if (/^Digit[0-9]$/.test(key)) {
+    return key.slice(5);
+  }
+  if (/^Key[A-Z]$/.test(key)) {
+    return key.slice(3);
+  }
+  return key;
+};
 
 export const getHotKeyDisplayName = ({
   key = '',
@@ -56,7 +65,7 @@ export const getHotKeyDisplayName = ({
   diaplayName += alt ? getModifierKeyDisplayName('alt') + '+' : '';
   diaplayName += shift ? getModifierKeyDisplayName('shift') + '+' : '';
   diaplayName += meta ? getModifierKeyDisplayName('meta') + '+' : '';
-  diaplayName += key;
+  diaplayName += formatKeyDisplayName(key);
   return diaplayName;
 };
 

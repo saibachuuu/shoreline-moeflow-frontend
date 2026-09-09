@@ -51,8 +51,9 @@ export const HotKeyRecorder: FC<HotKeyRecorderProps> = ({
         onBlur={() => setValue('')}
         onKeyDown={(e) => {
           e.stopPropagation();
+          e.nativeEvent.stopImmediatePropagation?.();
+          e.nativeEvent.stopPropagation?.();
           e.preventDefault();
-          // Ignore modifier keys
           if (MODIFIER_KEY_EVENT_KEYS.includes(e.nativeEvent.key)) return;
           const event = getHotKeyEvent(e.nativeEvent);
           onHotKeyChange?.(event);

@@ -21,6 +21,7 @@ import { getBestTranslation } from '@/utils/source';
 import { hover } from '@/utils/style';
 import { Source } from './Source';
 import { QuickCharacterButtons } from '../QuickCharacterButtons';
+import { QuickCharacterHotKeyGuide } from '../QuickCharacterHotKeyGuide';
 import { insertCharacterAtSelection } from '../quickCharacters';
 
 /** 校对模式的属性接口 */
@@ -237,8 +238,15 @@ export const ImageSourceViewerProofreader: FC<
       className={classNames(['ImageSourceViewerProofreader', className])}
       css={css`
         height: 100%;
-        .ImageSourceViewerProofreader__Translations {
+        .ImageSourceViewerProofreader__TranslationsWrapper {
+          position: relative;
           height: calc(100% - ${bottomHeight}px);
+          overflow: hidden;
+        }
+        .ImageSourceViewerProofreader__Translations {
+          position: relative;
+          z-index: 1;
+          height: 100%;
           overflow-y: auto;
         }
         .ImageSourceViewerProofreader__TranslationsBottom {
@@ -363,7 +371,9 @@ export const ImageSourceViewerProofreader: FC<
         }
       `}
     >
-      <div className="ImageSourceViewerProofreader__Translations">
+      <div className="ImageSourceViewerProofreader__TranslationsWrapper">
+        <QuickCharacterHotKeyGuide />
+        <div className="ImageSourceViewerProofreader__Translations">
         {sources.map((source, index) => (
           <Source
             ref={(ref) => (domRefs.current[index] = ref)}
@@ -392,6 +402,7 @@ export const ImageSourceViewerProofreader: FC<
             </div>
           </div>
         )}
+        </div>
       </div>
       {focusedSource && (
         <div

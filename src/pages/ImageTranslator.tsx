@@ -1,5 +1,5 @@
 import { css, Global } from '@emotion/core';
-import { Modal, Slider, Switch } from 'antd';
+import { Divider, Modal, Slider, Switch } from 'antd';
 import { useEffect, useState } from 'react';
 import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
@@ -26,8 +26,11 @@ import { toLowerCamelCase } from '@/utils';
 import { getCancelToken } from '@/utils/api';
 import { imageTranslatorSettingsStorage } from '@/utils/storage';
 import { useProjectHeartbeat, useTitle } from '@/hooks';
-import { ImageTranslatorSettingMouse } from '@/components/project-file';
-import { ImageTranslatorSettingHotKey } from '@/components/project-file';
+import {
+  ImageTranslatorSettingMouse,
+  ImageTranslatorSettingHotKey,
+  ImageTranslatorSettingSymbol,
+} from '@/components/project-file';
 import { GetFileReturn } from '@/apis/file';
 
 /**
@@ -301,6 +304,8 @@ const ImageTranslator: FC = () => {
           <>
             <ImageTranslatorSettingMouse />
             <ImageTranslatorSettingHotKey />
+            <Divider />
+            <ImageTranslatorSettingSymbol />
           </>
         )}
       </Modal>
