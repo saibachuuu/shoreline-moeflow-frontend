@@ -88,6 +88,23 @@ First open-source version of the MoeFlow frontend and backend.
 - Dependency updates.
 - Minor fixes.
 
+### Version 1.2.0 (Shoreline Custom Edition)
+
+#### Core & Full-Stack Features
+- **Independent Preview Image Compression**: Separated generation of thumbnails and resampled previews for faster loading.
+- **Quick Staff Assignment on Project Cards**: Directly assign and edit project workers from project cards without navigating into details.
+- **User Aliases**: Supported custom site-wide aliases, team creator overrides, and preferred display name switching.
+- **Real-Time Project List Polling & Presence**: Presence heartbeat mechanism with live active editor badges and list diff change notifications.
+- **Search Projects by Member / Across Project Sets**: Multi-set and cross-team project searches filtered by specific worker and role.
+- **Send Proofread Draft via Email**: Trigger proofread review emails from the image translator with side-by-side diffs and CC support.
+- **Import Comics from TG Bot**: Integrated with backend archive-import tasks to easily create projects from external bots like Telegram.
+
+#### Frontend-Specific Enhancements
+- **Special Character Editor**: Customizable quick-character buttons, keyboard shortcuts, and canvas-background cheatsheet guide.
+- **Comprehensive Dark Mode**: Deep Dark Mode adaptation across image selector, pagination, floating badges, with anti-flash styling and image brightness adjustment.
+- **Mobile Long-Press Delete Tag**: Optimized touch interactions on mobile devices to easily delete or manage tags.
+- **Streamlined Keyboard Navigation**: Proofread sending hotkeys, input-focus safeguards, and smooth mode toggles.
+
 ### Version NEXT
 
 - [diff](https://github.com/moeflow-com/moeflow-frontend/compare/v1.1.1...main)
