@@ -15,7 +15,6 @@ import { getBestTranslation } from '@/utils/source';
 import { clickEffect, hover } from '@/utils/style';
 import { can } from '@/utils/user';
 import { QuickCharacterButtons } from '../QuickCharacterButtons';
-import { QuickCharacterHotKeyGuide } from '../QuickCharacterHotKeyGuide';
 import { insertCharacterAtSelection } from '../quickCharacters';
 
 interface ImageSourceViewerSourceProps {
@@ -283,7 +282,6 @@ export const ImageSourceViewerSource: FC<ImageSourceViewerSourceProps> = ({
       `}
     >
       <div className="ImageSourceViewerTranslator__TranslationsWrapper">
-        <QuickCharacterHotKeyGuide />
         <div className="ImageSourceViewerTranslator__Translations">
         {myTranslations.map((myTranslation, i) => {
           const source = sources[i];

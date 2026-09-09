@@ -15,7 +15,6 @@ import { getBestTranslation } from '@/utils/source';
 import { clickEffect, hover } from '@/utils/style';
 import { can } from '@/utils/user';
 import { QuickCharacterButtons } from '../QuickCharacterButtons';
-import { QuickCharacterHotKeyGuide } from '../QuickCharacterHotKeyGuide';
 import { insertCharacterAtSelection } from '../quickCharacters';
 
 /** 翻译模式的属性接口 */
@@ -317,7 +316,6 @@ export const ImageSourceViewerTranslator: FC<
       `}
     >
       <div className="ImageSourceViewerTranslator__TranslationsWrapper">
-        <QuickCharacterHotKeyGuide />
         <div className="ImageSourceViewerTranslator__Translations">
         {myTranslations.map((myTranslation, i) => {
           const source = sources[i];

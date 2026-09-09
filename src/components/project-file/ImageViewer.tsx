@@ -37,6 +37,7 @@ import { MovableLabel } from './MovableLabel';
 import { Tooltip } from '@/components/shared/Tooltip';
 import { routes } from '@/pages/routes';
 import { addThumbnailRevision, getPreferredImageUrl } from './imageUrl';
+import { QuickCharacterHotKeyGuide } from './markers/QuickCharacterHotKeyGuide';
 /**
  * 🖥浏览器识别
  */
@@ -678,9 +679,12 @@ export const ImageViewer: FC<ImageViewerProps> = ({
           width={imageAreaSize.width}
           height={imageAreaSize.height}
           backgroundElement={
-            <MovableAreaColorBackground
-              color={style.translatorColorBackground}
-            ></MovableAreaColorBackground>
+            <>
+              <MovableAreaColorBackground
+                color={style.translatorColorBackground}
+              ></MovableAreaColorBackground>
+              <QuickCharacterHotKeyGuide />
+            </>
           }
         >
           <MovableItem

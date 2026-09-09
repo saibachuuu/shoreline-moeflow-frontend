@@ -21,7 +21,6 @@ import { getBestTranslation } from '@/utils/source';
 import { hover } from '@/utils/style';
 import { Source } from './Source';
 import { QuickCharacterButtons } from '../QuickCharacterButtons';
-import { QuickCharacterHotKeyGuide } from '../QuickCharacterHotKeyGuide';
 import { insertCharacterAtSelection } from '../quickCharacters';
 
 /** 校对模式的属性接口 */
@@ -338,6 +337,8 @@ export const ImageSourceViewerProofreader: FC<
           position: absolute;
           top: 6px;
           left: 11px;
+          z-index: 1;
+          pointer-events: none;
         }
         .ImageSourceViewerProofreader__TextDisplay {
           text-indent: 18px;
@@ -360,19 +361,19 @@ export const ImageSourceViewerProofreader: FC<
             border-right-width: 0px !important;
             outline: 0;
             box-shadow: none;
-            background: transparent;
+            background: transparent !important;
+            background-color: transparent !important;
           }
           &.ant-input[disabled] {
-            background: transparent;
+            background: transparent !important;
+            background-color: transparent !important;
           }
-        }
         .ImageSourceViewerProofreader__TextArea--hasAvatar {
           text-indent: 38px;
         }
       `}
     >
       <div className="ImageSourceViewerProofreader__TranslationsWrapper">
-        <QuickCharacterHotKeyGuide />
         <div className="ImageSourceViewerProofreader__Translations">
         {sources.map((source, index) => (
           <Source

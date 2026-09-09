@@ -17,9 +17,13 @@ export const QuickCharacterHotKeyGuide: FC<QuickCharacterHotKeyGuideProps> = ({
   className,
 }) => {
   const { formatMessage } = useIntl();
-
+  const platform = useSelector((state: AppState) => state.site.platform);
+  const isMobile = platform === 'mobile';
+  const themeMode = useSelector((state: AppState) => state.site.themeMode);
   const mode = useSelector((state: AppState) => state.imageTranslator.mode);
   const isProofreadOrGodMode = mode === 'proofreader' || mode === 'god';
+  const isVisibleMode =
+    mode === 'translator' || mode === 'proofreader' || mode === 'god';
   const quickCharacters = useSelector(
     (state: AppState) => state.imageTranslator.quickCharacters,
   );
@@ -101,24 +105,63 @@ export const QuickCharacterHotKeyGuide: FC<QuickCharacterHotKeyGuideProps> = ({
     },
   ];
 
+  if (isMobile || !isVisibleMode) {
+    return null;
+  }
+
+  const isDark = themeMode === 'dark';
+  const textColor = isDark ? style.textColor : 'rgba(255, 255, 255, 0.85)';
+  const textColorSecondary = isDark
+    ? style.textColorSecondary
+    : 'rgba(255, 255, 255, 0.55)';
+  const textColorSecondaryLighter = isDark
+    ? style.textColorSecondaryLighter
+    : 'rgba(255, 255, 255, 0.35)';
+  const badgeBg = isDark ? style.backgroundColorLight : 'rgba(0, 0, 0, 0.25)';
+  const badgeBorder = isDark ? style.borderColorBase : 'rgba(255, 255, 255, 0.2)';
+
   return (
     <div
       className={classNames('QuickCharacterHotKeyGuide', className)}
       css={css`
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        right: 12px;
+        width: 240px;
+        max-width: calc(100% - 24px);
+        max-height: calc(100% - 60px);
+        overflow-y: auto;
         display: flex;
         flex-direction: column;
-        align-items: center;
-        justify-content: center;
         pointer-events: none;
         user-select: none;
-        z-index: 0;
-        padding: 16px;
-        opacity: 0.4;
+        z-index: 1;
+        padding: 12px 14px;
+        box-sizing: border-box;
+        background-color: ${isDark
+          ? 'rgba(25, 25, 25, 0.55)'
+          : 'rgba(0, 0, 0, 0.35)'};
+        border: 1px solid
+          ${isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(255, 255, 255, 0.22)'};
+        border-radius: ${style.borderRadiusBase};
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(4px);
+        opacity: 0.8;
+
+        &::-webkit-scrollbar {
+          width: 4px;
+        }
+        &::-webkit-scrollbar-thumb {
+          background: ${isDark
+            ? 'rgba(255, 255, 255, 0.2)'
+            : 'rgba(255, 255, 255, 0.3)'};
+          border-radius: 2px;
+        }
+
+        @media (max-width: 768px) {
+          display: none !important;
+        }
       `}
     >
       <div
@@ -126,8 +169,8 @@ export const QuickCharacterHotKeyGuide: FC<QuickCharacterHotKeyGuideProps> = ({
         css={css`
           display: flex;
           flex-direction: column;
-          gap: 12px;
-          max-width: 360px;
+          gap: 10px;
+          max-width: 100%;
           width: 100%;
 
           .GuideSection {
@@ -139,14 +182,14 @@ export const QuickCharacterHotKeyGuide: FC<QuickCharacterHotKeyGuideProps> = ({
           .GuideSection__Title {
             font-size: 11px;
             font-weight: 600;
-            color: ${style.textColorSecondary};
+            color: ${textColorSecondary};
             letter-spacing: 0.5px;
           }
 
           .GuideSection__Grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 5px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
           }
 
           .GuideItem {
@@ -158,12 +201,12 @@ export const QuickCharacterHotKeyGuide: FC<QuickCharacterHotKeyGuideProps> = ({
           }
 
           .GuideItem__Label {
-            color: ${style.textColorSecondary};
+            color: ${textColorSecondary};
             flex-shrink: 0;
           }
 
           .GuideItem__Val {
-            color: ${style.textColor};
+            color: ${textColor};
             font-weight: 500;
             margin-left: 6px;
             text-align: right;
@@ -180,24 +223,24 @@ export const QuickCharacterHotKeyGuide: FC<QuickCharacterHotKeyGuideProps> = ({
           }
 
           .GuideItem__KeyBadge {
-            background-color: ${style.backgroundColorLight};
-            border: 1px solid ${style.borderColorBase};
+            background-color: ${badgeBg};
+            border: 1px solid ${badgeBorder};
             border-radius: 3px;
             padding: 0 4px;
             font-size: 10px;
-            color: ${style.textColor};
+            color: ${textColor};
             white-space: nowrap;
           }
 
           .GuideItem__KeyNone {
-            color: ${style.textColorSecondaryLighter};
+            color: ${textColorSecondaryLighter};
             font-size: 10px;
           }
 
           .GuideSection__SymbolsGrid {
             display: grid;
-            grid-template-columns: repeat(4, minmax(60px, 1fr));
-            gap: 5px 8px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 5px 6px;
           }
 
           .GuideSymbolItem {
@@ -205,21 +248,21 @@ export const QuickCharacterHotKeyGuide: FC<QuickCharacterHotKeyGuideProps> = ({
             align-items: center;
             justify-content: space-between;
             padding: 2px 5px;
-            background-color: ${style.backgroundColorLight};
-            border: 1px dashed ${style.borderColorBase};
+            background-color: ${badgeBg};
+            border: 1px dashed ${badgeBorder};
             border-radius: ${style.borderRadiusSm};
             font-size: 11px;
             line-height: 1.2;
           }
 
           .GuideSymbolItem__Key {
-            color: ${style.textColorSecondary};
+            color: ${textColorSecondary};
             font-size: 10px;
             font-family: inherit;
           }
 
           .GuideSymbolItem__Char {
-            color: ${style.textColor};
+            color: ${textColor};
             font-weight: bold;
             font-size: 12px;
             margin-left: 4px;
@@ -294,7 +337,7 @@ export const QuickCharacterHotKeyGuide: FC<QuickCharacterHotKeyGuideProps> = ({
           className="GuideFooterTip"
           css={css`
             font-size: 11px;
-            color: ${style.textColorSecondary};
+            color: ${textColorSecondary};
             text-align: center;
             margin-top: 2px;
             line-height: 1.4;

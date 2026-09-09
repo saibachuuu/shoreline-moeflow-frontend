@@ -239,6 +239,11 @@ const App: React.FC = () => {
             border-color: #383840 !important;
             color: rgba(255, 255, 255, 0.85) !important;
           }
+          /* 图像翻译器校对模式：输入框透明以露出左侧的译者/校对者图标与头像 */
+          [data-theme='dark']
+            .ImageSourceViewerProofreader__TextArea.ant-input {
+            background-color: transparent !important;
+          }
           /* 复选框暗黑模式 */
           [data-theme='dark'] .ant-checkbox-wrapper {
             color: rgba(255, 255, 255, 0.85) !important;

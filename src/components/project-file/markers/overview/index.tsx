@@ -4,7 +4,6 @@ import React from 'react';
 import { FC, Source as ISource } from '@/interfaces';
 import style from '@/style';
 import { Source } from './Source';
-import { QuickCharacterHotKeyGuide } from '../QuickCharacterHotKeyGuide';
 
 /** 全能模式的属性接口 */
 interface ImageSourceViewerGodProps {
@@ -55,7 +54,6 @@ export const ImageSourceViewerGod: FC<ImageSourceViewerGodProps> = ({
         }
       `}
     >
-      <QuickCharacterHotKeyGuide />
       <div className="ImageSourceViewerGod__Sources">
         {sources.map((source, index) => {
         return (
