@@ -213,6 +213,27 @@ site.setting.homepageWelcomeTip:
 site.setting.onlyAllowAdminCreateTeam:
   zhCn: 仅允许管理员创建团队
   en: Only allow administrators to create teams
+site.setting.partnerSearchEnabled:
+  zhCn: 开启站外项目撞车查询
+  en: Enable Partner Collision Search
+site.setting.partnerSearchTeamIDs:
+  zhCn: 允许被站外查询的团队 ID
+  en: Allowed Team IDs for Search
+site.setting.partnerSearchTeamIDsTip:
+  zhCn: 每行一个团队 ID。仅这些团队下正在进行中的项目会被外部接口检索到
+  en: One team ID per line. Only active projects in these teams will be searchable by external partners
+site.setting.partnerSearchRateLimitSeconds:
+  zhCn: 速率限制冷却秒数
+  en: Rate Limit Cooldown (Seconds)
+site.setting.partnerSearchRateLimitSecondsTip:
+  zhCn: 同一 IP/客户端在 n 秒内仅允许查询一次，填 0 表示不限流
+  en: Only one request is allowed per n seconds for the same IP/client. Set to 0 for no limit
+site.setting.partnerSearchMaxLimit:
+  zhCn: 单次返回结果条数上限
+  en: Max Results Per Query
+site.setting.partnerSearchMaxLimitTip:
+  zhCn: 外部撞车查询单次最多可获取的项目数量
+  en: Maximum number of projects returned per query by the external partner search API
 site.setting.enableWhitelist:
   zhCn: 启用注册白名单
   en: Enable Registration Whitelist

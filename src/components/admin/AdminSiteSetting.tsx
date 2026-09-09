@@ -1,5 +1,14 @@
 import { css } from '@emotion/core';
-import { Alert, Button, Form as AntdForm, Input, message, Spin, Switch } from 'antd';
+import {
+  Alert,
+  Button,
+  Form as AntdForm,
+  Input,
+  InputNumber,
+  message,
+  Spin,
+  Switch,
+} from 'antd';
 import TextArea from 'antd/lib/input/TextArea';
 import classNames from 'classnames';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -49,9 +58,13 @@ export const AdminSiteSetting: FC<AdminSiteSettingProps> = ({ className }) => {
   const [reloadToken, setReloadToken] = useState(0);
 
   interface APISiteSettingFormData
-    extends Omit<APISiteSetting, 'whitelistEmails' | 'autoJoinTeamIds'> {
+    extends Omit<
+      APISiteSetting,
+      'whitelistEmails' | 'autoJoinTeamIds' | 'partnerSearchTeamIds'
+    > {
     whitelistEmails: string;
     autoJoinTeamIds: string;
+    partnerSearchTeamIds: string;
   }
 
   const formDataFromAPI = (
@@ -63,6 +76,10 @@ export const AdminSiteSetting: FC<AdminSiteSettingProps> = ({ className }) => {
       ...data,
       whitelistEmails: arrayToTextarea(data.whitelistEmails ?? []),
       autoJoinTeamIds: arrayToTextarea(data.autoJoinTeamIds ?? []),
+      partnerSearchEnabled: data.partnerSearchEnabled ?? false,
+      partnerSearchTeamIds: arrayToTextarea(data.partnerSearchTeamIds ?? []),
+      partnerSearchRateLimitSeconds: data.partnerSearchRateLimitSeconds ?? 10,
+      partnerSearchMaxLimit: data.partnerSearchMaxLimit ?? 20,
     };
   };
 
@@ -101,6 +118,11 @@ export const AdminSiteSetting: FC<AdminSiteSettingProps> = ({ className }) => {
           ...values,
           whitelistEmails: textareaToArray(values.whitelistEmails),
           autoJoinTeamIds: textareaToArray(values.autoJoinTeamIds),
+          partnerSearchEnabled: !!values.partnerSearchEnabled,
+          partnerSearchTeamIds: textareaToArray(values.partnerSearchTeamIds),
+          partnerSearchRateLimitSeconds:
+            Number(values.partnerSearchRateLimitSeconds) || 0,
+          partnerSearchMaxLimit: Number(values.partnerSearchMaxLimit) || 20,
         },
       })
       .then((result) => {
@@ -129,6 +151,17 @@ export const AdminSiteSetting: FC<AdminSiteSettingProps> = ({ className }) => {
             .map((line: number) => line + 1)
             .join(', ');
           error.data.message.autoJoinTeamIds = [
+            formatMessage(
+              { id: 'site.setting.autoJoinTeamIDsError' },
+              { line },
+            ),
+          ];
+        }
+        if (error.data?.message?.partnerSearchTeamIds) {
+          const line = error.data.message.partnerSearchTeamIds
+            .map((line: number) => line + 1)
+            .join(', ');
+          error.data.message.partnerSearchTeamIds = [
             formatMessage(
               { id: 'site.setting.autoJoinTeamIDsError' },
               { line },
@@ -193,8 +226,41 @@ export const AdminSiteSetting: FC<AdminSiteSettingProps> = ({ className }) => {
         <FormItem
           label={formatMessage({ id: 'site.setting.onlyAllowAdminCreateTeam' })}
           name="onlyAllowAdminCreateTeam"
+          valuePropName="checked"
         >
           <Switch defaultChecked={siteSetting?.onlyAllowAdminCreateTeam} />
+        </FormItem>
+        <FormItem
+          label={formatMessage({ id: 'site.setting.partnerSearchEnabled' })}
+          name="partnerSearchEnabled"
+          valuePropName="checked"
+        >
+          <Switch defaultChecked={siteSetting?.partnerSearchEnabled} />
+        </FormItem>
+        <FormItem
+          label={formatMessage({ id: 'site.setting.partnerSearchTeamIDs' })}
+          name="partnerSearchTeamIds"
+          tooltip={formatMessage({ id: 'site.setting.partnerSearchTeamIDsTip' })}
+        >
+          <TextArea rows={6} />
+        </FormItem>
+        <FormItem
+          label={formatMessage({
+            id: 'site.setting.partnerSearchRateLimitSeconds',
+          })}
+          name="partnerSearchRateLimitSeconds"
+          tooltip={formatMessage({
+            id: 'site.setting.partnerSearchRateLimitSecondsTip',
+          })}
+        >
+          <InputNumber min={0} style={{ width: 200 }} />
+        </FormItem>
+        <FormItem
+          label={formatMessage({ id: 'site.setting.partnerSearchMaxLimit' })}
+          name="partnerSearchMaxLimit"
+          tooltip={formatMessage({ id: 'site.setting.partnerSearchMaxLimitTip' })}
+        >
+          <InputNumber min={1} style={{ width: 200 }} />
         </FormItem>
         <FormItem
           label={formatMessage({ id: 'site.setting.autoJoinTeamIDs' })}

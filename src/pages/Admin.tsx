@@ -37,7 +37,12 @@ const Admin: FC<AdminProps> = () => {
 
   return (
     <div css={css``}>
-      <Layout style={{ minHeight: '100vh' }}>
+      <Layout
+        style={{
+          minHeight: '100vh',
+          backgroundColor: 'var(--background-color-light, #fafafa)',
+        }}
+      >
         <Sider
           collapsible
           collapsed={collapsed}
@@ -83,7 +88,10 @@ const Admin: FC<AdminProps> = () => {
             </Menu.Item>
           </Menu>
         </Sider>
-        <Layout className="site-layout">
+        <Layout
+          className="site-layout"
+          style={{ backgroundColor: 'var(--background-color-light, #fafafa)' }}
+        >
           <Switch>
             <Route path={`${path}/`} exact>
               <Redirect to={`${path}/site-setting`} />

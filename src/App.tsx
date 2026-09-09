@@ -88,9 +88,17 @@ const App: React.FC = () => {
           [data-theme='dark'] #root,
           [data-theme='dark'] .Dashboard,
           [data-theme='dark'] .Dashboard__Content,
-          [data-theme='dark'] .DashboardBox__Content {
-            background-color: #1b1b20;
+          [data-theme='dark'] .DashboardBox__Content,
+          [data-theme='dark'] .ant-layout,
+          [data-theme='dark'] .site-layout,
+          [data-theme='dark'] .AdminSiteSetting,
+          [data-theme='dark'] .AdminUserList,
+          [data-theme='dark'] .AdminVCodeList {
+            background-color: #1b1b20 !important;
             color: rgba(255, 255, 255, 0.85);
+          }
+          [data-theme='dark'] .ant-layout-sider {
+            background-color: #202025 !important;
           }
           [data-theme='dark'] a {
             color: rgba(255, 255, 255, 0.85);
@@ -175,6 +183,12 @@ const App: React.FC = () => {
           [data-theme='dark'] .ant-form-item-label > label,
           [data-theme='dark'] .ant-form-item-control,
           [data-theme='dark'] .ant-form-item {
+            color: rgba(255, 255, 255, 0.85);
+          }
+          [data-theme='dark'] .ant-form-item-tooltip {
+            color: rgba(255, 255, 255, 0.45);
+          }
+          [data-theme='dark'] .ant-form-item-tooltip:hover {
             color: rgba(255, 255, 255, 0.85);
           }
           [data-theme='dark'] .ant-form-item-required::before {
