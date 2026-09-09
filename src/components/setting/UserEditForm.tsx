@@ -1,5 +1,6 @@
 import { css } from '@emotion/core';
-import { Button, Form as AntdForm, Input, Tag, message } from 'antd';
+import { Button, Form as AntdForm, Input, Tag, Tooltip, message } from 'antd';
+import { StarFilled, StarOutlined } from '@ant-design/icons';
 import React, { useState } from 'react';
 import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
@@ -28,6 +29,9 @@ export const UserEditForm: FC<UserEditFormProps> = ({ className }) => {
   const [submitting, setSubmitting] = useState(false);
   const user = useSelector((state: AppState) => state.user);
   const [aliases, setAliases] = useState<string[]>(user.aliases || []);
+  const [defaultDisplayName, setDefaultDisplayName] = useState<string>(
+    user.defaultDisplayName || '',
+  );
   const [aliasInput, setAliasInput] = useState('');
 
   const addAlias = () => {
@@ -36,10 +40,25 @@ export const UserEditForm: FC<UserEditFormProps> = ({ className }) => {
     setAliasInput('');
   };
 
+  const removeAlias = (aliasToRemove: string) => {
+    setAliases(aliases.filter((item) => item !== aliasToRemove));
+    if (defaultDisplayName === aliasToRemove) {
+      setDefaultDisplayName('');
+    }
+  };
+
+  const togglePreferredAlias = (alias: string) => {
+    if (defaultDisplayName === alias) {
+      setDefaultDisplayName('');
+    } else {
+      setDefaultDisplayName(alias);
+    }
+  };
+
   const handleFinish = (values: any) => {
     setSubmitting(true);
     api.user
-      .editUser({ data: { ...values, aliases } })
+      .editUser({ data: { ...values, aliases, defaultDisplayName } })
       .then((data) => {
         // 修改成功
         dispatch(setUserInfo(toLowerCamelCase(data.data.user)));
@@ -79,6 +98,19 @@ export const UserEditForm: FC<UserEditFormProps> = ({ className }) => {
           align-items: center;
           gap: 4px;
         }
+        .UserEditForm__Hint {
+          margin: 6px 0 4px 0;
+          font-size: 12px;
+          color: var(--text-color-secondary, rgba(0, 0, 0, 0.45));
+          user-select: none;
+        }
+        .UserEditForm__Tag--candidate {
+          transition: all 0.2s;
+          user-select: none;
+        }
+        .UserEditForm__Tag--candidate:hover {
+          opacity: 0.85;
+        }
         .UserEditForm__AliasInput.ant-input {
           display: block;
           width: 100%;
@@ -112,15 +144,67 @@ export const UserEditForm: FC<UserEditFormProps> = ({ className }) => {
         <FormItem label={formatMessage({ id: 'userEdit.siteAlias' })}>
           <div className="UserEditForm__AliasField">
             <div className="UserEditForm__Aliases">
-              {aliases.map((alias) => (
+              <Tooltip
+                title={
+                  !defaultDisplayName
+                    ? formatMessage({ id: 'userEdit.defaultUsername' })
+                    : formatMessage({ id: 'userEdit.cancelPreferredTooltip' })
+                }
+              >
                 <Tag
-                  closable
-                  key={alias}
-                  onClose={() => setAliases(aliases.filter((item) => item !== alias))}
+                  color={!defaultDisplayName ? 'gold' : undefined}
+                  className="UserEditForm__Tag--candidate"
+                  onClick={() => setDefaultDisplayName('')}
+                  style={{ cursor: 'pointer' }}
                 >
-                  {alias}
+                  {!defaultDisplayName ? (
+                    <StarFilled style={{ marginRight: 4 }} />
+                  ) : (
+                    <StarOutlined style={{ marginRight: 4, opacity: 0.5 }} />
+                  )}
+                  {user.name} ({formatMessage({ id: 'userEdit.defaultUsername' })})
                 </Tag>
-              ))}
+              </Tooltip>
+              {aliases.map((alias) => {
+                const isPreferred = defaultDisplayName === alias;
+                return (
+                  <Tooltip
+                    key={alias}
+                    title={
+                      isPreferred
+                        ? formatMessage({ id: 'userEdit.cancelPreferredTooltip' })
+                        : formatMessage({ id: 'userEdit.setAsPreferredTooltip' })
+                    }
+                  >
+                    <Tag
+                      color={isPreferred ? 'gold' : undefined}
+                      closable
+                      className="UserEditForm__Tag--candidate"
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => togglePreferredAlias(alias)}
+                      onClose={(e) => {
+                        e.stopPropagation();
+                        removeAlias(alias);
+                      }}
+                    >
+                      {isPreferred ? (
+                        <StarFilled style={{ marginRight: 4 }} />
+                      ) : (
+                        <StarOutlined style={{ marginRight: 4, opacity: 0.5 }} />
+                      )}
+                      {alias}
+                      {isPreferred && (
+                        <span style={{ marginLeft: 4, fontWeight: 500 }}>
+                          ({formatMessage({ id: 'userEdit.preferred' })})
+                        </span>
+                      )}
+                    </Tag>
+                  </Tooltip>
+                );
+              })}
+            </div>
+            <div className="UserEditForm__Hint">
+              {formatMessage({ id: 'userEdit.preferredDisplayNameHint' })}
             </div>
             <Input.TextArea
               bordered={false}

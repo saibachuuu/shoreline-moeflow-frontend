@@ -1725,6 +1725,21 @@ site.memberList.defaultDisplayNamePlaceholder:
 site.memberList.defaultDisplayNameHint:
   zhCn: 主动加入项目或被邀请加入项目时，将默认使用此展示名
   en: This display name is used by default when joining or being invited to projects
+site.memberList.quickSelectDisplayName:
+  zhCn: 快速选择展示名：
+  en: "Quick select display name:"
+site.memberList.currentPreferred:
+  zhCn: 当前首选
+  en: Current Preferred
+site.memberList.sitePreferred:
+  zhCn: 站点首选
+  en: Site Preferred
+site.memberList.syncToProjects:
+  zhCn: 同时同步更新该成员在当前团队所有已有项目中的展示名
+  en: Synchronize this display name to all existing projects of this member in this team
+site.memberList.syncToProjectsHint:
+  zhCn: 开启后，该成员在当前团队所有 active 项目中的署名将立即批量变更为此展示名
+  en: When enabled, this display name will be immediately applied to all active projects of this member in this team
 site.memberList.teamTags:
   zhCn: 团队标签
   en: Team tags
@@ -2156,6 +2171,21 @@ userEdit.siteAlias:
 userEdit.enterToAdd:
   zhCn: 输入后回车添加
   en: Press Enter to Add
+userEdit.defaultUsername:
+  zhCn: 注册用户名（默认）
+  en: Registered Username (Default)
+userEdit.preferred:
+  zhCn: 首选
+  en: Preferred
+userEdit.preferredDisplayNameHint:
+  zhCn: 💡 点击别名可设为首选显示名（加入项目时优先以此名称展示），再次点击或点击用户名可恢复默认
+  en: "💡 Click an alias to set it as your preferred display name (used by default when joining projects); click again or click the username to revert"
+userEdit.setAsPreferredTooltip:
+  zhCn: 点击设为首选显示名
+  en: Click to set as preferred display name
+userEdit.cancelPreferredTooltip:
+  zhCn: 点击恢复为注册用户名
+  en: Click to revert to registered username
 fileList.refreshLater:
   zhCn: （请稍后刷新页面查看进度）
   en: (Please refresh the page later to check progress)

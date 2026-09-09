@@ -153,6 +153,8 @@ export interface GetUserInfoResponse {
   // local
   admin?: boolean;
   aliases?: string[];
+  default_display_name?: string;
+  defaultDisplayName?: string;
 }
 /** 获取用户信息 */
 const getUserInfo = ({

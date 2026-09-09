@@ -31,4 +31,16 @@ describe('toUnderScoreCase', () => {
       auto_join_team_ids: [],
     });
   });
+
+  it('maps defaultDisplayName and syncToProjects to snake_case', () => {
+    expect(
+      toUnderScoreCase({
+        defaultDisplayName: '首选别名',
+        syncToProjects: true,
+      }),
+    ).toEqual({
+      default_display_name: '首选别名',
+      sync_to_projects: true,
+    });
+  });
 });

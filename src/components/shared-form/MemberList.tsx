@@ -1,5 +1,6 @@
 import { css } from '@emotion/core';
-import { Button, Input, Modal, Radio, Select, Spin, Tag, message } from 'antd';
+import { Button, Checkbox, Input, Modal, Radio, Select, Spin, Tag, Tooltip, message } from 'antd';
+import { StarFilled, StarOutlined } from '@ant-design/icons';
 import classNames from 'classnames';
 import { useIntl } from 'react-intl';
 import { useEffect, useMemo, useState } from 'react';
@@ -349,7 +350,7 @@ export const MemberList: FC<MemberListProps> = ({
         .IdentityMemberList__Label {
           display: block;
           margin-bottom: 6px;
-          color: ${style.textColorSecondary};
+          color: var(--text-color-secondary, rgba(0, 0, 0, 0.45));
           font-size: 12px;
         }
         .IdentityMemberList__Tags {
@@ -375,7 +376,25 @@ export const MemberList: FC<MemberListProps> = ({
         .IdentityMemberList__Hint {
           margin-top: 4px;
           font-size: 12px;
-          color: ${style.textColorSecondary};
+          color: var(--text-color-secondary, rgba(0, 0, 0, 0.45));
+        }
+        .IdentityMemberList__QuickSelectLabel {
+          font-size: 12px;
+          color: var(--text-color-secondary, rgba(0, 0, 0, 0.45));
+        }
+        .IdentityMemberList__SyncCheckbox {
+          color: var(--text-color, rgba(0, 0, 0, 0.85)) !important;
+          &.ant-checkbox-wrapper {
+            color: var(--text-color, rgba(0, 0, 0, 0.85)) !important;
+          }
+          .ant-checkbox + span {
+            color: var(--text-color, rgba(0, 0, 0, 0.85)) !important;
+          }
+        }
+        .IdentityMemberList__SyncCheckboxLabel {
+          font-size: 13px;
+          font-weight: 500;
+          color: var(--text-color, rgba(0, 0, 0, 0.85)) !important;
         }
         .IdentityMemberList__Aliases {
           display: flex;
@@ -532,6 +551,7 @@ const MemberDetail = ({
   );
   const [aliases, setAliases] = useState<string[]>(member?.aliases || []);
   const [aliasInput, setAliasInput] = useState('');
+  const [syncToProjects, setSyncToProjects] = useState(false);
   const [saving, setSaving] = useState(false);
   const [bindWord, setBindWord] = useState('');
   const [bindUsers, setBindUsers] = useState<
@@ -612,6 +632,7 @@ const MemberDetail = ({
     setDisplayName(member?.displayName || '');
     setDefaultDisplayName(member?.defaultDisplayName || '');
     setAliases(member?.aliases || []);
+    setSyncToProjects(false);
     setBindWord('');
     setBindUsers([]);
     setMergeTarget(undefined);
@@ -841,14 +862,19 @@ const MemberDetail = ({
         });
         updated = aliasResult.data.member;
       }
-      if ((defaultDisplayName || '') !== (member.defaultDisplayName || '')) {
+      if (
+        (defaultDisplayName || '') !== (member.defaultDisplayName || '') ||
+        syncToProjects
+      ) {
         const nameResult = await api.member.updateTeamMemberDefaultDisplayName({
           teamID: groupID,
           memberID: selectedMemberID!,
           defaultDisplayName,
           expectedVersion: updated.version,
+          syncToProjects,
         });
         updated = nameResult.data.member;
+        setSyncToProjects(false);
       }
       message.success(
         formatMessage({ id: 'site.memberList.teamMembersUpdated' }),
@@ -1199,9 +1225,122 @@ const MemberDetail = ({
                 id: 'site.memberList.defaultDisplayNamePlaceholder',
               })}
             />
+            {memberIsActive && (canManageSelected || member?.userId === currentUserID) && (
+              <div
+                style={{
+                  marginTop: 6,
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: 6,
+                  alignItems: 'center',
+                }}
+              >
+                <span className="IdentityMemberList__QuickSelectLabel">
+                  {formatMessage({ id: 'site.memberList.quickSelectDisplayName' })}
+                </span>
+                <Tooltip
+                  title={
+                    !defaultDisplayName
+                      ? formatMessage({ id: 'site.memberList.currentPreferred' })
+                      : formatMessage({ id: 'userEdit.cancelPreferredTooltip' })
+                  }
+                >
+                  <Tag
+                    color={!defaultDisplayName ? 'gold' : undefined}
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => setDefaultDisplayName('')}
+                  >
+                    {!defaultDisplayName ? (
+                      <StarFilled style={{ marginRight: 4 }} />
+                    ) : (
+                      <StarOutlined style={{ marginRight: 4, opacity: 0.5 }} />
+                    )}
+                    {member.user?.name}
+                    {member.user?.defaultDisplayName &&
+                      member.user.defaultDisplayName !== member.user.name && (
+                        <span style={{ marginLeft: 4, opacity: 0.85 }}>
+                          ({formatMessage({ id: 'site.memberList.sitePreferred' })}: {member.user.defaultDisplayName})
+                        </span>
+                      )}
+                  </Tag>
+                </Tooltip>
+                {(member.user?.aliases || []).map((alias: string) => {
+                  const isCur = defaultDisplayName === alias;
+                  return (
+                    <Tooltip
+                      key={`site-${alias}`}
+                      title={
+                        isCur
+                          ? formatMessage({ id: 'userEdit.cancelPreferredTooltip' })
+                          : formatMessage({ id: 'userEdit.setAsPreferredTooltip' })
+                      }
+                    >
+                      <Tag
+                        color={isCur ? 'gold' : undefined}
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => setDefaultDisplayName(isCur ? '' : alias)}
+                      >
+                        {isCur ? (
+                          <StarFilled style={{ marginRight: 4 }} />
+                        ) : (
+                          <StarOutlined style={{ marginRight: 4, opacity: 0.5 }} />
+                        )}
+                        {alias}
+                      </Tag>
+                    </Tooltip>
+                  );
+                })}
+                {aliases.map((alias: string) => {
+                  if ((member.user?.aliases || []).includes(alias)) return null;
+                  const isCur = defaultDisplayName === alias;
+                  return (
+                    <Tooltip
+                      key={`team-${alias}`}
+                      title={
+                        isCur
+                          ? formatMessage({ id: 'userEdit.cancelPreferredTooltip' })
+                          : formatMessage({ id: 'userEdit.setAsPreferredTooltip' })
+                      }
+                    >
+                      <Tag
+                        color={isCur ? 'gold' : undefined}
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => setDefaultDisplayName(isCur ? '' : alias)}
+                      >
+                        {isCur ? (
+                          <StarFilled style={{ marginRight: 4 }} />
+                        ) : (
+                          <StarOutlined style={{ marginRight: 4, opacity: 0.5 }} />
+                        )}
+                        {alias}
+                      </Tag>
+                    </Tooltip>
+                  );
+                })}
+              </div>
+            )}
             <div className="IdentityMemberList__Hint">
               {formatMessage({ id: 'site.memberList.defaultDisplayNameHint' })}
             </div>
+            {canManageSelected && memberIsActive && (
+              <div style={{ marginTop: 8 }}>
+                <Checkbox
+                  className="IdentityMemberList__SyncCheckbox"
+                  checked={syncToProjects}
+                  onChange={(e) => setSyncToProjects(e.target.checked)}
+                >
+                  <span
+                    className="IdentityMemberList__SyncCheckboxLabel"
+                    style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-color, inherit)' }}
+                  >
+                    {formatMessage({ id: 'site.memberList.syncToProjects' })}
+                  </span>
+                </Checkbox>
+                <div className="IdentityMemberList__Hint" style={{ marginTop: 2 }}>
+                  {formatMessage({ id: 'site.memberList.syncToProjectsHint' })}
+                </div>
+              </div>
+            )}
           </div>
           <div className="IdentityMemberList__Field">
             <span className="IdentityMemberList__Label">
@@ -1249,9 +1388,45 @@ const MemberDetail = ({
             </span>
             <div>
               {(member.user?.aliases || []).length
-                ? (member.user.aliases || []).map((alias: string) => (
-                    <Tag key={alias}>{alias}</Tag>
-                  ))
+                ? (member.user.aliases || []).map((alias: string) => {
+                    const isCur = defaultDisplayName === alias;
+                    return (
+                      <Tooltip
+                        key={alias}
+                        title={
+                          isCur
+                            ? formatMessage({ id: 'userEdit.cancelPreferredTooltip' })
+                            : formatMessage({ id: 'userEdit.setAsPreferredTooltip' })
+                        }
+                      >
+                        <Tag
+                          color={isCur ? 'gold' : undefined}
+                          style={{
+                            cursor:
+                              canManageSelected || member?.userId === currentUserID
+                                ? 'pointer'
+                                : 'default',
+                          }}
+                          onClick={() => {
+                            if (
+                              canManageSelected ||
+                              member?.userId === currentUserID
+                            ) {
+                              setDefaultDisplayName(isCur ? '' : alias);
+                            }
+                          }}
+                        >
+                          {isCur && <StarFilled style={{ marginRight: 4 }} />}
+                          {alias}
+                          {isCur && (
+                            <span style={{ marginLeft: 4, fontWeight: 500 }}>
+                              ({formatMessage({ id: 'site.memberList.currentPreferred' })})
+                            </span>
+                          )}
+                        </Tag>
+                      </Tooltip>
+                    );
+                  })
                 : formatMessage({ id: 'site.memberList.none' })}
             </div>
           </div>
@@ -1262,17 +1437,33 @@ const MemberDetail = ({
             {canEditAlias ? (
               <div className="IdentityMemberList__AliasField">
                 <div className="IdentityMemberList__Aliases">
-                  {aliases.map((alias) => (
-                    <Tag
-                      closable
-                      key={alias}
-                      onClose={() =>
-                        setAliases(aliases.filter((item) => item !== alias))
-                      }
-                    >
-                      {alias}
-                    </Tag>
-                  ))}
+                  {aliases.map((alias) => {
+                    const isCur = defaultDisplayName === alias;
+                    return (
+                      <Tag
+                        closable
+                        key={alias}
+                        color={isCur ? 'gold' : undefined}
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => setDefaultDisplayName(isCur ? '' : alias)}
+                        onClose={(e) => {
+                          e.stopPropagation();
+                          setAliases(aliases.filter((item) => item !== alias));
+                          if (defaultDisplayName === alias) {
+                            setDefaultDisplayName('');
+                          }
+                        }}
+                      >
+                        {isCur && <StarFilled style={{ marginRight: 4 }} />}
+                        {alias}
+                        {isCur && (
+                          <span style={{ marginLeft: 4, fontWeight: 500 }}>
+                            ({formatMessage({ id: 'site.memberList.currentPreferred' })})
+                          </span>
+                        )}
+                      </Tag>
+                    );
+                  })}
                 </div>
                 <Input.TextArea
                   bordered={false}

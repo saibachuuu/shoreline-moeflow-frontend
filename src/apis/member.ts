@@ -268,17 +268,19 @@ const updateTeamMemberDefaultDisplayName = ({
   memberID,
   defaultDisplayName,
   expectedVersion,
+  syncToProjects,
   configs,
 }: {
   teamID: string;
   memberID: string;
   defaultDisplayName: string;
   expectedVersion: number;
+  syncToProjects?: boolean;
   configs?: AxiosRequestConfig;
 }) => request<{ member: TeamMember }>({
   method: 'PATCH',
   url: `/v1/teams/${teamID}/members/${memberID}/default-display-name`,
-  data: toUnderScoreCase({ defaultDisplayName, expectedVersion }),
+  data: toUnderScoreCase({ defaultDisplayName, expectedVersion, syncToProjects }),
   ...configs,
 });
 

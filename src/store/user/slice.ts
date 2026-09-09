@@ -23,6 +23,7 @@ export interface UserState {
   token: string;
   admin: boolean;
   aliases: string[];
+  defaultDisplayName?: string;
 }
 
 export type SetUserInfoAction = PayloadAction<
@@ -43,6 +44,7 @@ export const initialState: UserState = {
   token: '',
   admin: false,
   aliases: [],
+  defaultDisplayName: '',
 };
 const slice = createSlice({
   name: 'user',

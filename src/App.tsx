@@ -239,6 +239,32 @@ const App: React.FC = () => {
             border-color: #383840 !important;
             color: rgba(255, 255, 255, 0.85) !important;
           }
+          /* 复选框暗黑模式 */
+          [data-theme='dark'] .ant-checkbox-wrapper {
+            color: rgba(255, 255, 255, 0.85) !important;
+          }
+          [data-theme='dark'] .ant-checkbox-wrapper span {
+            color: rgba(255, 255, 255, 0.85);
+          }
+          [data-theme='dark'] .ant-checkbox-inner {
+            background-color: #1f1f24;
+            border-color: #383840;
+          }
+          [data-theme='dark'] .ant-checkbox-checked .ant-checkbox-inner {
+            background-color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+          }
+          [data-theme='dark'] .ant-checkbox-wrapper:hover .ant-checkbox-inner,
+          [data-theme='dark'] .ant-checkbox:hover .ant-checkbox-inner,
+          [data-theme='dark'] .ant-checkbox-input:focus + .ant-checkbox-inner {
+            border-color: var(--primary-color);
+          }
+          /* 别名输入容器暗黑模式 */
+          [data-theme='dark'] .UserEditForm__AliasField,
+          [data-theme='dark'] .IdentityMemberList__AliasField {
+            background-color: #1f1f24 !important;
+            border-color: #383840 !important;
+          }
           [data-theme='dark'] .ant-input-affix-wrapper,
           [data-theme='dark'] .ant-input-group-addon {
             background-color: #1f1f24 !important;

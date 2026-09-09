@@ -13,6 +13,7 @@ export interface APIUser {
   hasAvatar: boolean;
   admin: boolean;
   aliases?: string[];
+  defaultDisplayName?: string;
   locale: {
     id: string;
     name: string;
@@ -56,6 +57,7 @@ interface EditUserData {
   signature: string;
   locale: string;
   aliases: string[];
+  defaultDisplayName?: string;
 }
 /** 修改用户信息 */
 const editUser = ({
