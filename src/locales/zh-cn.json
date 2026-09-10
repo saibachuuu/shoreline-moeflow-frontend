@@ -207,6 +207,8 @@
   "project.archiveImportFailed": "归档导入失败",
   "project.archiveImportRetry": "重试",
   "project.archiveImportDone": "归档导入完成",
+  "project.archiveImportDismiss": "不再提示",
+  "project.archiveImportDismissFailed": "关闭失败，请重试",
   "project.finishTip": "此操作将删除此项目的所有文件和图片。",
   "project.deleteTip": "一天后彻底删除此项目，不会留存任何信息，推荐使用完结功能。（您可以在正式删除前取消此操作）",
   "project.apply": "申请加入项目",

@@ -207,6 +207,8 @@
   "project.archiveImportFailed": "Archive import failed",
   "project.archiveImportRetry": "Retry",
   "project.archiveImportDone": "Archive import completed",
+  "project.archiveImportDismiss": "Dismiss",
+  "project.archiveImportDismissFailed": "Failed to dismiss, please retry",
   "project.finishTip": "This action will delete all files and images for this item.",
   "project.deleteTip": "\"Delete this item permanently after one day, no information will be retained. It is recommended to use the completion function. (You can cancel this operation before it is deleted)\"",
   "project.apply": "Apply to Join Project",

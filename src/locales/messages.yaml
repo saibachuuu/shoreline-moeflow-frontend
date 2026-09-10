@@ -631,6 +631,12 @@ project.archiveImportRetry:
 project.archiveImportDone:
   zhCn: 归档导入完成
   en: Archive import completed
+project.archiveImportDismiss:
+  zhCn: 不再提示
+  en: Dismiss
+project.archiveImportDismissFailed:
+  zhCn: 关闭失败，请重试
+  en: Failed to dismiss, please retry
 project.finishTip:
   zhCn: 此操作将删除此项目的所有文件和图片。
   en: This action will delete all files and images for this item.
