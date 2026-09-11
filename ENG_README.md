@@ -105,6 +105,13 @@ First open-source version of the MoeFlow frontend and backend.
 - **Mobile Long-Press Delete Tag**: Optimized touch interactions on mobile devices to easily delete or manage tags.
 - **Streamlined Keyboard Navigation**: Proofread sending hotkeys, input-focus safeguards, and smooth mode toggles.
 
+### Version 1.2.1
+
+- **Project Member Editor Mobile Adaptation**:
+  - Fixed negative coordinate calculation on narrow screens causing off-screen clipping; switched to centered modal dialog with backdrop on mobile viewports (<= 640px).
+  - Refactored full-mode role list into a horizontally scrollable tab bar on mobile, providing full screen width for the member panel.
+  - Refactored simple-mode layout to single column on narrow screens (<= 480px), enhanced touch targets, and prevented text overflow.
+
 ### Version NEXT
 
 - [diff](https://github.com/moeflow-com/moeflow-frontend/compare/v1.1.1...main)
