@@ -985,6 +985,14 @@ export const EditWorkers = ({
         color: ${style.textColor};
         border-radius: ${style.borderRadiusBase};
         box-shadow: ${style.boxShadowBase};
+        box-sizing: border-box;
+        @media (max-width: 600px) {
+          width: 100%;
+          max-width: 100%;
+          padding: 10px;
+          display: flex;
+          flex-direction: column;
+        }
         .EditWorkers__Header {
           display: flex;
           align-items: center;
@@ -1000,6 +1008,21 @@ export const EditWorkers = ({
           display: inline-flex;
           align-items: center;
           gap: 6px;
+        }
+        @media (max-width: 360px) {
+          .EditWorkers__Header {
+            gap: 4px;
+          }
+          .EditWorkers__HeaderTitle {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+          .EditWorkers__ModeBtn {
+            padding: 3px 6px;
+            font-size: 11px;
+          }
         }
         .EditWorkers__Presence {
           display: flex;
@@ -1026,11 +1049,21 @@ export const EditWorkers = ({
         .EditWorkers__Settings {
           padding: 4px;
           ${clickEffect()};
+          @media (max-width: 600px) {
+            padding: 6px;
+            margin: -2px 0;
+          }
         }
         .EditWorkers__Body {
           display: flex;
           gap: 10px;
           align-items: stretch;
+          @media (max-width: 600px) {
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+          }
         }
         .EditWorkersSimple {
           flex: 1 1 auto;
@@ -1044,6 +1077,15 @@ export const EditWorkers = ({
           grid-template-columns: 84px minmax(0, 1fr);
           gap: 10px;
           align-items: start;
+          @media (min-width: 481px) and (max-width: 600px) {
+            grid-template-columns: 76px minmax(0, 1fr);
+            gap: 6px;
+          }
+          @media (max-width: 480px) {
+            grid-template-columns: 1fr;
+            gap: 4px;
+            margin-bottom: 4px;
+          }
         }
         .EditWorkersSimple__Role {
           display: flex;
@@ -1052,6 +1094,9 @@ export const EditWorkers = ({
           font-size: 13px;
           padding-top: 5px;
           min-width: 0;
+          @media (max-width: 480px) {
+            padding-top: 0;
+          }
         }
         .EditWorkersSimple__RoleName {
           overflow: hidden;
@@ -1096,6 +1141,10 @@ export const EditWorkers = ({
           ${clickEffect()};
           display: inline-flex;
           align-items: center;
+          @media (max-width: 600px) {
+            padding: 2px 4px;
+            margin: -2px 0;
+          }
         }
         .EditWorkersSimple__InputWrap {
           position: relative;
@@ -1112,6 +1161,9 @@ export const EditWorkers = ({
         }
         .EditWorkersSimple__Dropdown .EditWorkers__Results {
           max-height: 200px;
+          @media (max-width: 600px) {
+            max-height: 160px;
+          }
         }
         .EditWorkers__JobList {
           flex: none;
@@ -1123,6 +1175,23 @@ export const EditWorkers = ({
           overflow-y: auto;
           padding-right: 6px;
           border-right: 1px solid ${style.borderColorLight};
+          @media (max-width: 600px) {
+            width: 100%;
+            flex-direction: row;
+            border-right: none;
+            border-bottom: 1px solid ${style.borderColorLight};
+            padding-right: 0;
+            padding-bottom: 6px;
+            max-height: none;
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            &::-webkit-scrollbar {
+              display: none;
+            }
+          }
         }
         .EditWorkers__Job {
           display: flex;
@@ -1134,12 +1203,24 @@ export const EditWorkers = ({
           ${clickEffect()};
           white-space: nowrap;
           font-size: 13px;
+          @media (max-width: 600px) {
+            flex: 0 0 auto;
+            padding: 4px 8px;
+            font-size: 12px;
+            background: ${style.hoverColor};
+          }
         }
         .EditWorkers__Job--active {
           background: ${style.backgroundColorLight};
           border-left: 3px solid ${style.primaryColor};
           padding-left: 5px;
           color: ${style.primaryColor};
+          @media (max-width: 600px) {
+            border-left: none;
+            padding-left: 8px;
+            border: 1px solid ${style.primaryColor};
+            background: ${style.primaryColor}18;
+          }
         }
         .EditWorkers__JobDot {
           flex: none;
@@ -1156,6 +1237,9 @@ export const EditWorkers = ({
           margin-left: auto;
           font-size: 12px;
           color: ${style.textColorSecondary};
+          @media (max-width: 600px) {
+            margin-left: 4px;
+          }
         }
         .EditWorkers__Stage {
           flex: 1 1 auto;
@@ -1169,6 +1253,10 @@ export const EditWorkers = ({
           justify-content: space-between;
           gap: 8px;
           margin-bottom: 6px;
+          @media (max-width: 360px) {
+            flex-wrap: wrap;
+            gap: 4px;
+          }
         }
         .EditWorkers__StageTitle {
           font-size: 13px;
@@ -1192,11 +1280,19 @@ export const EditWorkers = ({
           padding: 8px 10px;
           margin-bottom: 8px;
           background: ${style.backgroundColorLight};
+          @media (max-width: 600px) {
+            padding: 6px 8px;
+            margin-bottom: 6px;
+          }
         }
         .EditWorkers__PanelHint {
           margin: 6px 2px 0;
           font-size: 12px;
           color: ${style.textColorSecondary};
+          @media (max-width: 600px) {
+            font-size: 11px;
+            line-height: 1.4;
+          }
         }
         .EditWorkers__Results,
         .EditWorkers__Selected {
@@ -1204,6 +1300,10 @@ export const EditWorkers = ({
           overflow-y: auto;
           border: 1px solid ${style.borderColorLight};
           border-radius: ${style.borderRadiusBase};
+          @media (max-width: 600px) {
+            max-height: 170px;
+            -webkit-overflow-scrolling: touch;
+          }
         }
         .EditWorkers__Result,
         .EditWorkers__Member {
@@ -1216,6 +1316,18 @@ export const EditWorkers = ({
         .EditWorkers__Result {
           cursor: pointer;
           ${clickEffect()};
+        }
+        .EditWorkers__Result > span {
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          flex: 1 1 auto;
+        }
+        .EditWorkers__Result > .Icon,
+        .EditWorkers__Result > svg {
+          flex: none;
+          margin-left: 6px;
         }
         .EditWorkers__Result--disabled {
           cursor: default;
@@ -1236,11 +1348,23 @@ export const EditWorkers = ({
         .EditWorkers__ResultAlias {
           color: ${style.textColorSecondary};
           font-size: 12px;
+          margin-left: 4px;
+        }
+        @media (max-width: 480px) {
+          .EditWorkers__ResultAlias {
+            max-width: 100px;
+            display: inline-block;
+            vertical-align: bottom;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
         }
         .EditWorkers__CandidateBadge {
           margin-left: 6px;
           font-size: 12px;
           color: ${style.warningColor};
+          flex-shrink: 0;
         }
         .EditWorkers__CandidateBadge--held {
           color: ${style.successColor};
@@ -1278,16 +1402,25 @@ export const EditWorkers = ({
           display: inline-flex;
           align-items: center;
           gap: 2px;
+          @media (max-width: 600px) {
+            gap: 4px;
+          }
         }
         .EditWorkers__MemberEdit {
           padding: 2px 4px;
           color: ${style.textColorSecondary};
           ${clickEffect()};
+          @media (max-width: 600px) {
+            padding: 4px 6px;
+          }
         }
         .EditWorkers__Remove {
           padding: 2px 4px;
           color: ${style.textColorSecondary};
           ${clickEffect()};
+          @media (max-width: 600px) {
+            padding: 4px 6px;
+          }
         }
         .EditWorkers__MemberNameInput {
           flex: 1 1 auto;
@@ -1298,12 +1431,20 @@ export const EditWorkers = ({
           flex-wrap: wrap;
           gap: 8px;
           margin-top: 10px;
+          @media (max-width: 600px) {
+            gap: 6px;
+            margin-top: 8px;
+          }
         }
         .EditWorkers__SelfAction {
           padding: 5px 10px;
           border: 1px solid ${style.borderColorLight};
           border-radius: ${style.borderRadiusBase};
           ${clickEffect()};
+          @media (max-width: 600px) {
+            padding: 5px 8px;
+            font-size: 12px;
+          }
         }
         .EditWorkers__SelfAction--danger {
           color: ${style.errorColor};
@@ -1313,11 +1454,28 @@ export const EditWorkers = ({
           justify-content: flex-end;
           gap: 8px;
           margin-top: 10px;
+          @media (max-width: 600px) {
+            gap: 6px;
+            margin-top: 8px;
+          }
+          @media (max-width: 360px) {
+            justify-content: stretch;
+          }
         }
         .EditWorkers__Button {
           padding: 5px 10px;
           border-radius: ${style.borderRadiusBase};
           ${clickEffect()};
+          @media (max-width: 600px) {
+            padding: 6px 14px;
+            font-size: 13px;
+          }
+          @media (max-width: 360px) {
+            flex: 1 1 0;
+            text-align: center;
+            justify-content: center;
+            display: inline-flex;
+          }
         }
         .EditWorkers__Button--save {
           background: ${style.primaryColor};

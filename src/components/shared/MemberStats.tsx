@@ -280,19 +280,42 @@ export const MemberStats: FC<MemberStatsProps> = ({
               position: fixed;
               inset: 0;
               z-index: 1000;
+              @media (max-width: 640px) {
+                background: rgba(0, 0, 0, 0.45);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 10px;
+                box-sizing: border-box;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+              }
             `}
           >
             <div
               onClick={(event) => event.stopPropagation()}
               css={css`
                 position: fixed;
-                top: ${Math.min(rect.bottom + 5, window.innerHeight - 560)}px;
-                left: ${Math.min(rect.left, window.innerWidth - 660)}px;
+                top: ${Math.max(10, Math.min(rect.bottom + 5, window.innerHeight - 560))}px;
+                left: ${Math.max(10, Math.min(rect.left, window.innerWidth - 660))}px;
                 z-index: 1001;
                 background: ${style.backgroundColorLight};
                 color: ${style.textColor};
                 border-radius: ${style.borderRadiusBase};
                 box-shadow: ${style.boxShadowBase};
+                @media (max-width: 640px) {
+                  position: relative !important;
+                  top: auto !important;
+                  left: auto !important;
+                  margin: auto;
+                  width: 100% !important;
+                  max-width: calc(100vw - 20px) !important;
+                  max-height: calc(100dvh - 20px) !important;
+                  display: flex;
+                  flex-direction: column;
+                  overflow-y: auto;
+                  -webkit-overflow-scrolling: touch;
+                }
               `}
             >
               <EditWorkers
