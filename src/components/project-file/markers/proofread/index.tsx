@@ -368,6 +368,10 @@ export const ImageSourceViewerProofreader: FC<
             background: transparent !important;
             background-color: transparent !important;
           }
+          &.ImageSourceViewerProofreader__TextArea--hasAvatar {
+            text-indent: 38px;
+          }
+        }
         .ImageSourceViewerProofreader__TextArea--hasAvatar {
           text-indent: 38px;
         }
