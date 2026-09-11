@@ -339,6 +339,7 @@ export const EditWorkers = ({
       : undefined;
     const privilegedSelf =
       canManageMembers ||
+      qualificationMode === 'open' ||
       (member.userId === currentUserId &&
         (member.baseTag === 'creator' ||
           member.baseTag === 'admin' ||
@@ -375,12 +376,14 @@ export const EditWorkers = ({
     member: APIProjectMember | ProjectMemberDraft,
     roleKey: string,
   ) => {
-    if (
-      !canEditProjectMemberInQuickMenu(member, currentUserId, canManageMembers)
-    )
-      return;
+    const editable =
+      canManageMembers ||
+      qualificationMode === 'open' ||
+      member.userId === currentUserId;
+    if (!editable) return;
     if (
       !canManageMembers &&
+      qualificationMode !== 'open' &&
       (member.userId !== currentUserId || member.status !== 'active')
     )
       return;
@@ -430,14 +433,11 @@ export const EditWorkers = ({
     if ('user' in result) {
       const existing = draft.find((member) => member.userId === result.userId);
       if (existing && existing.status !== 'removed') {
-        if (
-          canEditProjectMemberInQuickMenu(
-            existing,
-            currentUserId,
-            canManageMembers,
-          )
-        )
-          addMember(existing, roleKey);
+        const editable =
+          canManageMembers ||
+          qualificationMode === 'open' ||
+          result.userId === currentUserId;
+        if (editable) addMember(existing, roleKey);
       } else {
         addRegisteredUser(
           { id: result.user.id, name: result.user.name },
@@ -449,14 +449,11 @@ export const EditWorkers = ({
     }
     const existing = draft.find((member) => member.userId === result.id);
     if (existing && existing.status !== 'removed') {
-      if (
-        canEditProjectMemberInQuickMenu(
-          existing,
-          currentUserId,
-          canManageMembers,
-        )
-      )
-        addMember(existing, roleKey);
+      const editable =
+        canManageMembers ||
+        qualificationMode === 'open' ||
+        result.id === currentUserId;
+      if (editable) addMember(existing, roleKey);
       return;
     }
     addRegisteredUser({ id: result.id, name: result.name }, roleKey);
@@ -470,7 +467,8 @@ export const EditWorkers = ({
     const existing = draft.find((member) => member.userId === user.id);
     const mayEditTags =
       canManageMembers ||
-      (user.id === currentUserId && existing?.status === 'active');
+      qualificationMode === 'open' ||
+      user.id === currentUserId;
     const candidate = existing || {
       userId: user.id,
       displayName: user.name,
@@ -519,24 +517,20 @@ export const EditWorkers = ({
     roleKey: string,
   ) => {
     if ('memberId' in result) {
-      return (
-        canEditProjectMemberInQuickMenu(
-          result,
-          currentUserId,
-          canManageMembers,
-        ) && canAssignRole(result, roleKey)
-      );
+      const editable =
+        canManageMembers ||
+        qualificationMode === 'open' ||
+        result.userId === currentUserId;
+      return editable && canAssignRole(result, roleKey);
     }
     const resultUserId = 'user' in result ? result.userId : result.id;
     const existing = draft.find((member) => member.userId === resultUserId);
     const editable =
       !existing ||
       existing.status === 'removed' ||
-      canEditProjectMemberInQuickMenu(
-        existing,
-        currentUserId,
-        canManageMembers,
-      );
+      canManageMembers ||
+      qualificationMode === 'open' ||
+      resultUserId === currentUserId;
     const candidate =
       'user' in result
         ? {
@@ -641,10 +635,11 @@ export const EditWorkers = ({
 
   // Add the current role to an already-joined member (empty-input candidate).
   const addRoleToJoined = (member: ProjectMemberDraft, roleKey: string) => {
-    if (
-      !canEditProjectMemberInQuickMenu(member, currentUserId, canManageMembers)
-    )
-      return;
+    const editable =
+      canManageMembers ||
+      qualificationMode === 'open' ||
+      member.userId === currentUserId;
+    if (!editable) return;
     if (member.status === 'invited') {
       message.info(formatMessage({ id: 'site.editWorkers.invitedNotice' }));
       return;
@@ -852,11 +847,10 @@ export const EditWorkers = ({
         {!loading &&
           !query.trim() &&
           candidates.map(({ member, holdsRole }) => {
-            const editable = canEditProjectMemberInQuickMenu(
-              member,
-              currentUserId,
-              canManageMembers,
-            );
+            const editable =
+              canManageMembers ||
+              qualificationMode === 'open' ||
+              member.userId === currentUserId;
             const userInfo = member.userId
               ? userInfoByUserId.get(member.userId)
               : undefined;
