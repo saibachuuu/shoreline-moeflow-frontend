@@ -112,6 +112,18 @@ First open-source version of the MoeFlow frontend and backend.
   - Refactored full-mode role list into a horizontally scrollable tab bar on mobile, providing full screen width for the member panel.
   - Refactored simple-mode layout to single column on narrow screens (<= 480px), enhanced touch targets, and prevented text overflow.
 
+### Version 1.2.2
+
+- **Open Qualification Mode Recruiting Fix**: In open qualification mode, ordinary members can invite other members and assign positions without being blocked as "unqualified"; self-claimed positions keep their tags when assigned directly.
+- **Proofread Textarea Avatar Overlap Fix**: Fixed the avatar obscuring text inside the image translator's proofread draft textarea.
+
+### Version 1.2.3
+
+- **Same-Name Member Deduplication**: Typing a name and pressing Enter in the quick worker editor (EditWorkers) now assigns the role to the first joined member with the same project display name (registered user first, then external alias) instead of stacking duplicate external records.
+- **Hard Delete for External Aliases**: Added a hard-delete entry in the member list (project owner or team creator only, with a confirmation dialog) that permanently removes an external alias and frees its `(project, external_id)` unique slot.
+- **Bind Flow Improvements**: External members now show the bind entry in both active and removed states; bind failures recognize both the `identityCode` string and the legacy 5109 numeric code as a concurrent-merge fallback.
+- **API & i18n**: Added the `hardDeleteProjectMember` API and an `identityCode` field on the failure result type; added hard-delete related messages (zh-CN, en, messages.yaml).
+
 ### Version NEXT
 
 - [diff](https://github.com/moeflow-com/moeflow-frontend/compare/v1.1.1...main)
