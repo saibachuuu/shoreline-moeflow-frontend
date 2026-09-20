@@ -608,6 +608,17 @@ const MemberDetail = ({
       (canManageMembers ||
         (member.status === 'active' && member.userId === currentUserID)),
   );
+  // Mechanism 3: only the project owner or the team creator may hard-delete an
+  // external alias (permanent removal, not soft-remove).  The backend enforces
+  // this too; the frontend just gates the button.
+  const canHardDeleteExternal = Boolean(
+    groupType === 'project' &&
+      member &&
+      member.status === 'active' &&
+      !member.userId &&
+      (project?.ownerUserId === currentUserID ||
+        project?.team?.baseTag === 'creator'),
+  );
   const canRestoreProjectMember = Boolean(
     groupType === 'project' &&
       member?.status === 'removed' &&
@@ -800,6 +811,37 @@ const MemberDetail = ({
     });
   };
 
+  const hardDeleteExternal = () => {
+    if (!canHardDeleteExternal) return;
+    Modal.confirm({
+      title: formatMessage({ id: 'site.memberList.hardDeleteExternalTitle' }),
+      content: formatMessage(
+        { id: 'site.memberList.hardDeleteExternalConfirm' },
+        { name: member.displayName },
+      ),
+      okType: 'danger',
+      okText: formatMessage({ id: 'site.memberList.hardDelete' }),
+      cancelText: formatMessage({ id: 'site.memberList.cancel' }),
+      onOk: async () => {
+        setSaving(true);
+        try {
+          await api.member.hardDeleteProjectMember({
+            projectID: groupID,
+            memberID: selectedMemberID!,
+          });
+          await onReload();
+          message.success(
+            formatMessage({ id: 'site.memberList.projectMemberHardDeleted' }),
+          );
+        } catch (error: any) {
+          error.default();
+        } finally {
+          setSaving(false);
+        }
+      },
+    });
+  };
+
   const restoreProjectMember = async () => {
     if (!canRestoreProjectMember) return;
     setSaving(true);
@@ -958,7 +1000,12 @@ const MemberDetail = ({
       onSaved(toLowerCamelCase((result.data as any).member));
       await onReload();
     } catch (error: any) {
-      if (error?.data?.code === 'MEMBER_MERGE_REQUIRED') {
+      const errorCode =
+        error?.data?.identityCode || error?.data?.code;
+      if (errorCode === 'MEMBER_MERGE_REQUIRED' || errorCode === 5109) {
+        // The backend normally auto-merges now; this branch is the fallback
+        // for a concurrent duplicate that still surfaces the explicit merge
+        // dialog.
         const target = members.find(
           (item: any) => item.userId === userID && item.status !== 'removed',
         );
@@ -1130,7 +1177,7 @@ const MemberDetail = ({
             </Tag>
             {member.isOwner && <Tag color="gold">owner</Tag>}
           </div>
-          {canManageMembers && member.status === 'active' && !member.userId && (
+          {canManageMembers && !member.userId && (
             <div className="IdentityMemberList__Field">
               <span className="IdentityMemberList__Label">
                 {formatMessage({ id: 'site.memberList.bindRegisteredUser' })}
@@ -1498,6 +1545,12 @@ const MemberDetail = ({
           <Button danger loading={saving} onClick={removeProjectMember}>
             <Icon icon="trash-alt" />{' '}
             {formatMessage({ id: 'site.memberList.removeMember' })}
+          </Button>
+        )}
+        {canHardDeleteExternal && (
+          <Button danger loading={saving} onClick={hardDeleteExternal}>
+            <Icon icon="trash-alt" />{' '}
+            {formatMessage({ id: 'site.memberList.hardDeleteExternal' })}
           </Button>
         )}
         {canRestoreProjectMember && (

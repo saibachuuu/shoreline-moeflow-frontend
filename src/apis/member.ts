@@ -142,6 +142,20 @@ const mergeProjectMember = ({
   ...configs,
 });
 
+const hardDeleteProjectMember = ({
+  projectID,
+  memberID,
+  configs,
+}: {
+  projectID: string;
+  memberID: string;
+  configs?: AxiosRequestConfig;
+}) => request({
+  method: 'DELETE',
+  url: `/v1/projects/${projectID}/members/${memberID}`,
+  ...configs,
+});
+
 const transferProjectOwner = ({
   projectID,
   newOwnerUserID,
@@ -318,6 +332,7 @@ export default {
   applyProjectMemberChanges,
   bindProjectMember,
   mergeProjectMember,
+  hardDeleteProjectMember,
   transferProjectOwner,
   getTeamMembers,
   addTeamMember,

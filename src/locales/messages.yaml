@@ -1827,6 +1827,21 @@ site.memberList.mergeExternalName:
 site.memberList.mergedTags:
   zhCn: 合并后的项目标签
   en: Tags after merge
+site.memberList.hardDeleteExternalTitle:
+  zhCn: 删除外部署名
+  en: Delete external alias
+site.memberList.hardDeleteExternalConfirm:
+  zhCn: 确认永久删除外部署名“{name}”吗？此操作不可恢复，该成员记录将被彻底移除。
+  en: 'Permanently delete the external alias "{name}"? This cannot be undone and the member record will be removed for good.'
+site.memberList.hardDeleteExternal:
+  zhCn: 删除外部署名
+  en: Delete external alias
+site.memberList.hardDelete:
+  zhCn: 永久删除
+  en: Delete permanently
+site.memberList.projectMemberHardDeleted:
+  zhCn: 外部署名已删除
+  en: External alias deleted
 site.editWorkers.title:
   zhCn: 项目成员快捷编辑
   en: Quick member editor

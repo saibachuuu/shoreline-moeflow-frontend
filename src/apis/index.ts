@@ -110,6 +110,8 @@ interface BasicFailureResultData {
   /** 支持 i18n 的错误信息 */
   message: string;
   requestId?: string;
+  /** 身份标签错误的稳定字符串标识（如 MEMBER_MERGE_REQUIRED）。 */
+  identityCode?: string;
 }
 
 /** 基础错误响应结果 */

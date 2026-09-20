@@ -503,10 +503,42 @@ export const EditWorkers = ({
   };
 
   const addExternalMember = (displayName: string, roleKey: string) => {
+    const value = displayName.trim();
+    if (!value) return;
+    // Mechanism 1: typing a name and pressing Enter defaults to adding an
+    // external alias, but if a member with the same project display name is
+    // already joined, assign the role to the first matching registered user
+    // instead of creating a duplicate external alias.  If no registered user
+    // matches but an external alias with that name is already joined, add the
+    // role to it (never stack a second same-name external record).
+    const sameNameUser = draft.find(
+      (member) =>
+        member.status !== 'removed' &&
+        member.displayName === value &&
+        member.userId,
+    );
+    if (sameNameUser) {
+      addMember(sameNameUser, roleKey);
+      setWord('');
+      closePanel();
+      return;
+    }
+    const sameNameExternal = draft.find(
+      (member) =>
+        member.status !== 'removed' &&
+        member.displayName === value &&
+        !member.userId,
+    );
+    if (sameNameExternal) {
+      addMember(sameNameExternal, roleKey);
+      setWord('');
+      closePanel();
+      return;
+    }
     setDraft((current) =>
       canManageMembers
-        ? mergeExternalMemberTag(current, displayName, roleKey)
-        : mergeExternalMemberWithoutTags(current, displayName),
+        ? mergeExternalMemberTag(current, value, roleKey)
+        : mergeExternalMemberWithoutTags(current, value),
     );
     setWord('');
     closePanel();
