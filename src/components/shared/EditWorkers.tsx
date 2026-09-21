@@ -1096,13 +1096,14 @@ export const EditWorkers = ({
           min-width: 0;
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 0;
         }
         .EditWorkersSimple__Row {
           display: grid;
           grid-template-columns: 84px minmax(0, 1fr);
           gap: 10px;
           align-items: start;
+          padding: 6px 0;
           @media (min-width: 481px) and (max-width: 600px) {
             grid-template-columns: 76px minmax(0, 1fr);
             gap: 6px;
@@ -1110,8 +1111,16 @@ export const EditWorkers = ({
           @media (max-width: 480px) {
             grid-template-columns: 1fr;
             gap: 4px;
-            margin-bottom: 4px;
           }
+        }
+        .EditWorkersSimple__Row:first-child {
+          padding-top: 0;
+        }
+        .EditWorkersSimple__Row:last-child {
+          padding-bottom: 0;
+        }
+        .EditWorkersSimple__Row + .EditWorkersSimple__Row {
+          border-top: 1px solid ${style.borderColorLight};
         }
         .EditWorkersSimple__Role {
           display: flex;
