@@ -15,6 +15,7 @@ import { setUserToken, UserState } from '@/store/user/slice';
 import style from '../../style';
 import { clickEffect } from '@/utils/style';
 import { routes } from '@/pages/routes';
+import { moduleMenuItems } from '@/modules';
 import { imageTranslatorSettingsStorage } from '@/utils/storage';
 
 export const MENU_COLLAPSED_WIDTH = 63;
@@ -367,6 +368,19 @@ export const DashboardMenu: FC<
             logo={<Icon className="ListItem__LogoIcon" icon="book"></Icon>}
             name={formatMessage({ id: 'site.myProjects' })}
           />
+          {/* 可选模块贡献的菜单项。零模块时 moduleMenuItems 为空。 */}
+          {moduleMenuItems.map((item) => (
+            <ListItem
+              key={item.path}
+              onClick={() => history.push(item.path)}
+              active={
+                matchPath(location.pathname, { path: item.path }) !== null
+              }
+              className="Dashboard__ListItem Dashboard__MenuOption Dashboard__MenuOption--system"
+              logo={<Icon className="ListItem__LogoIcon" icon={item.icon} />}
+              name={item.name}
+            />
+          ))}
         </>
       )}
       <ListItem

@@ -1,0 +1,28 @@
+# 外组作品检索（紫藤合作方）模块的文案。
+#
+# 本文件由 scripts/generate-locale-json.ts 自动合并进 src/locales/*.json。
+# 键与核心冲突时生成器会**直接报错**，避免模块静默覆盖核心文案。
+project.zitengChecking:
+  zhCn: 正在查询外组合作方是否有同名作品…
+  en: Checking the partner catalogue for the same title…
+project.zitengSuspected:
+  zhCn: 合作方已有 {count} 个疑似同名作品，请确认是否撞车
+  en: The partner already has {count} similar title(s); please confirm
+project.zitengCheckFailed:
+  zhCn: 合作方查重失败
+  en: Partner duplicate check failed
+project.zitengCheckFailedHint:
+  zhCn: 这不代表没有撞车，请稍后重试
+  en: This does not mean there is no conflict; please retry later
+project.zitengRetry:
+  zhCn: 重新查询
+  en: Check again
+project.zitengStateInProgress:
+  zhCn: 制作中
+  en: In progress
+project.zitengStatePublished:
+  zhCn: 已发布
+  en: Published
+project.zitengStateWithdrawn:
+  zhCn: 已撤回
+  en: Withdrawn

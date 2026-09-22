@@ -52,6 +52,7 @@
   },
   "scripts": {
     "build": "vite build",
+    "prebuild": "npm run build:locale",
     "start": "vite",
     "lint": "eslint src",
     "lint:fix": "eslint --fix src",

@@ -785,5 +785,13 @@
   "project.action.translation": "翻译文本",
   "project.editingSingleWithAction": "{name} 正编辑 {target}",
   "project.editingMultipleWithAction": "{names} 正编辑 {target}",
-  "project.editingManyWithAction": "{name}等 {count} 人 正编辑 {target}"
+  "project.editingManyWithAction": "{name}等 {count} 人 正编辑 {target}",
+  "project.zitengChecking": "正在查询外组合作方是否有同名作品…",
+  "project.zitengSuspected": "合作方已有 {count} 个疑似同名作品，请确认是否撞车",
+  "project.zitengCheckFailed": "合作方查重失败",
+  "project.zitengCheckFailedHint": "这不代表没有撞车，请稍后重试",
+  "project.zitengRetry": "重新查询",
+  "project.zitengStateInProgress": "制作中",
+  "project.zitengStatePublished": "已发布",
+  "project.zitengStateWithdrawn": "已撤回"
 }

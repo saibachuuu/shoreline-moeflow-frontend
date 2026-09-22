@@ -36,6 +36,7 @@ import Team from './Team';
 import TeamSetting from './TeamSetting';
 import UserSetting from './UserSetting';
 import { MENU_COLLAPSED_WIDTH } from '@/components/dashboard/DashboardMenu';
+import { moduleRoutes } from '@/modules';
 
 /** 仪表盘的属性接口 */
 interface DashboardProps {}
@@ -333,6 +334,14 @@ const Dashboard: FC<DashboardProps> = () => {
             <Route path={`${path}/join/:groupType/:groupID`}>
               <JoinGroup />
             </Route>
+            {/* 可选模块贡献的路由。零模块时 moduleRoutes 为空，不渲染任何内容。 */}
+            {moduleRoutes.map((moduleRoute) => (
+              <Route
+                key={moduleRoute.path}
+                path={`${path}/${moduleRoute.path}`}
+                component={moduleRoute.component}
+              />
+            ))}
           </Switch>
         </div>
         {isMobile && location.pathname === url + '/teams' && (

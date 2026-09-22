@@ -785,5 +785,13 @@
   "project.action.translation": "translation",
   "project.editingSingleWithAction": "{name} editing {target}",
   "project.editingMultipleWithAction": "{names} editing {target}",
-  "project.editingManyWithAction": "{name} & {others} others editing {target}"
+  "project.editingManyWithAction": "{name} & {others} others editing {target}",
+  "project.zitengChecking": "Checking the partner catalogue for the same title…",
+  "project.zitengSuspected": "The partner already has {count} similar title(s); please confirm",
+  "project.zitengCheckFailed": "Partner duplicate check failed",
+  "project.zitengCheckFailedHint": "This does not mean there is no conflict; please retry later",
+  "project.zitengRetry": "Check again",
+  "project.zitengStateInProgress": "In progress",
+  "project.zitengStatePublished": "Published",
+  "project.zitengStateWithdrawn": "Withdrawn"
 }

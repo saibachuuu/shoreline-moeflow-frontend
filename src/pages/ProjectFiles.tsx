@@ -17,6 +17,7 @@ import {
 import { ProjectTargetList } from '@/components/project/ProjectTargetList';
 import { ProjectImportFromLabelplusStatus } from '@/components/project/ProjectImportFromLabelplusStatus';
 import { ArchiveImportProgress } from '@/components/project/ArchiveImportProgress';
+import { moduleProjectTopSlots } from '@/modules';
 
 /** 项目文件页的属性接口 */
 interface ProjectFilesProps {
@@ -149,6 +150,12 @@ const ProjectFiles: FC<ProjectFilesProps> = ({ project }) => {
     wrapper,
     undefined,
     <>
+      {/* 可选模块插入的顶部区块（核心不认识任何具体模块） */}
+      {project &&
+        moduleProjectTopSlots.map((slot, index) => {
+          const SlotComponent = slot.component;
+          return <SlotComponent key={index} projectID={project.id} />;
+        })}
       <ArchiveImportProgress projectID={project.id} />
       <FileList
         project={project}
