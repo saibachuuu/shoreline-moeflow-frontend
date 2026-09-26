@@ -124,6 +124,15 @@ First open-source version of the MoeFlow frontend and backend.
 - **Bind Flow Improvements**: External members now show the bind entry in both active and removed states; bind failures recognize both the `identityCode` string and the legacy 5109 numeric code as a concurrent-merge fallback.
 - **API & i18n**: Added the `hardDeleteProjectMember` API and an `identityCode` field on the failure result type; added hard-delete related messages (zh-CN, en, messages.yaml).
 
+### Version 1.2.4
+
+- **Quick Worker Editor Role Row Separation**: Roles in the quick worker editor (EditWorkers) are now rendered in dedicated rows, improving readability and usability with dense member configurations.
+- **Optional Frontend Module System**: Introduced a directory-presence based modular architecture under `src/modules`, providing generic slots, routes, and menu contributions while enforcing strict decoupling (C1).
+- **Partner Work Search & Duplicate Check Alert**: Added partner catalogue search for conflicting works, presenting top-of-project alerts with suspected titles, progress, and retry actions.
+- **Alert & Prompt Box Dark Mode Adaptation**: Fully adapted Ant Design alert boxes (`ArchiveImportProgress`, `ZitengCheckAlert`), progress bars, danger buttons, and tags to the dark theme.
+- **Clear Duplicate Check Verdict Banner**: When a check determines no collision, displays a subtle, near-background green banner below the file search bar. Expands on first visit, retracts to a thin 3px green line on hover-away, and re-expands on hover without displacing card positions or blocking card interactions. On mobile, stays expanded at the top of the cards and naturally scrolls out of view.
+- **State Deduplication & Full i18n**: Shared query state via `useZitengCheck` to prevent duplicate polling, with full bilingual localization across all strings.
+
 ### Version NEXT
 
 - [diff](https://github.com/moeflow-com/moeflow-frontend/compare/v1.1.1...main)
