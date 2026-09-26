@@ -346,6 +346,17 @@ const App: React.FC = () => {
             border-color: var(--primary-color);
             color: #fff;
           }
+          [data-theme='dark'] .ant-btn-dangerous {
+            background-color: #26262a;
+            border-color: #a61d24;
+            color: #ff7875;
+          }
+          [data-theme='dark'] .ant-btn-dangerous:hover,
+          [data-theme='dark'] .ant-btn-dangerous:focus {
+            background-color: #26262a;
+            border-color: #d32029;
+            color: #ffa39e;
+          }
           [data-theme='dark'] .ant-radio-button-wrapper {
             background-color: #26262a;
             border-color: #383840;
@@ -559,6 +570,61 @@ const App: React.FC = () => {
             color: rgba(255, 255, 255, 0.85);
           }
 
+          /* 警告提示 (Alert) 暗黑模式 */
+          [data-theme='dark'] .ant-alert {
+            color: rgba(255, 255, 255, 0.85);
+          }
+          [data-theme='dark'] .ant-alert-message {
+            color: rgba(255, 255, 255, 0.85) !important;
+          }
+          [data-theme='dark'] .ant-alert-description {
+            color: rgba(255, 255, 255, 0.65) !important;
+          }
+          [data-theme='dark'] .ant-alert-success {
+            background-color: #162312 !important;
+            border-color: #274916 !important;
+          }
+          [data-theme='dark'] .ant-alert-success .ant-alert-icon {
+            color: #49aa19 !important;
+          }
+          [data-theme='dark'] .ant-alert-info {
+            background-color: #111d2c !important;
+            border-color: #153450 !important;
+          }
+          [data-theme='dark'] .ant-alert-info .ant-alert-icon {
+            color: #177ddc !important;
+          }
+          [data-theme='dark'] .ant-alert-warning {
+            background-color: #2b2111 !important;
+            border-color: #594214 !important;
+          }
+          [data-theme='dark'] .ant-alert-warning .ant-alert-icon {
+            color: #d89614 !important;
+          }
+          [data-theme='dark'] .ant-alert-error {
+            background-color: #2a1215 !important;
+            border-color: #58181c !important;
+          }
+          [data-theme='dark'] .ant-alert-error .ant-alert-icon {
+            color: #a61d24 !important;
+          }
+          [data-theme='dark'] .ant-alert-close-icon .anticon-close {
+            color: rgba(255, 255, 255, 0.45);
+          }
+          [data-theme='dark'] .ant-alert-close-icon .anticon-close:hover {
+            color: rgba(255, 255, 255, 0.75);
+          }
+          [data-theme='dark'] .ant-alert .ant-list-split .ant-list-item {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+            color: rgba(255, 255, 255, 0.85);
+          }
+          [data-theme='dark'] .ant-alert .ant-progress-text {
+            color: rgba(255, 255, 255, 0.85) !important;
+          }
+          [data-theme='dark'] .ant-alert .ant-progress-inner {
+            background-color: #2e2e38 !important;
+          }
+
           .ant-badge-dot {
             background-color: ${style.primaryColor};
           }
@@ -573,6 +639,16 @@ const App: React.FC = () => {
             background-color: #26262a;
             border-color: #383840;
             color: rgba(255, 255, 255, 0.85);
+          }
+          [data-theme='dark'] .ant-tag-orange {
+            background-color: #2b1d11 !important;
+            border-color: #593814 !important;
+            color: #ffc069 !important;
+          }
+          [data-theme='dark'] .ant-tag-blue {
+            background-color: #111d2c !important;
+            border-color: #153450 !important;
+            color: #69c0ff !important;
           }
 
           /* == 手机版 == */

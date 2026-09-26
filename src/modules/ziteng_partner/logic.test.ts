@@ -1,6 +1,7 @@
 import { ZitengCheck } from './api';
 import {
   deriveAlertState,
+  isZitengClear,
   shouldKeepPolling,
   suspicionLevelOf,
   suspectTitle,
@@ -151,5 +152,52 @@ describe('shouldKeepPolling', () => {
     expect(shouldKeepPolling(makeCheck({ status: 3 }))).toBe(false);
     expect(shouldKeepPolling(null)).toBe(false);
     expect(shouldKeepPolling(undefined)).toBe(false);
+  });
+});
+
+describe('isZitengClear', () => {
+  it('未查到（clear）且已完成返回 true', () => {
+    expect(isZitengClear(makeCheck({ status: 2, verdict: 'clear' }))).toBe(
+      true,
+    );
+  });
+
+  it('排队/执行中尚未结束返回 false', () => {
+    expect(isZitengClear(makeCheck({ status: 0, verdict: 'clear' }))).toBe(
+      false,
+    );
+    expect(isZitengClear(makeCheck({ status: 1, verdict: 'clear' }))).toBe(
+      false,
+    );
+  });
+
+  it('查询失败返回 false', () => {
+    expect(isZitengClear(makeCheck({ status: 3, verdict: 'failed' }))).toBe(
+      false,
+    );
+    expect(isZitengClear(makeCheck({ status: 3, verdict: 'clear' }))).toBe(
+      false,
+    );
+    expect(isZitengClear(makeCheck({ status: 2, verdict: 'failed' }))).toBe(
+      false,
+    );
+  });
+
+  it('有疑似作品返回 false', () => {
+    expect(
+      isZitengClear(
+        makeCheck({
+          status: 2,
+          verdict: 'suspected',
+          suspects: [{ id: '1', original_title: '作品' }],
+        }),
+      ),
+    ).toBe(false);
+  });
+
+  it('空 check 或尚未查询（verdict=""）返回 false', () => {
+    expect(isZitengClear(null)).toBe(false);
+    expect(isZitengClear(undefined)).toBe(false);
+    expect(isZitengClear(makeCheck({ verdict: '' }))).toBe(false);
   });
 });

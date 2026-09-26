@@ -16,7 +16,10 @@ export const STATUS_SUCCEEDED = 2;
 export const STATUS_FAILED = 3;
 
 /** 仍在进行中（需要继续轮询）的状态 */
-export const PENDING_STATUSES: readonly number[] = [STATUS_QUEUED, STATUS_RUNNING];
+export const PENDING_STATUSES: readonly number[] = [
+  STATUS_QUEUED,
+  STATUS_RUNNING,
+];
 
 /** 提示条要呈现的形态 */
 export type ZitengAlertKind = 'none' | 'pending' | 'suspected' | 'failed';
@@ -46,7 +49,10 @@ export const ZITENG_ALERT_NONE: ZitengAlertState = {
  */
 export const deriveAlertState = (
   check: ZitengCheck | null | undefined,
-  formatTitle: (suspect: ZitengCheck['suspects'][number], index: number) => string,
+  formatTitle: (
+    suspect: ZitengCheck['suspects'][number],
+    index: number,
+  ) => string,
 ): ZitengAlertState => {
   if (!check) return ZITENG_ALERT_NONE;
 
@@ -98,3 +104,22 @@ export const suspicionLevelOf = (
 export const shouldKeepPolling = (
   check: ZitengCheck | null | undefined,
 ): boolean => !!check && PENDING_STATUSES.includes(check.status);
+
+/**
+ * 是否判定为未撞车（查询已结束、成功且无疑似条目）。
+ */
+export const isZitengClear = (
+  check: ZitengCheck | null | undefined,
+): boolean => {
+  if (!check) return false;
+  if (PENDING_STATUSES.includes(check.status)) return false;
+  if (check.status === STATUS_FAILED || check.verdict === 'failed')
+    return false;
+  if (
+    check.verdict === 'suspected' &&
+    check.suspects &&
+    check.suspects.length > 0
+  )
+    return false;
+  return check.verdict === 'clear';
+};

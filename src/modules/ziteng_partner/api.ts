@@ -15,7 +15,11 @@ import { BasicSuccessResult, request } from '@/apis';
 export type ZitengVerdict = 'clear' | 'suspected' | 'failed' | '';
 
 /** 对方条目的状态 */
-export type ZitengWorkState = 'published' | 'in_progress' | 'withdrawn' | string;
+export type ZitengWorkState =
+  | 'published'
+  | 'in_progress'
+  | 'withdrawn'
+  | string;
 
 export interface ZitengSuspect {
   id: string;

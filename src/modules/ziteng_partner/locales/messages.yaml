@@ -26,3 +26,6 @@ project.zitengStatePublished:
 project.zitengStateWithdrawn:
   zhCn: 已撤回
   en: Withdrawn
+project.zitengClear:
+  zhCn: 合作方查重：未发现疑似撞车作品
+  en: 'Partner duplicate check: no conflicts found'

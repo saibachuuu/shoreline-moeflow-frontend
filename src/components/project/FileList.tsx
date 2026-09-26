@@ -29,6 +29,7 @@ import { ListPageSpec } from '@/components/shared/List';
 import { FilePondFile } from 'filepond';
 import { createDebugLogger } from '@/utils/debug-logger';
 import { useAiTranslate } from '@/components/ai';
+import { moduleProjectSearchUnderSlots } from '@/modules';
 
 /** 文件列表的属性接口 */
 interface FileListProps {
@@ -268,6 +269,13 @@ export const FileList: FC<FileListProps> = ({
         .FileList__SubHeader {
         }
         .FileList__List {
+          .FileList__SearchUnderSlots {
+            width: 100%;
+            position: relative;
+            height: 0;
+            overflow: visible;
+            z-index: 10;
+          }
           .List__Items {
             padding: 0 ${style.paddingBase}px;
             .List__ItemWrapper {
@@ -298,79 +306,81 @@ export const FileList: FC<FileListProps> = ({
           }
         `}
       />
-      {!readOnly && <FilePond
-        name="file"
-        className="FileList__FilePond"
-        ref={(ref) => (filePondRef.current = ref)}
-        css={css`
-          display: none;
-        `}
-        dropOnPage
-        dropOnElement={false}
-        allowMultiple
-        maxParallelUploads={5}
-        onaddfile={handleFileAdd}
-        // 上传中
-        onprocessfileprogress={(file, progress) => {
-          setItems((items) =>
-            items.map((item) => {
-              if (item.id === file.id) {
-                return {
-                  ...item,
-                  uploadPercent: Math.floor(progress * 100),
-                };
-              }
-              return item;
-            }),
-          );
-        }}
-        // 上传成功
-        onprocessfile={(error, file) => {
-          if (error) return;
-          const result = toLowerCamelCase(JSON.parse(file.serverId) as MFile);
-          setItems((items) => {
-            // 覆盖时删除列表中原来的文件
-            const itemsWithoutSameID = items.filter(
-              (item) => item.id !== result.id,
-            );
-            const updated = itemsWithoutSameID.map((item) => {
-              if (item.id === file.id) {
-                // return a new MFile item , overwriting its (Filepond-created) id
-                return {
-                  ...item,
-                  ...result,
-                  uploadState: 'success',
-                } as MFile;
-              }
-              return item;
-            });
-            debugLogger('updated on upload success', updated);
-            return updated;
-          });
-        }}
-        // 上传失败
-        onerror={(error, file) => {
-          if (file && file.id) {
+      {!readOnly && (
+        <FilePond
+          name="file"
+          className="FileList__FilePond"
+          ref={(ref) => (filePondRef.current = ref)}
+          css={css`
+            display: none;
+          `}
+          dropOnPage
+          dropOnElement={false}
+          allowMultiple
+          maxParallelUploads={5}
+          onaddfile={handleFileAdd}
+          // 上传中
+          onprocessfileprogress={(file, progress) => {
             setItems((items) =>
               items.map((item) => {
                 if (item.id === file.id) {
                   return {
                     ...item,
-                    uploadState: 'failure',
+                    uploadPercent: Math.floor(progress * 100),
                   };
                 }
                 return item;
               }),
             );
-          }
-        }}
-        server={{
-          process: {
-            url: uploadAPI,
-            headers: { Authorization: `Bearer ${token}` },
-          },
-        }}
-      />}
+          }}
+          // 上传成功
+          onprocessfile={(error, file) => {
+            if (error) return;
+            const result = toLowerCamelCase(JSON.parse(file.serverId) as MFile);
+            setItems((items) => {
+              // 覆盖时删除列表中原来的文件
+              const itemsWithoutSameID = items.filter(
+                (item) => item.id !== result.id,
+              );
+              const updated = itemsWithoutSameID.map((item) => {
+                if (item.id === file.id) {
+                  // return a new MFile item , overwriting its (Filepond-created) id
+                  return {
+                    ...item,
+                    ...result,
+                    uploadState: 'success',
+                  } as MFile;
+                }
+                return item;
+              });
+              debugLogger('updated on upload success', updated);
+              return updated;
+            });
+          }}
+          // 上传失败
+          onerror={(error, file) => {
+            if (file && file.id) {
+              setItems((items) =>
+                items.map((item) => {
+                  if (item.id === file.id) {
+                    return {
+                      ...item,
+                      uploadState: 'failure',
+                    };
+                  }
+                  return item;
+                }),
+              );
+            }
+          }}
+          server={{
+            process: {
+              url: uploadAPI,
+              headers: { Authorization: `Bearer ${token}` },
+            },
+          }}
+        />
+      )}
       <div className="FileList__Header">
         <Button
           className="FileList__ChangeTargetButton"
@@ -520,6 +530,16 @@ export const FileList: FC<FileListProps> = ({
       <List
         id={project.id}
         className="FileList__List"
+        header={
+          moduleProjectSearchUnderSlots.length > 0 ? (
+            <div className="FileList__SearchUnderSlots">
+              {moduleProjectSearchUnderSlots.map((slot, index) => {
+                const SlotComponent = slot.component;
+                return <SlotComponent key={index} projectID={project.id} />;
+              })}
+            </div>
+          ) : undefined
+        }
         onChange={loadPage}
         loading={loading}
         total={total}
@@ -543,7 +563,9 @@ export const FileList: FC<FileListProps> = ({
                     file.uploadState === 'success') &&
                     openInTranslator(file);
                 }}
-                selectVisible={!readOnly && can(project, PROJECT_PERMISSION.OUTPUT_TRA)}
+                selectVisible={
+                  !readOnly && can(project, PROJECT_PERMISSION.OUTPUT_TRA)
+                }
                 selected={selectedFileIds.includes(file.id)}
                 onSelect={(value) => {
                   if (value) {
@@ -562,7 +584,8 @@ export const FileList: FC<FileListProps> = ({
                     );
                   }
                 }}
-                deleteButtonVisible={!readOnly &&
+                deleteButtonVisible={
+                  !readOnly &&
                   can(project, PROJECT_PERMISSION.DELETE_FILE) &&
                   (file.uploadState === undefined ||
                     file.uploadState === 'success')

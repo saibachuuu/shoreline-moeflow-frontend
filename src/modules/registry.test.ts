@@ -13,6 +13,7 @@ import path from 'path';
 
 import {
   collectMenuItems,
+  collectProjectSearchUnderSlots,
   collectProjectTopSlots,
   collectRoutes,
   FrontendModule,
@@ -38,7 +39,9 @@ describe('selectModules', () => {
   });
 
   it('接受默认导出', () => {
-    const result = selectModules({ './demo/index.ts': { default: demoModule } });
+    const result = selectModules({
+      './demo/index.ts': { default: demoModule },
+    });
     expect(result).toEqual([demoModule]);
   });
 
@@ -51,7 +54,9 @@ describe('selectModules', () => {
   });
 
   it('跳过没有导出的条目，而不是抛错', () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const warn = jest
+      .spyOn(console, 'warn')
+      .mockImplementation(() => undefined);
     try {
       const result = selectModules({
         './empty/index.ts': {},
@@ -65,7 +70,9 @@ describe('selectModules', () => {
   });
 
   it('跳过 name 非字符串的非法模块', () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const warn = jest
+      .spyOn(console, 'warn')
+      .mockImplementation(() => undefined);
     try {
       const result = selectModules({
         './bad/index.ts': { MODULE: { name: 123 } as never },
@@ -124,6 +131,25 @@ describe('collectMenuItems / collectRoutes', () => {
       collectProjectTopSlots([
         { name: 'a', projectTopSlots: [slot] },
         { name: 'b', projectTopSlots: [slot, slot] },
+      ]),
+    ).toHaveLength(3);
+  });
+
+  it('只提供 name 的模块不贡献搜索框下方插槽', () => {
+    expect(collectProjectSearchUnderSlots([{ name: 'bare' }])).toEqual([]);
+  });
+
+  it('收集项目文件搜索框下方插槽', () => {
+    const slot = { component: (() => null) as never };
+    expect(
+      collectProjectSearchUnderSlots([
+        { name: 'a', projectSearchUnderSlots: [slot] },
+      ]),
+    ).toHaveLength(1);
+    expect(
+      collectProjectSearchUnderSlots([
+        { name: 'a', projectSearchUnderSlots: [slot] },
+        { name: 'b', projectSearchUnderSlots: [slot, slot] },
       ]),
     ).toHaveLength(3);
   });

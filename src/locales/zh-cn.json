@@ -793,5 +793,6 @@
   "project.zitengRetry": "重新查询",
   "project.zitengStateInProgress": "制作中",
   "project.zitengStatePublished": "已发布",
-  "project.zitengStateWithdrawn": "已撤回"
+  "project.zitengStateWithdrawn": "已撤回",
+  "project.zitengClear": "合作方查重：未发现疑似撞车作品"
 }

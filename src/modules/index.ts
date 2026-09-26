@@ -1,5 +1,6 @@
 import {
   collectMenuItems,
+  collectProjectSearchUnderSlots,
   collectProjectTopSlots,
   collectRoutes,
   FrontendModule,
@@ -38,5 +39,9 @@ export const moduleRoutes = collectRoutes(enabledModules);
 
 /** 所有模块插入「项目页顶部」的区块。 */
 export const moduleProjectTopSlots = collectProjectTopSlots(enabledModules);
+
+/** 所有模块插入「项目文件搜索框下方」的区块。 */
+export const moduleProjectSearchUnderSlots =
+  collectProjectSearchUnderSlots(enabledModules);
 
 export * from './registry';

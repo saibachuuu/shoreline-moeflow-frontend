@@ -793,5 +793,6 @@
   "project.zitengRetry": "Check again",
   "project.zitengStateInProgress": "In progress",
   "project.zitengStatePublished": "Published",
-  "project.zitengStateWithdrawn": "Withdrawn"
+  "project.zitengStateWithdrawn": "Withdrawn",
+  "project.zitengClear": "Partner duplicate check: no conflicts found"
 }

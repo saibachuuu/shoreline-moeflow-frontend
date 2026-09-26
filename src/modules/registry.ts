@@ -39,6 +39,15 @@ export interface ProjectTopSlot {
   component: FC<{ projectID: string }>;
 }
 
+/**
+ * 模块插入到「项目文件搜索框下方」的区块。
+ *
+ * 这是通用插槽，核心只知道"这里可以放东西"，不知道谁放、放什么。
+ */
+export interface ProjectSearchUnderSlot {
+  component: FC<{ projectID: string }>;
+}
+
 /** 模块自述。 */
 export interface FrontendModule {
   /** 模块标识，建议等于目录名。 */
@@ -49,6 +58,8 @@ export interface FrontendModule {
   routes?: ModuleRoute[];
   /** 插入项目页顶部的区块（按模块 name 排序渲染）。 */
   projectTopSlots?: ProjectTopSlot[];
+  /** 插入项目文件搜索框下方的区块。 */
+  projectSearchUnderSlots?: ProjectSearchUnderSlot[];
 }
 
 /** 模块 `index.ts` 允许导出的形状：具名 `MODULE` 或默认导出。 */
@@ -100,4 +111,11 @@ export function collectProjectTopSlots(
   modules: readonly FrontendModule[],
 ): ProjectTopSlot[] {
   return modules.flatMap((module) => module.projectTopSlots ?? []);
+}
+
+/** 从模块列表中取出所有「项目文件搜索框下方」区块。 */
+export function collectProjectSearchUnderSlots(
+  modules: readonly FrontendModule[],
+): ProjectSearchUnderSlot[] {
+  return modules.flatMap((module) => module.projectSearchUnderSlots ?? []);
 }

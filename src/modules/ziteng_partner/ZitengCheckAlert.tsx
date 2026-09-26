@@ -1,24 +1,13 @@
 import { css } from '@emotion/core';
 import { Alert, Button, List, Tag } from 'antd';
-import { useCallback, useEffect, useRef, useState } from 'react';
 import { useIntl } from 'react-intl';
 import { FC } from '@/interfaces';
-import { getZitengCheck, triggerZitengCheck, ZitengCheck } from './api';
-import {
-  deriveAlertState,
-  shouldKeepPolling,
-  suspicionLevelOf,
-  suspectTitle,
-} from './logic';
+import { useZitengCheck } from './state';
+import { deriveAlertState, suspicionLevelOf, suspectTitle } from './logic';
 
 interface ZitengCheckAlertProps {
   projectID: string;
 }
-
-/** 轮询间隔：查询通常几百毫秒内完成，1.5s 足够且不打扰 */
-const POLL_INTERVAL_MS = 1500;
-/** 轮询上限：避免任务卡死时无限轮询 */
-const MAX_POLLS = 40;
 
 /**
  * 项目顶部的撞车提示。
@@ -33,62 +22,7 @@ const MAX_POLLS = 40;
  */
 export const ZitengCheckAlert: FC<ZitengCheckAlertProps> = ({ projectID }) => {
   const { formatMessage } = useIntl();
-  const [check, setCheck] = useState<ZitengCheck | null>(null);
-  const [loading, setLoading] = useState(false);
-  const polls = useRef(0);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const load = useCallback(async () => {
-    try {
-      const resp = await getZitengCheck({ projectID });
-      setCheck(resp.data?.check ?? null);
-      return resp.data?.check ?? null;
-    } catch (e) {
-      // 查询接口本身失败：不伪装成「未查到」，也不硬塞一个失败态
-      // （后端会把任务失败写进 verdict，这里只是网络层抖动）
-      return null;
-    }
-  }, [projectID]);
-
-  // 初次加载 + 结果未出时轮询
-  useEffect(() => {
-    let cancelled = false;
-    polls.current = 0;
-
-    const tick = async () => {
-      const next = await load();
-      if (cancelled) return;
-      if (!shouldKeepPolling(next)) return;
-      polls.current += 1;
-      if (polls.current >= MAX_POLLS) return;
-      timer.current = setTimeout(tick, POLL_INTERVAL_MS);
-    };
-
-    tick();
-    return () => {
-      cancelled = true;
-      if (timer.current) clearTimeout(timer.current);
-    };
-  }, [projectID, load]);
-
-  const retry = () => {
-    setLoading(true);
-    triggerZitengCheck({ projectID })
-      .then((resp) => {
-        setCheck(resp.data?.check ?? null);
-        polls.current = 0;
-        // 重新开始轮询
-        const tick = async () => {
-          const next = await load();
-          if (!shouldKeepPolling(next)) return;
-          polls.current += 1;
-          if (polls.current >= MAX_POLLS) return;
-          timer.current = setTimeout(tick, POLL_INTERVAL_MS);
-        };
-        tick();
-      })
-      .finally(() => setLoading(false));
-  };
+  const { check, loading, retry } = useZitengCheck(projectID);
 
   const state = deriveAlertState(check, (suspect) => suspectTitle(suspect));
 
@@ -169,12 +103,14 @@ export const ZitengCheckAlert: FC<ZitengCheckAlertProps> = ({ projectID }) => {
                     </Tag>
                   )}
                   {level === 'withdrawn' && (
-                    <Tag>{formatMessage({ id: 'project.zitengStateWithdrawn' })}</Tag>
+                    <Tag>
+                      {formatMessage({ id: 'project.zitengStateWithdrawn' })}
+                    </Tag>
                   )}
                   {suspect.circle && (
                     <span
                       css={css`
-                        color: rgba(0, 0, 0, 0.45);
+                        color: var(--text-color-secondary);
                       `}
                     >
                       {suspect.circle}
