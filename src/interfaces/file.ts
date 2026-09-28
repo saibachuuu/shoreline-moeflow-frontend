@@ -8,6 +8,7 @@ export interface FileTargetCache {
 
 // 文件
 export interface File {
+  manualOrder?: number | null;
   id: string;
   name: string;
   saveName: string;

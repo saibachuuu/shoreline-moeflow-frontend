@@ -12,6 +12,7 @@ import { Language, Project, ProjectSet, Role, Team } from '../interfaces';
 import { toUnderScoreCase } from '../utils';
 
 export interface APIProject {
+  canOrderFiles?: boolean;
   groupType: 'project';
   id: string;
   name: string;

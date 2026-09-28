@@ -10,6 +10,7 @@ import { useHistory } from 'react-router-dom';
 import { Button, EmptyTip, List } from '@/components';
 import { OutputList } from './OutputList';
 import { FileItem } from './FileItem';
+import { FileOrderEditor } from './FileOrderEditor';
 import { api, resultTypes } from '@/apis';
 import {
   FILE_NOT_EXIST_REASON,
@@ -55,6 +56,7 @@ export const FileList: FC<FileListProps> = ({
   const history = useHistory(); // 路由
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
+  const [orderEditing, setOrderEditing] = useState(false);
   const [listMode] = useState<'image' | 'text'>('image');
   const [total, setTotal] = useState(0); // 元素总个数
   const runtimeConfig = useSelector(
@@ -308,6 +310,8 @@ export const FileList: FC<FileListProps> = ({
       />
       {!readOnly && (
         <FilePond
+          allowDrop={!orderEditing}
+          allowPaste={!orderEditing}
           name="file"
           className="FileList__FilePond"
           ref={(ref) => (filePondRef.current = ref)}
@@ -388,13 +392,14 @@ export const FileList: FC<FileListProps> = ({
           iconProps={{
             style: { height: '16px', width: '16px' },
           }}
+          disabled={orderEditing}
           onClick={onChangeTargetClick}
         >
           {(!isMobile
             ? formatMessage({ id: 'project.changeTarget' }) + ' - '
             : '') + target?.language.i18nName}
         </Button>
-        {!readOnly && aiEnabled && aiTranslateApi && (
+        {!readOnly && !orderEditing && aiEnabled && aiTranslateApi && (
           <Button
             tooltipProps={{
               overlay: formatMessage({ id: 'fileList.aiTranslate.buttonTip' }),
@@ -424,57 +429,92 @@ export const FileList: FC<FileListProps> = ({
             setListMode(listMode === 'text' ? 'image' : 'text');
           }}
         ></Button> */}
-        {!readOnly && can(project, PROJECT_PERMISSION.OUTPUT_TRA) && (
-          <Button icon="download" onClick={() => setOutputDrawerVisible(true)}>
-            {!isMobile && formatMessage({ id: 'project.export' })}
-            {selectedFileIds.length > 0 && ` (${selectedFileIds.length})`}
-          </Button>
-        )}
-        {!readOnly && can(project, PROJECT_PERMISSION.ADD_FILE) && (
+        {!readOnly &&
+          !orderEditing &&
+          can(project, PROJECT_PERMISSION.OUTPUT_TRA) && (
+            <Button
+              icon="download"
+              onClick={() => setOutputDrawerVisible(true)}
+            >
+              {!isMobile && formatMessage({ id: 'project.export' })}
+              {selectedFileIds.length > 0 && ` (${selectedFileIds.length})`}
+            </Button>
+          )}
+        {!readOnly &&
+          !orderEditing &&
+          can(project, PROJECT_PERMISSION.ADD_FILE) && (
+            <Button
+              icon="plus"
+              onClick={() => {
+                filePondRef.current?.browse();
+              }}
+            >
+              {!isMobile && formatMessage({ id: 'site.upload' })}
+            </Button>
+          )}
+        {!readOnly &&
+          !orderEditing &&
+          can(project, PROJECT_PERMISSION.CHANGE) && (
+            <Button
+              icon="image"
+              onClick={() => {
+                Modal.confirm({
+                  title: formatMessage({
+                    id: 'fileList.regenerateThumbnails.title',
+                  }),
+                  content: formatMessage({
+                    id: 'fileList.regenerateThumbnails.content',
+                  }),
+                  onOk: () => {
+                    api.file
+                      .regenerateThumbnails({
+                        projectID: project.id,
+                      })
+                      .then((result) => {
+                        message.success(result.data.message);
+                      })
+                      .catch((error) => {
+                        error.default();
+                      });
+                  },
+                  onCancel: () => {},
+                  okText: formatMessage({ id: 'form.ok' }),
+                  cancelText: formatMessage({ id: 'form.cancel' }),
+                });
+              }}
+            >
+              {!isMobile &&
+                formatMessage({
+                  id: 'fileList.regenerateThumbnails.buttonText',
+                })}
+            </Button>
+          )}
+        {!readOnly && !orderEditing && project.canOrderFiles && (
           <Button
-            icon="plus"
-            onClick={() => {
-              filePondRef.current?.browse();
-            }}
+            elem="button"
+            icon="arrows-alt-v"
+            disabled={
+              loading ||
+              spinningIDs.length > 0 ||
+              items.some((file) => file.uploadState === 'uploading')
+            }
+            onClick={() => setOrderEditing(true)}
           >
-            {!isMobile && formatMessage({ id: 'site.upload' })}
-          </Button>
-        )}
-        {!readOnly && can(project, PROJECT_PERMISSION.CHANGE) && (
-          <Button
-            icon="image"
-            onClick={() => {
-              Modal.confirm({
-                title: formatMessage({
-                  id: 'fileList.regenerateThumbnails.title',
-                }),
-                content: formatMessage({
-                  id: 'fileList.regenerateThumbnails.content',
-                }),
-                onOk: () => {
-                  api.file
-                    .regenerateThumbnails({
-                      projectID: project.id,
-                    })
-                    .then((result) => {
-                      message.success(result.data.message);
-                    })
-                    .catch((error) => {
-                      error.default();
-                    });
-                },
-                onCancel: () => {},
-                okText: formatMessage({ id: 'form.ok' }),
-                cancelText: formatMessage({ id: 'form.cancel' }),
-              });
-            }}
-          >
-            {!isMobile &&
-              formatMessage({ id: 'fileList.regenerateThumbnails.buttonText' })}
+            {formatMessage({ id: 'fileList.order.edit' })}
           </Button>
         )}
       </div>
-      {selectedFileIds.length > 0 && (
+      {orderEditing && (
+        <FileOrderEditor
+          key={project.id}
+          projectID={project.id}
+          onClose={(saved) => {
+            setOrderEditing(false);
+            if (saved) dispatch(setFilesState({ selectedFileIds: [] }));
+          }}
+        />
+      )}
+      {!orderEditing && selectedFileIds.length > 0 && (
         <div className="FileList__SubHeader">
           <AntdButton
             type="link"
@@ -527,110 +567,115 @@ export const FileList: FC<FileListProps> = ({
           </AntdButton>
         </div>
       )}
-      <List
-        id={project.id}
-        className="FileList__List"
-        header={
-          moduleProjectSearchUnderSlots.length > 0 ? (
-            <div className="FileList__SearchUnderSlots">
-              {moduleProjectSearchUnderSlots.map((slot, index) => {
-                const SlotComponent = slot.component;
-                return <SlotComponent key={index} projectID={project.id} />;
-              })}
-            </div>
-          ) : undefined
-        }
-        onChange={loadPage}
-        loading={loading}
-        total={total}
-        items={items}
-        itemHeight={250}
-        multiColumn
-        columnWidth={200}
-        paginationProps={{
-          disabled: spinningIDs.length > 0,
-        }}
-        minPageSize={16}
-        itemCreater={(file) => {
-          return (
-            <Spin spinning={spinningIDs.indexOf(file.id) > -1}>
-              <FileItem
-                className="FileList__FileItem"
-                file={file}
-                hasTarget={Boolean(target)}
-                onClick={() => {
-                  (file.uploadState === undefined ||
-                    file.uploadState === 'success') &&
-                    openInTranslator(file);
-                }}
-                selectVisible={
-                  !readOnly && can(project, PROJECT_PERMISSION.OUTPUT_TRA)
-                }
-                selected={selectedFileIds.includes(file.id)}
-                onSelect={(value) => {
-                  if (value) {
-                    dispatch(
-                      setFilesState({
-                        selectedFileIds: [...selectedFileIds, file.id],
-                      }),
-                    );
-                  } else {
-                    dispatch(
-                      setFilesState({
-                        selectedFileIds: selectedFileIds.filter(
-                          (id) => id !== file.id,
-                        ),
-                      }),
-                    );
+      {!orderEditing && (
+        <List
+          id={project.id}
+          className="FileList__List"
+          header={
+            moduleProjectSearchUnderSlots.length > 0 ? (
+              <div className="FileList__SearchUnderSlots">
+                {moduleProjectSearchUnderSlots.map((slot, index) => {
+                  const SlotComponent = slot.component;
+                  return <SlotComponent key={index} projectID={project.id} />;
+                })}
+              </div>
+            ) : undefined
+          }
+          onChange={loadPage}
+          loading={loading}
+          total={total}
+          items={items}
+          itemHeight={250}
+          multiColumn
+          columnWidth={200}
+          paginationProps={{
+            disabled: spinningIDs.length > 0,
+          }}
+          minPageSize={16}
+          itemCreater={(file) => {
+            return (
+              <Spin spinning={spinningIDs.indexOf(file.id) > -1}>
+                <FileItem
+                  className="FileList__FileItem"
+                  file={file}
+                  hasTarget={Boolean(target)}
+                  onClick={() => {
+                    (file.uploadState === undefined ||
+                      file.uploadState === 'success') &&
+                      openInTranslator(file);
+                  }}
+                  selectVisible={
+                    !readOnly &&
+                    !orderEditing &&
+                    can(project, PROJECT_PERMISSION.OUTPUT_TRA)
                   }
-                }}
-                deleteButtonVisible={
-                  !readOnly &&
-                  can(project, PROJECT_PERMISSION.DELETE_FILE) &&
-                  (file.uploadState === undefined ||
-                    file.uploadState === 'success')
+                  selected={selectedFileIds.includes(file.id)}
+                  onSelect={(value) => {
+                    if (value) {
+                      dispatch(
+                        setFilesState({
+                          selectedFileIds: [...selectedFileIds, file.id],
+                        }),
+                      );
+                    } else {
+                      dispatch(
+                        setFilesState({
+                          selectedFileIds: selectedFileIds.filter(
+                            (id) => id !== file.id,
+                          ),
+                        }),
+                      );
+                    }
+                  }}
+                  deleteButtonVisible={
+                    !readOnly &&
+                    !orderEditing &&
+                    can(project, PROJECT_PERMISSION.DELETE_FILE) &&
+                    (file.uploadState === undefined ||
+                      file.uploadState === 'success')
+                  }
+                  onDeleteButtonClick={() => {
+                    deleteFile(file);
+                  }}
+                />
+              </Spin>
+            );
+          }}
+          emptyTipCreater={() => {
+            return (
+              <EmptyTip
+                className="ProjectList__EmptyTip"
+                text={
+                  <>
+                    <p>{formatMessage({ id: 'file.uploadTip1' })}</p>
+                    <p>{formatMessage({ id: 'file.uploadTip2' })}</p>
+                  </>
                 }
-                onDeleteButtonClick={() => {
-                  deleteFile(file);
-                }}
               />
-            </Spin>
-          );
-        }}
-        emptyTipCreater={() => {
-          return (
-            <EmptyTip
-              className="ProjectList__EmptyTip"
-              text={
-                <>
-                  <p>{formatMessage({ id: 'file.uploadTip1' })}</p>
-                  <p>{formatMessage({ id: 'file.uploadTip2' })}</p>
-                </>
-              }
-            />
-          );
-        }}
-        searchEmptyTipCreater={(word) => {
-          return (
-            <EmptyTip
-              className="ProjectList__EmptyTip"
-              text={formatMessage({ id: 'file.emptySearchTip' }, { word })}
-            />
-          );
-        }}
-        defaultPage={defaultPage}
-        onPageChange={(page) => {
-          dispatch(setFilesState({ page }));
-        }}
-        defaultWord={defaultWord}
-        onWordChange={(word) => {
-          dispatch(setFilesState({ word }));
-        }}
-        defaultScrollTop={defaultScrollTop}
-        onScrollTopChange={(scrollTop) => {
-          dispatch(setFilesState({ scrollTop }));
-        }}
-      />
+            );
+          }}
+          searchEmptyTipCreater={(word) => {
+            return (
+              <EmptyTip
+                className="ProjectList__EmptyTip"
+                text={formatMessage({ id: 'file.emptySearchTip' }, { word })}
+              />
+            );
+          }}
+          defaultPage={defaultPage}
+          onPageChange={(page) => {
+            dispatch(setFilesState({ page }));
+          }}
+          defaultWord={defaultWord}
+          onWordChange={(word) => {
+            dispatch(setFilesState({ word }));
+          }}
+          defaultScrollTop={defaultScrollTop}
+          onScrollTopChange={(scrollTop) => {
+            dispatch(setFilesState({ scrollTop }));
+          }}
+        />
+      )}
       <Drawer
         className="FileList__OutputDrawer"
         title={

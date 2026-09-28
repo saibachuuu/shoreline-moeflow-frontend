@@ -109,7 +109,34 @@ const regenerateThumbnail = ({
   });
 };
 
+export interface FileOrderSnapshot {
+  defaultFileIds: string[];
+  files: File[];
+  version: string;
+}
+
+const getFileOrder = (projectID: string, configs?: AxiosRequestConfig) =>
+  request<FileOrderSnapshot>({
+    method: 'GET',
+    url: `/v1/projects/${projectID}/files/order`,
+    ...configs,
+  });
+
+const saveFileOrder = (
+  projectID: string,
+  fileIds: string[],
+  version: string,
+  resetToDefault = false,
+) =>
+  request<{ message: string }>({
+    method: 'PUT',
+    url: `/v1/projects/${projectID}/files/order`,
+    data: { file_ids: fileIds, version, reset_to_default: resetToDefault },
+  });
+
 export default {
+  getFileOrder,
+  saveFileOrder,
   getProjectFiles,
   getFile,
   deleteFile,

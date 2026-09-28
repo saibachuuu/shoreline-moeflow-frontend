@@ -2393,3 +2393,38 @@ project.editingManyWithAction:
 
 
 
+
+fileList.order:
+  autoSort:
+    zhCn: 自动排序
+    en: Auto sort
+  autoSortHint:
+    zhCn: 已按默认文件名顺序排列。点击“保存顺序”后将清空手动顺序，恢复默认排序；取消则保留原设置。继续手动移动图片会改为保存自定义顺序。
+    en: Previewing the default filename order. Save to clear manual ordering and restore the default, or cancel to keep the previous settings. Moving an image again switches back to custom ordering.
+  edit:
+    zhCn: 编辑顺序
+    en: Edit order
+  title:
+    zhCn: 图片顺序编辑
+    en: Edit image order
+  save:
+    zhCn: 保存顺序
+    en: Save order
+  cancel:
+    zhCn: 取消
+    en: Cancel
+  hint:
+    zhCn: 拖拽图片或选择下方序号可移动位置。这里显示当前目录的全部图片，不受分页和搜索影响；保存后才会生效。
+    en: Drag an image or select its position below. All images in this directory are shown, regardless of pagination or search. Changes apply only after saving.
+  position:
+    zhCn: 顺序
+    en: Position
+  discard:
+    zhCn: 放弃尚未保存的顺序修改？
+    en: Discard unsaved order changes?
+  discardButton:
+    zhCn: 放弃修改
+    en: Discard
+  continue:
+    zhCn: 继续编辑
+    en: Keep editing
