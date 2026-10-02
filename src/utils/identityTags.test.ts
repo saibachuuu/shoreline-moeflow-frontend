@@ -7,7 +7,12 @@ jest.mock('@/apis/project', () => ({
   ],
 }));
 
-import { buildFallbackIdentityTagOptions, filterIdentityTagPermissions, mergeIdentityTagOptions } from './identityTags';
+import {
+  buildFallbackIdentityTagOptions,
+  filterIdentityTagPermissions,
+  mergeIdentityTagOptions,
+  normalizeIdentityTagPolicy,
+} from './identityTags';
 
 describe('identity tag option fallbacks', () => {
   test('provides fixed project worker tags and keeps tags already used by members', () => {
@@ -48,5 +53,41 @@ describe('identity tag option fallbacks', () => {
 
     expect(filterIdentityTagPermissions(permissions, 'project', 'site')).toEqual(permissions);
     expect(filterIdentityTagPermissions(permissions, 'project', 'team_override')).toEqual(permissions);
+  });
+
+  test('normalizeIdentityTagPolicy preserves snake_case tag keys and maps fields properly', () => {
+    const backendResponse = {
+      version: 2,
+      team_tags: {
+        admin: {
+          code: 'admin',
+          name: 'admin',
+          permissions: ['team:ACCESS'],
+          assignable: false,
+          source: 'site',
+        },
+      },
+      project_tags: {
+        raw_provider: {
+          code: 'raw_provider',
+          name: 'raw_provider',
+          permissions: ['project:ACCESS', 'project:ADD_FILE'],
+          assignable: true,
+          source: 'team_override',
+          initial_permissions: ['project:ACCESS'],
+          initial_assignable: true,
+        },
+      },
+    };
+
+    const policy = normalizeIdentityTagPolicy(backendResponse);
+    expect(policy.version).toBe(2);
+    expect(policy.projectTags['raw_provider']).toBeDefined();
+    expect(policy.projectTags['raw_provider'].code).toBe('raw_provider');
+    expect(policy.projectTags['raw_provider'].source).toBe('team_override');
+    expect(policy.projectTags['raw_provider'].initialPermissions).toEqual(['project:ACCESS']);
+    expect(policy.projectTags['raw_provider'].initialAssignable).toBe(true);
+    // Ensure rawProvider was NOT created as a key
+    expect((policy.projectTags as any)['rawProvider']).toBeUndefined();
   });
 });

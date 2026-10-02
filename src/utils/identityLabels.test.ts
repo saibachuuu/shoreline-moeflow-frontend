@@ -5,6 +5,7 @@ const formatMessage = ({ id }: { id: string }) => `localized:${id}`;
 describe('identity label localization', () => {
   test('localizes known identity tags and preserves custom names', () => {
     expect(formatIdentityTagLabel(formatMessage, 'creator')).toBe('localized:identity.tag.creator');
+    expect(formatIdentityTagLabel(formatMessage, 'raw_provider')).toBe('localized:identity.tag.rawProvider');
     expect(formatIdentityTagLabel(formatMessage, 'reviewer', 'Reviewer')).toBe('Reviewer');
   });
 
@@ -35,5 +36,7 @@ describe('identity label localization', () => {
     });
     expect(zhCn['project.workerRole.raw_provider']).toBe('图源');
     expect(en['project.workerRole.raw_provider']).toBe('Raw Provider');
+    expect(zhCn['identity.tag.rawProvider']).toBe('图源');
+    expect(en['identity.tag.rawProvider']).toBe('Raw Provider');
   });
 });

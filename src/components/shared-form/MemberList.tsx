@@ -153,7 +153,7 @@ export const MemberList: FC<MemberListProps> = ({
     api.member
       .getIdentityTagPolicy({ teamID })
       .then((result) => {
-        const data = toLowerCamelCase(result.data) as any;
+        const data = result.data as any;
         const definitions =
           groupType === 'team' ? data.teamTags : data.projectTags;
         setTagOptions(

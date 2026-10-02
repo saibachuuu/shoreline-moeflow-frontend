@@ -53,21 +53,14 @@ export interface TeamMember {
   status: 'active' | 'removed';
 }
 
-export interface IdentityTagDefinition {
-  code: string;
-  name: string;
-  permissions: string[];
-  assignable: boolean;
-  source: 'site' | 'team' | 'team_override';
-  initialPermissions?: string[];
-  initialAssignable?: boolean;
-}
+import {
+  IdentityTagDefinition,
+  IdentityTagPolicy,
+  normalizeIdentityTagPolicy,
+} from '../utils/identityTags';
 
-export interface IdentityTagPolicy {
-  version: number;
-  teamTags: Record<string, IdentityTagDefinition>;
-  projectTags: Record<string, IdentityTagDefinition>;
-}
+export type { IdentityTagDefinition, IdentityTagPolicy };
+export { normalizeIdentityTagPolicy };
 
 const getProjectMembers = ({
   projectID,
@@ -302,11 +295,11 @@ const getIdentityTagPolicy = ({
   teamID,
   configs,
 }: { teamID: string; configs?: AxiosRequestConfig }) =>
-  request<IdentityTagPolicy>({
+  request<any>({
     method: 'GET',
     url: `/v1/teams/${teamID}/identity-tag-policy`,
     ...configs,
-  });
+  }).then((result) => ({ ...result, data: normalizeIdentityTagPolicy(result.data) }));
 
 const updateIdentityTagPolicy = ({
   teamID,
@@ -320,12 +313,12 @@ const updateIdentityTagPolicy = ({
     removes: Array<{ scope: 'team' | 'project'; code: string }>;
   };
   configs?: AxiosRequestConfig;
-}) => request<IdentityTagPolicy>({
+}) => request<any>({
   method: 'PATCH',
   url: `/v1/teams/${teamID}/identity-tag-policy`,
   data: toUnderScoreCase(data),
   ...configs,
-});
+}).then((result) => ({ ...result, data: normalizeIdentityTagPolicy(result.data) }));
 
 export default {
   getProjectMembers,

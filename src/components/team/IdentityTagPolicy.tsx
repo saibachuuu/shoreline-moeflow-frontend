@@ -5,7 +5,6 @@ import { useIntl } from 'react-intl';
 import { api } from '@/apis';
 import { FC, UserTeam } from '@/interfaces';
 import style from '@/style';
-import { toLowerCamelCase } from '@/utils';
 import { filterIdentityTagPermissions } from '@/utils/identityTags';
 import {
   IDENTITY_TAG_MESSAGE_IDS,
@@ -87,7 +86,7 @@ export const IdentityTagPolicy: FC<Props> = ({ team, className }) => {
     api.member
       .getIdentityTagPolicy({ teamID: team.id })
       .then((result) => {
-        const data = toLowerCamelCase(result.data) as any;
+        const data = result.data as any;
         setPolicy(data);
         setCreating(false);
         setSelected(
@@ -141,7 +140,7 @@ export const IdentityTagPolicy: FC<Props> = ({ team, className }) => {
         teamID: team.id,
         data: { expectedVersion: policy.version, upserts, removes },
       });
-      setPolicy(toLowerCamelCase(result.data));
+      setPolicy(result.data);
       message.success(formatMessage({ id: 'site.identityTagPolicy.updated' }));
       return true;
     } catch (error: any) {
