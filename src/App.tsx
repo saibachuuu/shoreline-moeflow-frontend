@@ -273,6 +273,35 @@ const App: React.FC = () => {
             background-color: #1f1f24 !important;
             border-color: #383840 !important;
           }
+          /* 图片顺序编辑暗黑模式 */
+          [data-theme='dark'] .FileOrderEditor {
+            color: rgba(255, 255, 255, 0.85);
+          }
+          [data-theme='dark'] .FileOrderEditor__Card {
+            background-color: #1f1f24 !important;
+            border-color: #383840 !important;
+            color: rgba(255, 255, 255, 0.85);
+          }
+          [data-theme='dark'] .FileOrderEditor__Card:hover {
+            border-color: #4f4f5a !important;
+          }
+          [data-theme='dark'] .FileOrderEditor__Card[data-drop='true'] {
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 0 2px rgba(255, 101, 124, 0.25) !important;
+            background-color: rgba(255, 101, 124, 0.12) !important;
+          }
+          [data-theme='dark'] .FileOrderEditor__Image {
+            background-color: rgba(255, 255, 255, 0.04);
+          }
+          [data-theme='dark'] .FileOrderEditor__Name {
+            color: rgba(255, 255, 255, 0.85);
+          }
+          [data-theme='dark'] .FileOrderEditor__PositionLabel {
+            color: rgba(255, 255, 255, 0.45);
+          }
+          [data-theme='dark'] .FileOrderEditor__Title {
+            color: rgba(255, 255, 255, 0.85);
+          }
           [data-theme='dark'] .ant-input-affix-wrapper,
           [data-theme='dark'] .ant-input-group-addon {
             background-color: #1f1f24 !important;
@@ -346,6 +375,12 @@ const App: React.FC = () => {
             border-color: var(--primary-color);
             color: #fff;
           }
+          [data-theme='dark'] .ant-btn[disabled],
+          [data-theme='dark'] .ant-btn[disabled]:hover {
+            background-color: #1f1f24 !important;
+            border-color: #2e2e34 !important;
+            color: rgba(255, 255, 255, 0.25) !important;
+          }
           [data-theme='dark'] .ant-btn-dangerous {
             background-color: #26262a;
             border-color: #a61d24;
@@ -383,7 +418,8 @@ const App: React.FC = () => {
           /* 全局图片减亮 */
           .FileItem__Image,
           .ProjectPreview__PreviewImage,
-          .ProjectPreview__PreviewListImage {
+          .ProjectPreview__PreviewListImage,
+          .FileOrderEditor__Image {
             filter: brightness(calc(1 - var(--image-darkness, 0)));
           }
           [data-theme='dark'] .ant-table {

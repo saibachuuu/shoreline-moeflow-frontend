@@ -6,6 +6,7 @@ import { useIntl } from 'react-intl';
 import { Prompt } from 'react-router-dom';
 import { api, resultTypes } from '@/apis';
 import { File } from '@/interfaces';
+import style from '@/style';
 import { toLowerCamelCase } from '@/utils';
 import { moveFile, sortFilesByIds } from '@/utils/fileOrder';
 
@@ -136,16 +137,24 @@ export const FileOrderEditor = ({ projectID, onClose }: Props) => {
   return (
     <section
       aria-label={text('title')}
+      className="FileOrderEditor"
       css={css`
         flex: 1;
         min-height: 0;
         overflow: auto;
         padding: 12px;
+        color: ${style.textColor};
         .order-toolbar {
           display: flex;
           flex-wrap: wrap;
+          align-items: center;
           gap: 8px;
           margin-bottom: 12px;
+        }
+        .order-title {
+          font-weight: 500;
+          color: ${style.textColor};
+          margin-left: 4px;
         }
         .order-grid {
           display: grid;
@@ -154,24 +163,85 @@ export const FileOrderEditor = ({ projectID, onClose }: Props) => {
           margin-top: 12px;
         }
         .order-card {
+          display: flex;
+          flex-direction: column;
           padding: 8px;
-          border: 2px solid #ddd;
-          border-radius: 6px;
+          border: 2px solid ${style.borderColorBase};
+          border-radius: ${style.borderRadiusBase};
           cursor: grab;
-          background: white;
+          background: #ffffff;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+          transition:
+            border-color 0.2s,
+            box-shadow 0.2s,
+            background-color 0.2s;
+        }
+        .order-card:hover {
+          border-color: ${style.primaryColorLighter};
         }
         .order-card[data-drop='true'] {
-          border-color: #1890ff;
+          border-color: ${style.primaryColor};
+          box-shadow: 0 0 0 2px rgba(255, 101, 124, 0.25);
+          background-color: rgba(255, 101, 124, 0.05);
         }
         .order-card img {
           width: 100%;
           height: 180px;
           object-fit: contain;
           user-select: none;
+          background-color: rgba(0, 0, 0, 0.02);
+          border-radius: 4px;
+          filter: brightness(calc(1 - var(--image-darkness, 0)));
         }
         .order-name {
           overflow-wrap: anywhere;
           margin: 8px 0;
+          color: ${style.textColor};
+          font-size: 13px;
+          line-height: 1.4;
+          flex: 1;
+        }
+        .order-card label {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 12px;
+          color: ${style.textColorSecondary};
+          user-select: none;
+          margin-top: auto;
+        }
+        .order-card label .ant-select {
+          flex: 1;
+          min-width: 0;
+        }
+        [data-theme='dark'] & {
+          color: rgba(255, 255, 255, 0.85);
+          .order-title {
+            color: rgba(255, 255, 255, 0.85);
+          }
+          .order-card {
+            background-color: #1f1f24;
+            border-color: #383840;
+            color: rgba(255, 255, 255, 0.85);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+          }
+          .order-card:hover {
+            border-color: #4f4f5a;
+          }
+          .order-card[data-drop='true'] {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(255, 101, 124, 0.25);
+            background-color: rgba(255, 101, 124, 0.12);
+          }
+          .order-card img {
+            background-color: rgba(255, 255, 255, 0.04);
+          }
+          .order-name {
+            color: rgba(255, 255, 255, 0.85);
+          }
+          .order-card label {
+            color: rgba(255, 255, 255, 0.45);
+          }
         }
       `}
     >
@@ -194,7 +264,7 @@ export const FileOrderEditor = ({ projectID, onClose }: Props) => {
         <Button disabled={saving} onClick={cancel}>
           {text('cancel')}
         </Button>
-        <span>
+        <span className="order-title FileOrderEditor__Title">
           {text('title')} ({files.length})
         </span>
       </div>
@@ -209,7 +279,7 @@ export const FileOrderEditor = ({ projectID, onClose }: Props) => {
           {files.map((file, index) => (
             <article
               key={file.id}
-              className="order-card"
+              className="order-card FileOrderEditor__Card"
               data-drop={dropId === file.id}
               draggable={!saving}
               onDragStart={(event) => {
@@ -241,6 +311,7 @@ export const FileOrderEditor = ({ projectID, onClose }: Props) => {
               }}
             >
               <img
+                className="FileOrderEditor__Image"
                 src={
                   file.coverUrl && file.coverUrl !== 'generating'
                     ? file.coverUrl
@@ -250,8 +321,8 @@ export const FileOrderEditor = ({ projectID, onClose }: Props) => {
                 draggable={false}
                 loading="lazy"
               />
-              <div className="order-name">{file.name}</div>
-              <label>
+              <div className="order-name FileOrderEditor__Name">{file.name}</div>
+              <label className="FileOrderEditor__PositionLabel">
                 {text('position')}
                 <Select
                   aria-label={`${text('position')} ${file.name}`}
