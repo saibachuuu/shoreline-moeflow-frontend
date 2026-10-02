@@ -28,6 +28,7 @@ import { can } from '@/utils/user';
 import { routes } from '@/pages/routes';
 import { ListPageSpec } from '@/components/shared/List';
 import { FilePondFile } from 'filepond';
+import { getEffectiveApiBaseURL } from '@/utils/networkRoute';
 import { createDebugLogger } from '@/utils/debug-logger';
 import { useAiTranslate } from '@/components/ai';
 import { moduleProjectSearchUnderSlots } from '@/modules';
@@ -62,7 +63,11 @@ export const FileList: FC<FileListProps> = ({
   const runtimeConfig = useSelector(
     (state: AppState) => state.site.runtimeConfig,
   );
-  const uploadAPI = `${runtimeConfig.baseURL}/v1/projects/${project.id}/files`;
+  const networkRoute = useSelector(
+    (state: AppState) => state.site.networkRoute,
+  );
+  const apiBase = getEffectiveApiBaseURL(networkRoute) || runtimeConfig?.baseURL || '/api/';
+  const uploadAPI = `${apiBase.replace(/\/+$/, '')}/v1/projects/${project.id}/files`;
   const token = useSelector((state: AppState) => state.user.token);
   const platform = useSelector((state: AppState) => state.site.platform);
   const isMobile = platform === 'mobile';

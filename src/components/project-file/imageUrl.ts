@@ -1,7 +1,11 @@
+import { resolveMediaUrl } from '@/utils/networkRoute';
+
 type ImageUrls = {
   url?: string;
   resampleUrl?: string;
 };
+
+export { resolveMediaUrl };
 
 export function getPreferredImageUrl(
   file: ImageUrls,
@@ -10,7 +14,8 @@ export function getPreferredImageUrl(
   const hasResampleImage = Boolean(
     file.resampleUrl && file.resampleUrl !== 'generating',
   );
-  return useOriginalImage || !hasResampleImage ? file.url : file.resampleUrl;
+  const rawUrl = useOriginalImage || !hasResampleImage ? file.url : file.resampleUrl;
+  return resolveMediaUrl(rawUrl);
 }
 
 export function addThumbnailRevision(

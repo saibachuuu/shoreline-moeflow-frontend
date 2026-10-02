@@ -6,6 +6,8 @@ import { useIntl } from 'react-intl';
 import defaultTeamAvatar from '@/images/common/default-team-avatar.jpg';
 import defaultUserAvatar from '@/images/common/default-user-avatar.jpg';
 
+import { resolveMediaUrl } from '@/utils/networkRoute';
+
 /** 头像的属性接口 */
 interface AvatarProps {
   shape?: 'circle' | 'square';
@@ -34,7 +36,7 @@ const AvatarWithoutRef: React.ForwardRefRenderFunction<
       break;
   }
   if (url) {
-    avatarUrl = url;
+    avatarUrl = resolveMediaUrl(url);
   }
 
   // 默认形状

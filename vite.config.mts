@@ -81,6 +81,13 @@ export default defineConfig({
     'process.env.REACT_APP_BASE_URL': JSON.stringify(
       process.env.REACT_APP_BASE_URL ?? '/api/',
     ),
+    'process.env.DOMAIN': JSON.stringify(process.env.DOMAIN ?? ''),
+    'process.env.CDN_API_DOMAIN': JSON.stringify(
+      process.env.CDN_API_DOMAIN ?? process.env.VITE_CDN_API_DOMAIN ?? '',
+    ),
+    'process.env.CDN_MEDIA_DOMAIN': JSON.stringify(
+      process.env.CDN_MEDIA_DOMAIN ?? process.env.VITE_CDN_MEDIA_DOMAIN ?? '',
+    ),
     __BETA_BUILD__: JSON.stringify(createBetaBuildLabel()),
   },
   resolve: {

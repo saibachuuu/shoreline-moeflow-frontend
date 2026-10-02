@@ -31,4 +31,32 @@ describe('image URL selection', () => {
     );
     expect(addThumbnailRevision('/image.webp', 0)).toBe('/image.webp');
   });
+
+  test('resolves storage url to cdn in cdn mode', () => {
+    const store: Record<string, string> = { moeflow_network_route: 'cdn' };
+    const originalWindow = (global as any).window;
+    const originalLocalStorage = (global as any).localStorage;
+    (global as any).window = {
+      location: { hostname: 'm.usag.cc', protocol: 'https:' },
+    };
+    (global as any).localStorage = {
+      getItem: (k: string) => store[k] ?? null,
+      setItem: (k: string, v: string) => {
+        store[k] = v;
+      },
+      removeItem: (k: string) => {
+        delete store[k];
+      },
+    };
+    try {
+      const cdnUrl = getPreferredImageUrl({
+        url: 'https://m.usag.cc/storage/files/1.jpg',
+      });
+      expect(cdnUrl).toContain('/storage/files/1.jpg');
+      expect(cdnUrl).not.toContain('https://m.usag.cc');
+    } finally {
+      (global as any).window = originalWindow;
+      (global as any).localStorage = originalLocalStorage;
+    }
+  });
 });
