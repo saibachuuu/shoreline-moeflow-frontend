@@ -133,6 +133,13 @@ First open-source version of the MoeFlow frontend and backend.
 - **Clear Duplicate Check Verdict Banner**: When a check determines no collision, displays a subtle, near-background green banner below the file search bar. Expands on first visit, retracts to a thin 3px green line on hover-away, and re-expands on hover without displacing card positions or blocking card interactions. On mobile, stays expanded at the top of the cards and naturally scrolls out of view.
 - **State Deduplication & Full i18n**: Shared query state via `useZitengCheck` to prevent duplicate polling, with full bilingual localization across all strings.
 
+### Version 1.2.5
+
+- **In-Page File Ordering Editor & Reset**: Added entry and exit for file ordering edit mode in project file lists; supports drag-and-drop reordering, quick position selection, one-click reset to default order with live preview, and unsaved changes navigation guard. Limited to project managers and team creators with persistent ordering.
+- **Dark Mode Adaptation for File Order Editor**: Replaced hardcoded styles with CSS theme variables, aligned drag-and-drop indicators with theme primary colors, and fully adapted disabled button states, text contrast, and image brightness dimming.
+- **Direct & CDN Route Dynamic Switching**: Added a "Switch Route" toggle in DashboardMenu, allowing seamless switching between "Direct (Recommended)" and "Global CDN" routes; dynamically rewrites API endpoints and image/media URLs according to selected route with local storage persistence.
+- **Identity Tags & i18n Bug Fixes**: Preserved tag code keys in identity tag metadata mapping; fixed localized display of third-party raw_provider strings in team policies.
+
 ### Version NEXT
 
 - [diff](https://github.com/moeflow-com/moeflow-frontend/compare/v1.1.1...main)
