@@ -152,6 +152,7 @@ export interface GetUserInfoResponse {
   has_avatar: boolean;
   // local
   admin?: boolean;
+  can_manage_site_admins?: boolean;
   aliases?: string[];
   default_display_name?: string;
   defaultDisplayName?: string;

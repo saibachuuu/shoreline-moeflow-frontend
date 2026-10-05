@@ -1,6 +1,9 @@
 import { css } from '@emotion/core';
 import React, { useEffect, useState } from 'react';
 import { useIntl } from 'react-intl';
+import { useDispatch, useSelector } from 'react-redux';
+import { setUserInfo } from '@/store/user/slice';
+import type { AppState } from '@/store';
 import { FC } from '@/interfaces';
 import classNames from 'classnames';
 import {
@@ -38,6 +41,12 @@ interface AdminUserListProps {
  */
 export const AdminUserList: FC<AdminUserListProps> = ({ className }) => {
   const { formatMessage } = useIntl();
+  const dispatch = useDispatch();
+  const currentUserID = useSelector((state: AppState) => state.user.id);
+  const canManageSiteAdmins = useSelector(
+    (state: AppState) =>
+      state.user.admin && state.user.canManageSiteAdmins === true,
+  );
 
   const [data, setData] = useState<APIUser[]>([]);
   const [word, setWord] = useState('');
@@ -88,6 +97,7 @@ export const AdminUserList: FC<AdminUserListProps> = ({ className }) => {
   };
 
   const handelChangeAdminStatus = async (record: APIUser) => {
+    if (!canManageSiteAdmins) return;
     setLoading(true);
     try {
       await api.user.adminChangeAdminStatus({
@@ -96,6 +106,14 @@ export const AdminUserList: FC<AdminUserListProps> = ({ className }) => {
           status: !record.admin,
         },
       });
+      if (record.id === currentUserID) {
+        dispatch(
+          setUserInfo({
+            admin: !record.admin,
+            canManageSiteAdmins: !record.admin && canManageSiteAdmins,
+          }),
+        );
+      }
       fetchData();
       message.success(formatMessage({ id: 'site.setting.editSuccess' }));
     } catch (error) {
@@ -166,15 +184,17 @@ export const AdminUserList: FC<AdminUserListProps> = ({ className }) => {
       key: 'action',
       render: (_: any, record: APIUser) => (
         <Space size="middle">
-          <a
-            onClick={() => {
-              handelChangeAdminStatus(record);
-            }}
-          >
-            {record.admin
-              ? formatMessage({ id: 'admin.unsetAdmin' })
-              : formatMessage({ id: 'admin.setAdmin' })}
-          </a>
+          {canManageSiteAdmins && (
+            <a
+              onClick={() => {
+                handelChangeAdminStatus(record);
+              }}
+            >
+              {record.admin
+                ? formatMessage({ id: 'admin.unsetAdmin' })
+                : formatMessage({ id: 'admin.setAdmin' })}
+            </a>
+          )}
           <a
             onClick={() => {
               setChangePasswordModalUser(record);

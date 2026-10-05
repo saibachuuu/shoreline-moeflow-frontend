@@ -22,6 +22,8 @@ export interface UserState {
   /** 用户 Token */
   token: string;
   admin: boolean;
+  /** Server-granted permission to grant/revoke site administrators. */
+  canManageSiteAdmins?: boolean;
   aliases: string[];
   defaultDisplayName?: string;
 }
@@ -43,6 +45,7 @@ export const initialState: UserState = {
   },
   token: '',
   admin: false,
+  canManageSiteAdmins: false,
   aliases: [],
   defaultDisplayName: '',
 };
@@ -60,12 +63,20 @@ const slice = createSlice({
       >,
     ) {
       state.token = action.payload.token;
+      // Fail closed until the current session's capability has been reloaded.
+      state.canManageSiteAdmins = false;
       // 之后会触发 saga 获取用户详情
     },
     setUserInfo(state, action: SetUserInfoAction) {
+      if (action.payload.id !== undefined && action.payload.id !== state.id) {
+        state.canManageSiteAdmins = false;
+      }
       let key: keyof typeof action.payload;
       for (key in action.payload) {
         state[key] = action.payload[key] as never;
+      }
+      if (!state.admin) {
+        state.canManageSiteAdmins = false;
       }
     },
   },
