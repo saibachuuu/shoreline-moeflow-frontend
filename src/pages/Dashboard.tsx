@@ -13,7 +13,13 @@ import {
   useRouteMatch,
 } from 'react-router-dom';
 import { api } from '@/apis';
-import { ApplicationList, DashboardMenu, Icon, TabBarM } from '../components';
+import {
+  ApplicationList,
+  Button,
+  DashboardMenu,
+  Icon,
+  TabBarM,
+} from '../components';
 import { UserInvitationList } from '@/components';
 import { APPLICATION_STATUS } from '@/constants';
 import { INVITATION_STATUS } from '@/constants';
@@ -22,6 +28,7 @@ import { AppState } from '@/store';
 import {
   setNewInvitationsCount,
   setRelatedApplicationsCount,
+  setThemeMode,
 } from '@/store/site/slice';
 import style from '../style';
 import { getCancelToken } from '@/utils/api';
@@ -272,6 +279,22 @@ const Dashboard: FC<DashboardProps> = () => {
             onLeftClick={() => {
               history.goBack();
             }}
+            rightContent={
+              <Button
+                elem="button"
+                className="Dashboard__ThemeToggle"
+                color={style.textColor}
+                icon={themeMode === 'dark' ? 'sun' : 'moon'}
+                aria-label={formatMessage({
+                  id: themeMode === 'dark' ? 'site.lightMode' : 'site.darkMode',
+                })}
+                onClick={() => {
+                  const nextTheme = themeMode === 'dark' ? 'light' : 'dark';
+                  dispatch(setThemeMode(nextTheme));
+                  localStorage.setItem('themeMode', nextTheme);
+                }}
+              />
+            }
           >
             {formatMessage({ id: 'site.dashboard' })}
           </NavBarM>
