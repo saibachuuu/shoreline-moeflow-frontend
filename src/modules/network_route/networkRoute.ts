@@ -72,10 +72,7 @@ export function getBaseHostname(): string {
 /**
  * 规范化 Base URL，确保带有协议且以 / 结尾
  */
-function normalizeUrl(
-  input: string,
-  defaultPath: string,
-): string {
+function normalizeUrl(input: string, defaultPath: string): string {
   let val = input.trim();
   if (!val) return '';
 

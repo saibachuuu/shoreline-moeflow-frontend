@@ -1,10 +1,10 @@
+import { moduleAdminSettings } from '@/modules';
 import { css } from '@emotion/core';
 import {
   Alert,
   Button,
   Form as AntdForm,
   Input,
-  InputNumber,
   message,
   Spin,
   Switch,
@@ -63,19 +63,13 @@ export const AdminSiteSetting: FC<AdminSiteSettingProps> = ({ className }) => {
   const [reloadToken, setReloadToken] = useState(0);
 
   interface APISiteSettingFormData
-    extends Omit<
-      APISiteSetting,
-      'whitelistEmails' | 'autoJoinTeamIds' | 'partnerSearchTeamIds'
-    > {
+    extends Omit<APISiteSetting, 'whitelistEmails' | 'autoJoinTeamIds'> {
     whitelistEmails: string;
     autoJoinTeamIds: string;
-    partnerSearchTeamIds: string;
     showBetaBadge?: boolean;
   }
 
-  const formDataFromAPI = (
-    data: APISiteSetting,
-  ): APISiteSettingFormData => {
+  const formDataFromAPI = (data: APISiteSetting): APISiteSettingFormData => {
     // 后端 auto_join_team_ids 经 toLowerCamelCase 的 _id 特例转成
     // autoJoinTeamIds（小写 d），与表单字段名保持一致。
     return {
@@ -83,10 +77,6 @@ export const AdminSiteSetting: FC<AdminSiteSettingProps> = ({ className }) => {
       ...data,
       whitelistEmails: arrayToTextarea(data.whitelistEmails ?? []),
       autoJoinTeamIds: arrayToTextarea(data.autoJoinTeamIds ?? []),
-      partnerSearchEnabled: data.partnerSearchEnabled ?? false,
-      partnerSearchTeamIds: arrayToTextarea(data.partnerSearchTeamIds ?? []),
-      partnerSearchRateLimitSeconds: data.partnerSearchRateLimitSeconds ?? 10,
-      partnerSearchMaxLimit: data.partnerSearchMaxLimit ?? 20,
     };
   };
 
@@ -132,11 +122,6 @@ export const AdminSiteSetting: FC<AdminSiteSettingProps> = ({ className }) => {
           ...apiValues,
           whitelistEmails: textareaToArray(apiValues.whitelistEmails),
           autoJoinTeamIds: textareaToArray(apiValues.autoJoinTeamIds),
-          partnerSearchEnabled: !!apiValues.partnerSearchEnabled,
-          partnerSearchTeamIds: textareaToArray(apiValues.partnerSearchTeamIds),
-          partnerSearchRateLimitSeconds:
-            Number(apiValues.partnerSearchRateLimitSeconds) || 0,
-          partnerSearchMaxLimit: Number(apiValues.partnerSearchMaxLimit) || 20,
         },
       })
       .then((result) => {
@@ -165,17 +150,6 @@ export const AdminSiteSetting: FC<AdminSiteSettingProps> = ({ className }) => {
             .map((line: number) => line + 1)
             .join(', ');
           error.data.message.autoJoinTeamIds = [
-            formatMessage(
-              { id: 'site.setting.autoJoinTeamIDsError' },
-              { line },
-            ),
-          ];
-        }
-        if (error.data?.message?.partnerSearchTeamIds) {
-          const line = error.data.message.partnerSearchTeamIds
-            .map((line: number) => line + 1)
-            .join(', ');
-          error.data.message.partnerSearchTeamIds = [
             formatMessage(
               { id: 'site.setting.autoJoinTeamIDsError' },
               { line },
@@ -224,126 +198,99 @@ export const AdminSiteSetting: FC<AdminSiteSettingProps> = ({ className }) => {
         <Spin />
       ) : (
         <Form form={form} onFinish={handleFinish} autoComplete="off">
-        <FormItem
-          label={formatMessage({ id: 'site.setting.showBetaBadge' })}
-          name="showBetaBadge"
-          valuePropName="checked"
-          tooltip={formatMessage({ id: 'site.setting.showBetaBadgeTip' })}
-        >
-          <Switch
-            onChange={(checked) => {
-              try {
-                localStorage.setItem(SHOW_BETA_BADGE_KEY, String(checked));
-              } catch {}
-              dispatch(setShowBetaBadge(checked));
-            }}
-          />
-        </FormItem>
-        <FormItem
-          label={formatMessage({ id: 'site.setting.enableWhitelist' })}
-          name="enableWhitelist"
-        >
-          <Switch defaultChecked={siteSetting?.enableWhitelist} />
-        </FormItem>
-        <FormItem
-          label={formatMessage({ id: 'site.setting.whitelistEmails' })}
-          name="whitelistEmails"
-          tooltip={formatMessage({ id: 'site.setting.whitelistEmailsTip' })}
-        >
-          <TextArea rows={10} />
-        </FormItem>
-        <FormItem
-          label={formatMessage({ id: 'site.setting.onlyAllowAdminCreateTeam' })}
-          name="onlyAllowAdminCreateTeam"
-          valuePropName="checked"
-        >
-          <Switch defaultChecked={siteSetting?.onlyAllowAdminCreateTeam} />
-        </FormItem>
-        <FormItem
-          label={formatMessage({ id: 'site.setting.partnerSearchEnabled' })}
-          name="partnerSearchEnabled"
-          valuePropName="checked"
-        >
-          <Switch defaultChecked={siteSetting?.partnerSearchEnabled} />
-        </FormItem>
-        <FormItem
-          label={formatMessage({ id: 'site.setting.partnerSearchTeamIDs' })}
-          name="partnerSearchTeamIds"
-          tooltip={formatMessage({ id: 'site.setting.partnerSearchTeamIDsTip' })}
-        >
-          <TextArea rows={6} />
-        </FormItem>
-        <FormItem
-          label={formatMessage({
-            id: 'site.setting.partnerSearchRateLimitSeconds',
-          })}
-          name="partnerSearchRateLimitSeconds"
-          tooltip={formatMessage({
-            id: 'site.setting.partnerSearchRateLimitSecondsTip',
-          })}
-        >
-          <InputNumber min={0} style={{ width: 200 }} />
-        </FormItem>
-        <FormItem
-          label={formatMessage({ id: 'site.setting.partnerSearchMaxLimit' })}
-          name="partnerSearchMaxLimit"
-          tooltip={formatMessage({ id: 'site.setting.partnerSearchMaxLimitTip' })}
-        >
-          <InputNumber min={1} style={{ width: 200 }} />
-        </FormItem>
-        <FormItem
-          label={formatMessage({ id: 'site.setting.autoJoinTeamIDs' })}
-          name="autoJoinTeamIds"
-          tooltip={formatMessage({ id: 'site.setting.autoJoinTeamIDsTip' })}
-        >
-          <TextArea rows={10} />
-        </FormItem>
-        <FormItem
-          label={formatMessage({ id: 'site.setting.customSiteTitle' })}
-          name="customSiteTitle"
-          tooltip={formatMessage({ id: 'site.setting.customSiteTitleTip' })}
-        >
-          <TextArea rows={2} />
-        </FormItem>
-        <FormItem
-          label={formatMessage({ id: 'site.setting.homepageImageUrl' })}
-          name="homepageImageUrl"
-          tooltip={formatMessage({ id: 'site.setting.homepageImageUrlTip' })}
-        >
-          <Input placeholder="https://example.com/homepage-image.png" />
-        </FormItem>
-        <FormItem
-          label={formatMessage({ id: 'site.setting.homepageWelcome' })}
-          name="homepageWelcome"
-          tooltip={formatMessage({ id: 'site.setting.homepageWelcomeTip' })}
-        >
-          <TextArea rows={7} />
-        </FormItem>
-        <FormItem
-          label={formatMessage({ id: 'site.setting.homepageHtml' })}
-          name="homepageHtml"
-          tooltip={formatMessage({ id: 'site.setting.homepageHtmlTip' })}
-        >
-          <TextArea rows={10} />
-        </FormItem>
-        <FormItem
-          label={formatMessage({ id: 'site.setting.homepageCss' })}
-          name="homepageCss"
-        >
-          <TextArea rows={10} />
-        </FormItem>
+          <FormItem
+            label={formatMessage({ id: 'site.setting.showBetaBadge' })}
+            name="showBetaBadge"
+            valuePropName="checked"
+            tooltip={formatMessage({ id: 'site.setting.showBetaBadgeTip' })}
+          >
+            <Switch
+              onChange={(checked) => {
+                try {
+                  localStorage.setItem(SHOW_BETA_BADGE_KEY, String(checked));
+                } catch {}
+                dispatch(setShowBetaBadge(checked));
+              }}
+            />
+          </FormItem>
+          <FormItem
+            label={formatMessage({ id: 'site.setting.enableWhitelist' })}
+            name="enableWhitelist"
+          >
+            <Switch defaultChecked={siteSetting?.enableWhitelist} />
+          </FormItem>
+          <FormItem
+            label={formatMessage({ id: 'site.setting.whitelistEmails' })}
+            name="whitelistEmails"
+            tooltip={formatMessage({ id: 'site.setting.whitelistEmailsTip' })}
+          >
+            <TextArea rows={10} />
+          </FormItem>
+          <FormItem
+            label={formatMessage({
+              id: 'site.setting.onlyAllowAdminCreateTeam',
+            })}
+            name="onlyAllowAdminCreateTeam"
+            valuePropName="checked"
+          >
+            <Switch defaultChecked={siteSetting?.onlyAllowAdminCreateTeam} />
+          </FormItem>
+          <FormItem
+            label={formatMessage({ id: 'site.setting.autoJoinTeamIDs' })}
+            name="autoJoinTeamIds"
+            tooltip={formatMessage({ id: 'site.setting.autoJoinTeamIDsTip' })}
+          >
+            <TextArea rows={10} />
+          </FormItem>
+          <FormItem
+            label={formatMessage({ id: 'site.setting.customSiteTitle' })}
+            name="customSiteTitle"
+            tooltip={formatMessage({ id: 'site.setting.customSiteTitleTip' })}
+          >
+            <TextArea rows={2} />
+          </FormItem>
+          <FormItem
+            label={formatMessage({ id: 'site.setting.homepageImageUrl' })}
+            name="homepageImageUrl"
+            tooltip={formatMessage({ id: 'site.setting.homepageImageUrlTip' })}
+          >
+            <Input placeholder="https://example.com/homepage-image.png" />
+          </FormItem>
+          <FormItem
+            label={formatMessage({ id: 'site.setting.homepageWelcome' })}
+            name="homepageWelcome"
+            tooltip={formatMessage({ id: 'site.setting.homepageWelcomeTip' })}
+          >
+            <TextArea rows={7} />
+          </FormItem>
+          <FormItem
+            label={formatMessage({ id: 'site.setting.homepageHtml' })}
+            name="homepageHtml"
+            tooltip={formatMessage({ id: 'site.setting.homepageHtmlTip' })}
+          >
+            <TextArea rows={10} />
+          </FormItem>
+          <FormItem
+            label={formatMessage({ id: 'site.setting.homepageCss' })}
+            name="homepageCss"
+          >
+            <TextArea rows={10} />
+          </FormItem>
 
-        <FormItem
-          css={css`
-            text-align: right;
-          `}
-        >
-          <Button type="primary" htmlType="submit" loading={submitting}>
-            {formatMessage({ id: 'form.submit' })}
-          </Button>
-        </FormItem>
+          <FormItem
+            css={css`
+              text-align: right;
+            `}
+          >
+            <Button type="primary" htmlType="submit" loading={submitting}>
+              {formatMessage({ id: 'form.submit' })}
+            </Button>
+          </FormItem>
         </Form>
       )}
+      {moduleAdminSettings.map((Setting, index) => (
+        <Setting key={index} />
+      ))}
     </div>
   );
 };

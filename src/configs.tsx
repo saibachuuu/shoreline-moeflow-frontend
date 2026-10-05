@@ -3,11 +3,6 @@ import { lazyThenable } from '@jokester/ts-commonutil/lib/concurrency/lazy-thena
 export interface RuntimeConfig {
   // base URL for API requests
   baseURL: string;
-  domain?: string;
-  cdnApiDomain?: string;
-  cdnMediaDomain?: string;
-  cdnApiBaseURL?: string;
-  cdnMediaBaseURL?: string;
 }
 
 /**
@@ -18,7 +13,9 @@ export interface RuntimeConfig {
  * 3. fallback
  */
 export const runtimeConfig = lazyThenable<RuntimeConfig>((async () => {
-  const overriden: Partial<RuntimeConfig> = await fetch('/moeflow-runtime-config.json')
+  const overriden: Partial<RuntimeConfig> = await fetch(
+    '/moeflow-runtime-config.json',
+  )
     .then((res) => res.json())
     .catch(() => null);
   const merged: RuntimeConfig = {

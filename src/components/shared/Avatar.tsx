@@ -6,7 +6,7 @@ import { useIntl } from 'react-intl';
 import defaultTeamAvatar from '@/images/common/default-team-avatar.jpg';
 import defaultUserAvatar from '@/images/common/default-user-avatar.jpg';
 
-import { resolveMediaUrl } from '@/utils/networkRoute';
+import { resolveMediaUrl } from '@/services/runtimeExtensions';
 
 /** 头像的属性接口 */
 interface AvatarProps {

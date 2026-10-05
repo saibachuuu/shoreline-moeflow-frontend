@@ -1,3 +1,4 @@
+import { setRuntimeExtensions } from '@/services/runtimeExtensions';
 import {
   collectMenuItems,
   collectProjectSearchUnderSlots,
@@ -11,8 +12,8 @@ import {
 /**
  * 前端可选模块的**目录扫描**入口。
  *
- * 本文件只做一件事：用 Vite 的 `import.meta.glob` 扫描模块目录，
- * 然后把结果交给 `./registry.ts` 的纯逻辑处理。
+ * 本文件用 Vite 的 `import.meta.glob` 扫描模块目录，
+ * 将结果交给 `./registry.ts` 的纯逻辑处理，再汇总通用插槽与运行时扩展。
  *
  * 模块 = 各模块目录下的 `index.ts` 存在，且导出 `MODULE`（或默认导出）
  * 一个 `FrontendModule`。目录即启用，没有别的开关。
@@ -44,4 +45,16 @@ export const moduleProjectTopSlots = collectProjectTopSlots(enabledModules);
 export const moduleProjectSearchUnderSlots =
   collectProjectSearchUnderSlots(enabledModules);
 
+setRuntimeExtensions(
+  enabledModules.flatMap((module) => (module.runtime ? [module.runtime] : [])),
+);
+export const moduleDesktopSettings = enabledModules.flatMap(
+  (module) => module.desktopSettings ?? [],
+);
+export const moduleMobileSettings = enabledModules.flatMap(
+  (module) => module.mobileSettings ?? [],
+);
+export const moduleAdminSettings = enabledModules.flatMap(
+  (module) => module.adminSettings ?? [],
+);
 export * from './registry';

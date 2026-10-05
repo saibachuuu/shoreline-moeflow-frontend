@@ -194,6 +194,8 @@ describe('注册表保持通用（C1 反向检查）', () => {
     'ziteng',
     'partnerSearch',
     'partner_search',
+    'network_route',
+    'networkRoute',
   ];
 
   for (const file of ['index.ts', 'registry.ts']) {
@@ -234,11 +236,11 @@ describe('文案生成与模块目录保持一致', () => {
   });
 
   it('核心 messages.yaml 不含本模块的文案（§4 检查项 10）', () => {
-    // 只检查**已经模块化**的文案。partnerSearch/archiveImport 尚未迁成模块，
-    // 它们的文案留在核心是预期的（见 docs/optional-modules.md §5、§7），
-    // 因此不在这里断言——否则测试会为一件已知的待办而失败。
+    // 已模块化的功能不得将专属文案留在核心。
     expect(MESSAGES_YAML).not.toContain('ziteng');
     expect(MESSAGES_YAML).not.toContain('zitengChecking');
+    expect(MESSAGES_YAML).not.toContain('partnerSearch');
+    expect(MESSAGES_YAML).not.toContain('site.routeCdn');
   });
 
   it('模块文案目录结构与生成器的约定一致', () => {
@@ -272,5 +274,28 @@ describe('前端模块契约', () => {
     expect(mod.name).toBe('demo');
     expect(mod.menuItems).toBeUndefined();
     expect(mod.routes).toBeUndefined();
+  });
+});
+
+describe('module-independent runtime and settings wiring', () => {
+  test.each([
+    'apis/index.ts',
+    'apis/siteSetting.ts',
+    'store/site/slice.ts',
+    'services/runtimeExtensions.ts',
+    'configs.tsx',
+    'components/admin/AdminSiteSetting.tsx',
+    'components/dashboard/DashboardMenu.tsx',
+    'components/project/FileList.tsx',
+    'pages/MeM.tsx',
+  ])('%s has no concrete extension dependency', (file) => {
+    const source = fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
+    for (const name of [
+      'networkRoute',
+      'network_route',
+      'partnerSearch',
+      'partner_search',
+    ])
+      expect(source).not.toContain(name);
   });
 });

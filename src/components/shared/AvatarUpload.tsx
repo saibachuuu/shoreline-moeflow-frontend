@@ -14,7 +14,7 @@ import { setUserInfo } from '../../store/user/slice';
 import { setCurrentTeamInfo } from '../../store/team/slice';
 import { Avatar } from '..';
 import { usePromised } from '@jokester/ts-commonutil/lib/react/hook/use-promised';
-import { getEffectiveApiBaseURL } from '@/utils/networkRoute';
+import { resolveApiBaseURL } from '@/services/runtimeExtensions';
 /** 头像上传的属性接口 */
 interface AvatarUploadProps {
   type: 'user' | 'team';
@@ -72,7 +72,7 @@ export const AvatarUpload: FC<AvatarUploadProps> = ({
         <ImgCrop rotate>
           <Upload
             name="file"
-            action={`${(getEffectiveApiBaseURL() || runtimeConfigLoaded.value.baseURL).replace(/\/+$/, '')}/v1/avatar`}
+            action={`${resolveApiBaseURL(runtimeConfigLoaded.value.baseURL).replace(/\/+$/, '')}/v1/avatar`}
             method="PUT"
             showUploadList={false}
             data={{

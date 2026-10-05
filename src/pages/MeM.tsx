@@ -9,6 +9,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Avatar, Button, TabBarM } from '../components';
 import style from '../style';
 import { Badge } from 'antd';
+import { moduleMobileSettings } from '@/modules';
+import { setThemeMode } from '@/store/site/slice';
 import { setUserToken } from '../store/user/slice';
 
 /** 用户手机版 Me 的属性接口 */
@@ -32,6 +34,7 @@ const MeM: FC<MeMProps> = () => {
   );
   const currentUser = useSelector((state: AppState) => state.user);
   const dispatch = useDispatch();
+  const themeMode = useSelector((state: AppState) => state.site.themeMode);
 
   /** 登出 */
   const logout = () => {
@@ -56,11 +59,12 @@ const MeM: FC<MeMProps> = () => {
           min-height: 150px;
         }
         .MeM__Button {
-           border-top: 1px solid ${style.borderColorLight};
-           background: ${style.backgroundColorLight};
+          width: 100%;
+          border-top: 1px solid ${style.borderColorLight};
+          background: ${style.backgroundColorLight};
         }
         .MeM__Button:last-child {
-           border-bottom: 1px solid ${style.borderColorLight};
+          border-bottom: 1px solid ${style.borderColorLight};
           margin-bottom: 45px;
         }
         .MeM__Badge {
@@ -72,6 +76,24 @@ const MeM: FC<MeMProps> = () => {
         <Avatar type="user" size={120} url={currentUser.avatar} />
       </div>
       <div className="MeM__Buttons">
+        <Button
+          elem="button"
+          className="MeM__Button"
+          color={style.textColor}
+          icon={themeMode === 'dark' ? 'sun' : 'moon'}
+          onClick={() => {
+            const next = themeMode === 'dark' ? 'light' : 'dark';
+            dispatch(setThemeMode(next));
+            localStorage.setItem('themeMode', next);
+          }}
+        >
+          {formatMessage({
+            id: themeMode === 'dark' ? 'site.lightMode' : 'site.darkMode',
+          })}
+        </Button>
+        {moduleMobileSettings.map((Setting, index) => (
+          <Setting key={index} />
+        ))}
         <Button
           className="MeM__Button"
           color={style.textColor}

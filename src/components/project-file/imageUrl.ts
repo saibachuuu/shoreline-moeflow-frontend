@@ -1,4 +1,4 @@
-import { resolveMediaUrl } from '@/utils/networkRoute';
+import { resolveMediaUrl } from '@/services/runtimeExtensions';
 
 type ImageUrls = {
   url?: string;
@@ -14,7 +14,8 @@ export function getPreferredImageUrl(
   const hasResampleImage = Boolean(
     file.resampleUrl && file.resampleUrl !== 'generating',
   );
-  const rawUrl = useOriginalImage || !hasResampleImage ? file.url : file.resampleUrl;
+  const rawUrl =
+    useOriginalImage || !hasResampleImage ? file.url : file.resampleUrl;
   return resolveMediaUrl(rawUrl);
 }
 

@@ -1,3 +1,5 @@
+import { setRuntimeExtensions } from '@/services/runtimeExtensions';
+import { getPreferredImageUrl } from '@/components/project-file/imageUrl';
 import {
   deriveDefaultCdnDomain,
   getEffectiveApiBaseURL,
@@ -7,16 +9,28 @@ import {
 describe('deriveDefaultCdnDomain', () => {
   test('derives CDN domain by appending cdn to the child-most subdomain part', () => {
     expect(deriveDefaultCdnDomain('m.usag.cc', 'cdn')).toBe('mcdn.usag.cc');
-    expect(deriveDefaultCdnDomain('moedev.usag.cc', 'cdn')).toBe('moedevcdn.usag.cc');
-    expect(deriveDefaultCdnDomain('dash.usag.cc', 'cdn')).toBe('dashcdn.usag.cc');
-    expect(deriveDefaultCdnDomain('site.dev.usag.cc', 'cdn')).toBe('sitecdn.dev.usag.cc');
+    expect(deriveDefaultCdnDomain('moedev.usag.cc', 'cdn')).toBe(
+      'moedevcdn.usag.cc',
+    );
+    expect(deriveDefaultCdnDomain('dash.usag.cc', 'cdn')).toBe(
+      'dashcdn.usag.cc',
+    );
+    expect(deriveDefaultCdnDomain('site.dev.usag.cc', 'cdn')).toBe(
+      'sitecdn.dev.usag.cc',
+    );
   });
 
   test('derives Media domain by appending media to the child-most subdomain part', () => {
     expect(deriveDefaultCdnDomain('m.usag.cc', 'media')).toBe('mmedia.usag.cc');
-    expect(deriveDefaultCdnDomain('moedev.usag.cc', 'media')).toBe('moedevmedia.usag.cc');
-    expect(deriveDefaultCdnDomain('dash.usag.cc', 'media')).toBe('dashmedia.usag.cc');
-    expect(deriveDefaultCdnDomain('site.dev.usag.cc', 'media')).toBe('sitemedia.dev.usag.cc');
+    expect(deriveDefaultCdnDomain('moedev.usag.cc', 'media')).toBe(
+      'moedevmedia.usag.cc',
+    );
+    expect(deriveDefaultCdnDomain('dash.usag.cc', 'media')).toBe(
+      'dashmedia.usag.cc',
+    );
+    expect(deriveDefaultCdnDomain('site.dev.usag.cc', 'media')).toBe(
+      'sitemedia.dev.usag.cc',
+    );
   });
 
   test('handles single-label hosts gracefully', () => {
@@ -56,5 +70,37 @@ describe('getEffectiveApiBaseURL', () => {
   test('returns CDN API base URL for cdn mode', () => {
     const cdnBase = getEffectiveApiBaseURL('cdn');
     expect(cdnBase).toContain('/api/');
+  });
+});
+
+describe('media integration', () => {
+  test('resolves storage url to cdn in cdn mode', () => {
+    const store: Record<string, string> = { moeflow_network_route: 'cdn' };
+    const originalWindow = (global as any).window;
+    const originalLocalStorage = (global as any).localStorage;
+    (global as any).window = {
+      location: { hostname: 'm.usag.cc', protocol: 'https:' },
+    };
+    (global as any).localStorage = {
+      getItem: (k: string) => store[k] ?? null,
+      setItem: (k: string, v: string) => {
+        store[k] = v;
+      },
+      removeItem: (k: string) => {
+        delete store[k];
+      },
+    };
+    setRuntimeExtensions([{ mediaURL: (url) => resolveMediaUrl(url) ?? url }]);
+    try {
+      const cdnUrl = getPreferredImageUrl({
+        url: 'https://m.usag.cc/storage/files/1.jpg',
+      });
+      expect(cdnUrl).toContain('/storage/files/1.jpg');
+      expect(cdnUrl).not.toContain('https://m.usag.cc');
+    } finally {
+      setRuntimeExtensions([]);
+      (global as any).window = originalWindow;
+      (global as any).localStorage = originalLocalStorage;
+    }
   });
 });

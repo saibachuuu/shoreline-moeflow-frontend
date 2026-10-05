@@ -1,3 +1,4 @@
+import { calculateColumns } from '@/utils/listLayout';
 import { css } from '@emotion/core';
 import { Pagination } from 'antd';
 import { PaginationProps } from 'antd/lib/pagination';
@@ -38,6 +39,7 @@ interface ListProps<T> {
   itemHeight: number;
   multiColumn?: boolean;
   columnWidth?: number;
+  minColumns?: number;
   itemCreater: (item: T) => React.ReactNode | React.ReactElement;
   emptyTipCreater?: () => React.ReactNode | React.ReactElement | undefined;
   searchEmptyTipCreater?: (
@@ -107,6 +109,7 @@ export function List<T>({
   itemHeight,
   multiColumn = false,
   columnWidth = 100,
+  minColumns = 1,
   itemCreater,
   emptyTipCreater,
   searchEmptyTipCreater,
@@ -135,7 +138,9 @@ export function List<T>({
   const domRef = useRef<HTMLDivElement>(null); // 节点自身 Ref
   const cancelRef = useRef<Canceler>();
   const listHeightRef = useRef(0);
-  const [column, setColumn] = useState(1);
+  const [column, setColumn] = useState(
+    multiColumn ? Math.max(1, minColumns) : 1,
+  );
   // 分页
   const [pageSize, setPageSize] = useState(defaultPageSize); // 每页元素个数
   const [page, setPage] = useState(defaultPage); // 当前页数
@@ -165,8 +170,7 @@ export function List<T>({
       // 仅计算每行摆放的宽度
       let newColumn = 1;
       if (multiColumn) {
-        newColumn = Math.floor(width / columnWidth);
-        if (newColumn < 1) newColumn = 1;
+        newColumn = calculateColumns(width, columnWidth, minColumns);
       }
       if (newColumn !== column) setColumn(newColumn);
     }
@@ -233,8 +237,7 @@ export function List<T>({
   const calcPageSize = (width: number, height: number) => {
     let newColumn = 1;
     if (multiColumn) {
-      newColumn = Math.floor(width / columnWidth);
-      if (newColumn < 1) newColumn = 1;
+      newColumn = calculateColumns(width, columnWidth, minColumns);
     }
     if (newColumn !== column) setColumn(newColumn);
     let otherHeight = paginationHeight; // 减去分页器高度
@@ -261,6 +264,10 @@ export function List<T>({
 
   /** 当区域尺寸变化时，动态计算每页显示的个数 */
   const handleResize = (width: number, height: number) => {
+    // Width changes must still update columns when the virtual keyboard is open.
+    setColumn(
+      multiColumn ? calculateColumns(width, columnWidth, minColumns) : 1,
+    );
     // 手机版不改变每页个数（因为键盘上升屏幕尺寸肯定变化，造成混乱）
     // 之前页面键盘打开，跳转到此页后收缩，页面放大也记下
     if (isMobile && listHeightRef.current >= height) {
@@ -284,9 +291,16 @@ export function List<T>({
         overflow-y: auto;
         scrollbar-width: thin;
         scrollbar-color: ${style.borderColorLight} transparent;
-        &::-webkit-scrollbar { width: 8px; }
-        &::-webkit-scrollbar-thumb { background: ${style.borderColorLight}; border-radius: 4px; }
-        &::-webkit-scrollbar-track { background: transparent; }
+        &::-webkit-scrollbar {
+          width: 8px;
+        }
+        &::-webkit-scrollbar-thumb {
+          background: ${style.borderColorLight};
+          border-radius: 4px;
+        }
+        &::-webkit-scrollbar-track {
+          background: transparent;
+        }
         .List__Header {
           width: 100%;
         }

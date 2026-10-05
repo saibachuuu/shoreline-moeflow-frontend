@@ -12,10 +12,6 @@ export interface APISiteSetting {
   homepageImageUrl: string;
   homepageHtml: string;
   homepageCss: string;
-  partnerSearchEnabled?: boolean;
-  partnerSearchTeamIds?: string[];
-  partnerSearchRateLimitSeconds?: number;
-  partnerSearchMaxLimit?: number;
 }
 
 const getSiteSetting = ({ configs }: { configs?: AxiosRequestConfig }) => {

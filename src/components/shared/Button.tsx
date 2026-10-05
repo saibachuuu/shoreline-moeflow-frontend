@@ -18,6 +18,8 @@ const sizeMap = {
 /** 按钮的属性接口 */
 interface ButtonProps {
   tooltipProps?: TooltipProps;
+  'aria-label'?: string;
+  onBlur?: () => void;
   /**
    * defaults to be 'div' but unpreferable
    */
@@ -43,6 +45,8 @@ interface ButtonProps {
  */
 export const Button: FC<ButtonProps> = ({
   elem = 'div',
+  'aria-label': ariaLabel,
+  onBlur,
   size = 'default',
   icon,
   tooltipProps,
@@ -140,6 +144,11 @@ export const Button: FC<ButtonProps> = ({
           }
         }
       `,
+      'aria-label': ariaLabel,
+      onBlur,
+      ...(elem === 'button'
+        ? { type: 'button', disabled: disabled || loading }
+        : {}),
       onClick: disabled || loading ? undefined : onClick,
     },
     buttonContent,

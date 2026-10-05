@@ -1,5 +1,6 @@
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { FC } from 'react';
+import type { RuntimeExtension } from '@/services/runtimeExtensions';
 
 /**
  * 前端可选模块的**纯逻辑**部分。
@@ -52,6 +53,11 @@ export interface ProjectSearchUnderSlot {
 export interface FrontendModule {
   /** 模块标识，建议等于目录名。 */
   name: string;
+  runtime?: RuntimeExtension;
+  /** 设置入口使用通用插槽，核心不依赖具体模块。 */
+  desktopSettings?: FC[];
+  mobileSettings?: FC[];
+  adminSettings?: FC[];
   /** 菜单项；不提供则不显示菜单入口。 */
   menuItems?: ModuleMenuItem[];
   /** 挂在 dashboard 下的路由。 */

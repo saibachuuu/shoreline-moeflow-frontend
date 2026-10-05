@@ -22,7 +22,6 @@ import { AppState } from '@/store';
 import {
   setNewInvitationsCount,
   setRelatedApplicationsCount,
-  setThemeMode,
 } from '@/store/site/slice';
 import style from '../style';
 import { getCancelToken } from '@/utils/api';
@@ -257,37 +256,22 @@ const Dashboard: FC<DashboardProps> = () => {
         {/* 手机版顶部导航栏（除了 Tab 页） */}
         {isMobile && !isMobileTabPage() && (
           <NavBarM
-             css={css`
-               position: fixed;
+            css={css`
+              position: fixed;
               width: 100%;
               height: ${style.navHeightM}px;
               top: 0;
               left: 0;
-               border-bottom: 1px solid ${style.borderColorLight};
-               background: ${style.backgroundColorLight};
-               color: ${style.textColor};
-               z-index: 100;
-             `}
-             mode={themeMode === 'dark' ? 'dark' : 'light'}
+              border-bottom: 1px solid ${style.borderColorLight};
+              background: ${style.backgroundColorLight};
+              color: ${style.textColor};
+              z-index: 100;
+            `}
+            mode={themeMode === 'dark' ? 'dark' : 'light'}
             icon={<Icon icon="angle-left" />}
             onLeftClick={() => {
               history.goBack();
             }}
-            rightContent={
-              <span
-                css={css`
-                  cursor: pointer;
-                  font-size: 18px;
-                `}
-                onClick={() => {
-                  const newTheme = themeMode === 'dark' ? 'light' : 'dark';
-                  dispatch(setThemeMode(newTheme));
-                  localStorage.setItem('themeMode', newTheme);
-                }}
-              >
-                <Icon icon={themeMode === 'dark' ? 'sun' : 'moon'} />
-              </span>
-            }
           >
             {formatMessage({ id: 'site.dashboard' })}
           </NavBarM>

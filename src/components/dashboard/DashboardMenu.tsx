@@ -1,5 +1,5 @@
 import { css } from '@emotion/core';
-import { Badge, MenuProps, message, Slider } from 'antd';
+import { Badge, MenuProps, Slider } from 'antd';
 import classNames from 'classnames';
 import React from 'react';
 import { useIntl } from 'react-intl';
@@ -9,14 +9,13 @@ import { Avatar, Dropdown, Icon, ListItem, TeamList, Tooltip } from '..';
 import { FC } from '@/interfaces';
 import { AppState } from '@/store';
 import { resetProjectsState } from '@/store/project/slice';
-import { setNetworkRoute, setThemeMode } from '@/store/site/slice';
+import { setThemeMode } from '@/store/site/slice';
 import { setImageTranslatorImageDarkness } from '@/store/site/slice';
 import { setUserToken, UserState } from '@/store/user/slice';
-import { NetworkRoute, setNetworkRouteStorage } from '@/utils/networkRoute';
 import style from '../../style';
 import { clickEffect } from '@/utils/style';
 import { routes } from '@/pages/routes';
-import { moduleMenuItems } from '@/modules';
+import { moduleMenuItems, moduleDesktopSettings } from '@/modules';
 import { imageTranslatorSettingsStorage } from '@/utils/storage';
 
 export const MENU_COLLAPSED_WIDTH = 63;
@@ -57,9 +56,6 @@ export const DashboardMenu: FC<
   );
   const isMobile = platform === 'mobile';
   const themeMode = useSelector((state: AppState) => state.site.themeMode);
-  const networkRoute = useSelector(
-    (state: AppState) => state.site.networkRoute,
-  );
   const imageDarkness = useSelector(
     (state: AppState) => state.site.imageTranslatorImageDarkness,
   );
@@ -347,8 +343,7 @@ export const DashboardMenu: FC<
                 value={imageDarkness}
                 tooltip={{ formatter: (value) => `${value ?? 0}%` }}
                 onChange={(value) => {
-                  const darkness =
-                    typeof value === 'number' ? value : value[0];
+                  const darkness = typeof value === 'number' ? value : value[0];
                   dispatch(setImageTranslatorImageDarkness(darkness));
                   imageTranslatorSettingsStorage.save({
                     autoFocusInput,
@@ -358,59 +353,9 @@ export const DashboardMenu: FC<
               />
             </div>
           </div>
-          <div
-            className="Dashboard__RouteControl"
-            css={css`
-              width: 100%;
-              overflow: hidden;
-            `}
-          >
-            <Tooltip
-              title={
-                networkRoute === 'cdn'
-                  ? formatMessage({ id: 'site.routeCdnTip' })
-                  : formatMessage({ id: 'site.routeDirectTip' })
-              }
-              placement="right"
-            >
-              <div>
-                <ListItem
-                  onClick={() => {
-                    const nextRoute: NetworkRoute =
-                      networkRoute === 'cdn' ? 'direct' : 'cdn';
-                    dispatch(setNetworkRoute(nextRoute));
-                    setNetworkRouteStorage(nextRoute);
-                    message.success(
-                      formatMessage(
-                        { id: 'site.routeSwitched' },
-                        {
-                          route: formatMessage({
-                            id:
-                              nextRoute === 'cdn'
-                                ? 'site.routeCdn'
-                                : 'site.routeDirect',
-                          }),
-                        },
-                      ),
-                    );
-                    window.location.reload();
-                  }}
-                  className="Dashboard__ListItem Dashboard__MenuOption Dashboard__MenuOption--system"
-                  logo={
-                    <Icon
-                      className="ListItem__LogoIcon"
-                      icon={networkRoute === 'cdn' ? 'cloud' : 'wifi'}
-                    />
-                  }
-                  name={
-                    networkRoute === 'cdn'
-                      ? formatMessage({ id: 'site.routeCdn' })
-                      : formatMessage({ id: 'site.routeDirect' })
-                  }
-                />
-              </div>
-            </Tooltip>
-          </div>
+          {moduleDesktopSettings.map((Setting, index) => (
+            <Setting key={index} />
+          ))}
           <ListItem
             onClick={() => {
               dispatch(resetProjectsState());

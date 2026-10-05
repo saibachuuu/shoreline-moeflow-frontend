@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { defineConfig, ProxyOptions } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'node:path';
+import fs from 'node:fs';
 import { antdLessVars, antdLessVarsM } from './src/style';
 import vitePluginImp from 'vite-plugin-imp';
 import { visualizer } from 'rollup-plugin-visualizer';
@@ -10,6 +11,17 @@ import tailwindcss from '@tailwindcss/vite';
 
 const ___dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const moeflowSrc = path.join(___dirname, './src');
+
+// Only explicitly declared public build variables are exposed to the browser.
+const modulesDir = path.join(moeflowSrc, 'modules');
+const moduleDefines: Record<string, string> = {};
+for (const entry of fs.existsSync(modulesDir) ? fs.readdirSync(modulesDir, { withFileTypes: true }) : []) {
+  if (!entry.isDirectory()) continue;
+  const manifest = path.join(modulesDir, entry.name, 'build-env.json');
+  if (!fs.existsSync(manifest)) continue;
+  const names: string[] = JSON.parse(fs.readFileSync(manifest, 'utf8'));
+  for (const name of names) moduleDefines[`process.env.${name}`] = JSON.stringify(process.env[name] ?? '');
+}
 
 /**
  * Develop with a bare Python API server
@@ -81,13 +93,7 @@ export default defineConfig({
     'process.env.REACT_APP_BASE_URL': JSON.stringify(
       process.env.REACT_APP_BASE_URL ?? '/api/',
     ),
-    'process.env.DOMAIN': JSON.stringify(process.env.DOMAIN ?? ''),
-    'process.env.CDN_API_DOMAIN': JSON.stringify(
-      process.env.CDN_API_DOMAIN ?? process.env.VITE_CDN_API_DOMAIN ?? '',
-    ),
-    'process.env.CDN_MEDIA_DOMAIN': JSON.stringify(
-      process.env.CDN_MEDIA_DOMAIN ?? process.env.VITE_CDN_MEDIA_DOMAIN ?? '',
-    ),
+    ...moduleDefines,
     __BETA_BUILD__: JSON.stringify(createBetaBuildLabel()),
   },
   resolve: {

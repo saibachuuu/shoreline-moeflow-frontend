@@ -36,71 +36,16 @@ import group from './group';
 import insight from './insight';
 import siteSetting from './siteSetting';
 import { lazyThenable } from '@jokester/ts-commonutil/lib/concurrency/lazy-thenable';
-import {
-  getCdnApiBaseURL,
-  getNetworkRoute,
-  resolveMediaUrl,
-} from '@/utils/networkRoute';
+import { configureApiClient } from '@/services/runtimeExtensions';
 
-const debugLogger = createDebugLogger('apis');
-
-function rewriteStorageUrls(data: any): any {
-  if (!data) return data;
-  if (typeof Blob !== 'undefined' && data instanceof Blob) return data;
-  if (typeof ArrayBuffer !== 'undefined' && data instanceof ArrayBuffer) return data;
-  if (typeof FormData !== 'undefined' && data instanceof FormData) return data;
-
-  if (typeof data === 'string') {
-    if (data.includes('/storage/')) {
-      return resolveMediaUrl(data, 'cdn') ?? data;
-    }
-    return data;
-  }
-  if (Array.isArray(data)) {
-    return data.map(rewriteStorageUrls);
-  }
-  if (typeof data === 'object') {
-    const result: any = {};
-    for (const key of Object.keys(data)) {
-      const val = data[key];
-      if (typeof val === 'string' && val.includes('/storage/')) {
-        result[key] = resolveMediaUrl(val, 'cdn');
-      } else if (val && typeof val === 'object') {
-        result[key] = rewriteStorageUrls(val);
-      } else {
-        result[key] = val;
-      }
-    }
-    return result;
-  }
-  return data;
-}
+const debugLogger = createDebugLogger('apis:index');
 
 const instanceP = lazyThenable(async () => {
   const instance = axios.create({
     baseURL: `${(await runtimeConfig).baseURL}`,
   });
 
-  // 线路路由拦截器：当处于 CDN 模式时将请求定向至 CDN API 域名
-  instance.interceptors.request.use((req) => {
-    const route = getNetworkRoute();
-    if (route === 'cdn') {
-      const cdnApiBase = getCdnApiBaseURL();
-      if (cdnApiBase) {
-        req.baseURL = cdnApiBase;
-      }
-    }
-    return req;
-  });
-
-  // 媒体 URL 映射拦截器：当处于 CDN 模式时将响应中的存储链接映射至 CDN 媒体域名
-  instance.interceptors.response.use((response) => {
-    const route = getNetworkRoute();
-    if (route === 'cdn' && response.data) {
-      response.data = rewriteStorageUrls(response.data);
-    }
-    return response;
-  });
+  configureApiClient(instance);
 
   return instance;
 });
@@ -255,7 +200,8 @@ export async function request<T = any>(
         const nested = (rawErrorData as any).error;
         const errorData = {
           ...(typeof nested === 'object' && nested ? nested : rawErrorData),
-          requestId: (rawErrorData as any).request_id || (nested && nested.request_id),
+          requestId:
+            (rawErrorData as any).request_id || (nested && nested.request_id),
         } as BasicFailureResultData | ValidationFailureResultData;
         if (errorData.code === 2) {
           // 将 message 中的字段名转为小驼峰

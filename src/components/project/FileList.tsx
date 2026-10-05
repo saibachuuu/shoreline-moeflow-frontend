@@ -7,7 +7,11 @@ import { FilePond } from 'react-filepond';
 import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { Button, EmptyTip, List } from '@/components';
+import { EmptyTip, List } from '@/components';
+import {
+  ResponsiveToolbar,
+  ToolbarButton,
+} from '@/components/shared/ResponsiveToolbar';
 import { OutputList } from './OutputList';
 import { FileItem } from './FileItem';
 import { FileOrderEditor } from './FileOrderEditor';
@@ -28,7 +32,7 @@ import { can } from '@/utils/user';
 import { routes } from '@/pages/routes';
 import { ListPageSpec } from '@/components/shared/List';
 import { FilePondFile } from 'filepond';
-import { getEffectiveApiBaseURL } from '@/utils/networkRoute';
+import { resolveApiBaseURL } from '@/services/runtimeExtensions';
 import { createDebugLogger } from '@/utils/debug-logger';
 import { useAiTranslate } from '@/components/ai';
 import { moduleProjectSearchUnderSlots } from '@/modules';
@@ -63,10 +67,7 @@ export const FileList: FC<FileListProps> = ({
   const runtimeConfig = useSelector(
     (state: AppState) => state.site.runtimeConfig,
   );
-  const networkRoute = useSelector(
-    (state: AppState) => state.site.networkRoute,
-  );
-  const apiBase = getEffectiveApiBaseURL(networkRoute) || runtimeConfig?.baseURL || '/api/';
+  const apiBase = resolveApiBaseURL(runtimeConfig?.baseURL);
   const uploadAPI = `${apiBase.replace(/\/+$/, '')}/v1/projects/${project.id}/files`;
   const token = useSelector((state: AppState) => state.user.token);
   const platform = useSelector((state: AppState) => state.site.platform);
@@ -288,21 +289,25 @@ export const FileList: FC<FileListProps> = ({
             .List__ItemWrapper {
               flex: none;
               margin-bottom: 10px;
+              min-width: 0;
+              padding: 0 4px;
             }
           }
         }
         .FileList__FileItem {
           margin: 0 auto;
+          max-width: 100%;
+          .FileItem__ImageWrapper,
+          .FileItem__Image {
+            width: 100%;
+          }
+          .FileItem__Image {
+            object-fit: contain;
+          }
         }
         .FileList__Header {
           display: flex;
           justify-content: stretch;
-        }
-        .FileList__ChangeTargetButton {
-          flex: auto;
-          .Button__Content {
-            justify-content: flex-start;
-          }
         }
       `}
     >
@@ -390,26 +395,36 @@ export const FileList: FC<FileListProps> = ({
           }}
         />
       )}
-      <div className="FileList__Header">
-        <Button
+      <ResponsiveToolbar className="FileList__Header">
+        <ToolbarButton
           className="FileList__ChangeTargetButton"
           icon="exchange-alt"
+          actionKey="target"
+          description={
+            formatMessage({ id: 'project.changeTarget' }) +
+            ' - ' +
+            target?.language.i18nName
+          }
           iconProps={{
             style: { height: '16px', width: '16px' },
           }}
           disabled={orderEditing}
           onClick={onChangeTargetClick}
         >
-          {(!isMobile
-            ? formatMessage({ id: 'project.changeTarget' }) + ' - '
-            : '') + target?.language.i18nName}
-        </Button>
+          {formatMessage({ id: 'project.changeTarget' }) +
+            ' - ' +
+            target?.language.i18nName}
+        </ToolbarButton>
         {!readOnly && !orderEditing && aiEnabled && aiTranslateApi && (
-          <Button
+          <ToolbarButton
             tooltipProps={{
               overlay: formatMessage({ id: 'fileList.aiTranslate.buttonTip' }),
             }}
             icon="robot"
+            actionKey="ai"
+            description={formatMessage({
+              id: 'fileList.aiTranslate.buttonTip',
+            })}
             onClick={() =>
               aiTranslateApi.start({
                 onFileSaved(f2) {
@@ -421,47 +436,44 @@ export const FileList: FC<FileListProps> = ({
             }
           >
             {formatMessage({ id: 'fileList.aiTranslate.buttonText' })}
-          </Button>
+          </ToolbarButton>
         )}
-        {/* {can(team, TEAM_PERMISSION.USE_OCR_QUOTA) && (
-        )} */}
-        {/* <Button
-          tooltipProps={{
-            overlay: formatMessage({ id: 'fileList.changeMode' }),
-          }}
-          icon={listMode === 'text' ? 'th-large' : 'th-list'}
-          onClick={() => {
-            setListMode(listMode === 'text' ? 'image' : 'text');
-          }}
-        ></Button> */}
         {!readOnly &&
           !orderEditing &&
           can(project, PROJECT_PERMISSION.OUTPUT_TRA) && (
-            <Button
+            <ToolbarButton
               icon="download"
+              actionKey="export"
+              description={formatMessage({ id: 'project.export' })}
               onClick={() => setOutputDrawerVisible(true)}
             >
-              {!isMobile && formatMessage({ id: 'project.export' })}
+              {formatMessage({ id: 'project.export' })}
               {selectedFileIds.length > 0 && ` (${selectedFileIds.length})`}
-            </Button>
+            </ToolbarButton>
           )}
         {!readOnly &&
           !orderEditing &&
           can(project, PROJECT_PERMISSION.ADD_FILE) && (
-            <Button
+            <ToolbarButton
               icon="plus"
+              actionKey="upload"
+              description={formatMessage({ id: 'site.upload' })}
               onClick={() => {
                 filePondRef.current?.browse();
               }}
             >
-              {!isMobile && formatMessage({ id: 'site.upload' })}
-            </Button>
+              {formatMessage({ id: 'site.upload' })}
+            </ToolbarButton>
           )}
         {!readOnly &&
           !orderEditing &&
           can(project, PROJECT_PERMISSION.CHANGE) && (
-            <Button
+            <ToolbarButton
               icon="image"
+              actionKey="thumbnails"
+              description={formatMessage({
+                id: 'fileList.regenerateThumbnails.buttonText',
+              })}
               onClick={() => {
                 Modal.confirm({
                   title: formatMessage({
@@ -488,16 +500,17 @@ export const FileList: FC<FileListProps> = ({
                 });
               }}
             >
-              {!isMobile &&
-                formatMessage({
-                  id: 'fileList.regenerateThumbnails.buttonText',
-                })}
-            </Button>
+              {formatMessage({
+                id: 'fileList.regenerateThumbnails.buttonText',
+              })}
+            </ToolbarButton>
           )}
         {!readOnly && !orderEditing && project.canOrderFiles && (
-          <Button
+          <ToolbarButton
             elem="button"
             icon="arrows-alt-v"
+            actionKey="order"
+            description={formatMessage({ id: 'fileList.order.edit' })}
             disabled={
               loading ||
               spinningIDs.length > 0 ||
@@ -506,9 +519,9 @@ export const FileList: FC<FileListProps> = ({
             onClick={() => setOrderEditing(true)}
           >
             {formatMessage({ id: 'fileList.order.edit' })}
-          </Button>
+          </ToolbarButton>
         )}
-      </div>
+      </ResponsiveToolbar>
       {orderEditing && (
         <FileOrderEditor
           key={project.id}
@@ -593,6 +606,7 @@ export const FileList: FC<FileListProps> = ({
           itemHeight={250}
           multiColumn
           columnWidth={200}
+          minColumns={2}
           paginationProps={{
             disabled: spinningIDs.length > 0,
           }}

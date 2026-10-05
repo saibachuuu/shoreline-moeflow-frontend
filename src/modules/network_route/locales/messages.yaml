@@ -1,0 +1,18 @@
+site.networkRoute:
+  zhCn: 网络线路
+  en: Network Route
+site.routeDirect:
+  zhCn: 直连线路
+  en: Direct Line
+site.routeCdn:
+  zhCn: CDN加速
+  en: CDN Line
+site.routeDirectTip:
+  zhCn: 当前为直连线路，点击切换至CDN加速
+  en: Currently on Direct Line, click to switch to CDN Line
+site.routeCdnTip:
+  zhCn: 当前为CDN加速，点击切换至直连线路
+  en: Currently on CDN Line, click to switch to Direct Line
+site.routeSwitched:
+  zhCn: 已切换为{route}，正在重新加载...
+  en: Switched to {route}, reloading...

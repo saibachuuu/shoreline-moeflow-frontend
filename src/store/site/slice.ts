@@ -2,11 +2,6 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { OSName, Platform } from '@/interfaces';
 import { RuntimeConfig } from '@/configs';
 
-import {
-  getNetworkRoute,
-  NetworkRoute,
-} from '@/utils/networkRoute';
-
 export type ThemeMode = 'light' | 'dark';
 export const SHOW_BETA_BADGE_KEY = 'moeflow_show_beta_badge';
 
@@ -27,7 +22,6 @@ export interface SiteState {
   runtimeConfig: RuntimeConfig;
   customSiteTitle: string;
   themeMode: ThemeMode;
-  networkRoute: NetworkRoute;
   imageTranslatorAutoFocusInput: boolean;
   imageTranslatorImageDarkness: number;
   showBetaBadge: boolean;
@@ -41,7 +35,6 @@ const initialState: SiteState = {
   runtimeConfig: null!,
   customSiteTitle: '',
   themeMode: 'light',
-  networkRoute: getNetworkRoute(),
   imageTranslatorAutoFocusInput: false,
   imageTranslatorImageDarkness: 0,
   showBetaBadge: getInitialShowBetaBadge(),
@@ -71,9 +64,6 @@ const slice = createSlice({
     setThemeMode(state, action: PayloadAction<ThemeMode>) {
       state.themeMode = action.payload;
     },
-    setNetworkRoute(state, action: PayloadAction<NetworkRoute>) {
-      state.networkRoute = action.payload;
-    },
     setImageTranslatorAutoFocusInput(state, action: PayloadAction<boolean>) {
       state.imageTranslatorAutoFocusInput = action.payload;
     },
@@ -97,7 +87,6 @@ export const {
   setRuntimeConfig,
   setCustomSiteTitle,
   setThemeMode,
-  setNetworkRoute,
   setImageTranslatorAutoFocusInput,
   setImageTranslatorImageDarkness,
   setShowBetaBadge,
