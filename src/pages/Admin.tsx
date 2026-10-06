@@ -1,3 +1,4 @@
+import { NotificationWorkspace } from '@/components/notification/NotificationWorkspace';
 import { css } from '@emotion/core';
 import React, { useState } from 'react';
 import {
@@ -45,6 +46,9 @@ const Admin: FC<AdminProps> = () => {
       >
         <Sider
           collapsible
+          breakpoint="md"
+          collapsedWidth={64}
+          onBreakpoint={broken => setCollapsed(broken)}
           collapsed={collapsed}
           onCollapse={(value) => setCollapsed(value)}
         >
@@ -86,6 +90,9 @@ const Admin: FC<AdminProps> = () => {
             >
               {formatMessage({ id: 'admin.captchas' })}
             </Menu.Item>
+            <Menu.Item key="notifications" onClick={() => history.push(`${url}/notifications`)}>
+              {formatMessage({ id: 'notification.management' })}
+            </Menu.Item>
           </Menu>
         </Sider>
         <Layout
@@ -93,6 +100,7 @@ const Admin: FC<AdminProps> = () => {
           style={{ backgroundColor: 'var(--background-color-light, #fafafa)' }}
         >
           <Switch>
+            <Route path={`${path}/notifications`}><NotificationWorkspace admin /></Route>
             <Route path={`${path}/`} exact>
               <Redirect to={`${path}/site-setting`} />
             </Route>

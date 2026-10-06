@@ -1,3 +1,4 @@
+import { useNotificationCounts } from '@/hooks/useNotificationCounts';
 import { css } from '@emotion/core';
 import { TabBar } from 'antd-mobile';
 import { useIntl } from 'react-intl';
@@ -19,6 +20,7 @@ export const TabBarM: FC<TabBarProps> = ({ className }) => {
   const { formatMessage } = useIntl(); // i18n
   const history = useHistory(); // 路由
   const location = useLocation();
+  const notificationCounts = useNotificationCounts();
   const newInvitationsCount = useSelector(
     (state: AppState) => state.site.newInvitationsCount,
   );
@@ -86,6 +88,14 @@ export const TabBarM: FC<TabBarProps> = ({ className }) => {
             history.replace('/dashboard/teams');
           }}
         ></TabBar.Item>
+        {notificationCounts.enabled && <TabBar.Item
+          key="notifications" title={formatMessage({ id: 'notification.title' })}
+          icon={<Icon className="tab-icon" icon="bell" />}
+          selectedIcon={<Icon className="tab-icon" icon="bell" />}
+          selected={checkActive({ path: '/dashboard/notifications', exact: true })}
+          badge={notificationCounts.total > 99 ? '99+' : notificationCounts.total || undefined}
+          onPress={() => history.replace('/dashboard/notifications')}
+        />}
         <TabBar.Item
           icon={<Icon className="tab-icon" icon="user-circle"></Icon>}
           selectedIcon={<Icon className="tab-icon" icon="user-circle"></Icon>}

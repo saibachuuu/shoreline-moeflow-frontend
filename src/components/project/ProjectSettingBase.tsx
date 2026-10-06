@@ -1,3 +1,5 @@
+import { NotificationEntry } from '@/components/notification/NotificationWorkspace';
+import { useRouteMatch } from 'react-router-dom';
 import { css } from '@emotion/core';
 import { Button, message, Modal, Tag } from 'antd';
 import classNames from 'classnames';
@@ -42,6 +44,7 @@ export const ProjectSettingBase: FC<ProjectSettingBaseProps> = ({
 }) => {
   const { formatMessage } = useIntl();
   const history = useHistory();
+  const { url } = useRouteMatch();
   const dispatch = useDispatch();
   const [leaveLoading, setLeaveLoading] = useState(false);
   const [lifecycleLoading, setLifecycleLoading] = useState(false);
@@ -206,6 +209,7 @@ export const ProjectSettingBase: FC<ProjectSettingBaseProps> = ({
         padding: ${style.paddingBase}px;
       `}
     >
+      <div style={{ marginBottom: 16 }}><NotificationEntry category="project" scopeId={currentProject.id} to={`${url.replace(/\/base\/?$/, "")}/notifications`} /></div>
       <Content>
         <ContentTitle>{formatMessage({ id: 'project.me' })}</ContentTitle>
         <ContentItem>

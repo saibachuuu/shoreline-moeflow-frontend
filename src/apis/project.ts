@@ -1,3 +1,4 @@
+import { v4 as uuid } from 'uuid';
 /**
  * 项目相关 API
  */
@@ -506,23 +507,28 @@ export const sendProofreadDraft = ({
   targetID,
   ccMyself = true,
   fileID,
+  idempotencyKey,
   configs,
 }: {
   projectID: string;
   targetID: string;
   ccMyself?: boolean;
   fileID?: string;
+  idempotencyKey?: string;
   configs?: AxiosRequestConfig;
 }) =>
   request<{
     message: string;
-    recipients: string[];
-    changedPagesCount: number;
-    changedLabelsCount: number;
+    recipients?: string[];
+    notification_id?: string;
+    state?: string;
+    changed_pages_count?: number;
+    changed_labels_count?: number;
   }>({
     method: 'POST',
     url: `/v1/projects/${projectID}/targets/${targetID}/send-proofread-draft`,
     data: toUnderScoreCase({ ccMyself, fileID }),
+    headers: { 'Idempotency-Key': idempotencyKey || uuid() },
     ...configs,
   });
 

@@ -1,6 +1,7 @@
 import { css, Global } from '@emotion/core';
 import { Button, Checkbox, Divider, message, Modal, Slider, Switch } from 'antd';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { v4 as uuid } from 'uuid';
 import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
@@ -48,6 +49,7 @@ const ImageTranslator: FC = () => {
   const focusedSourceID = useSelector(
     (state: AppState) => state.source.focusedSource.id,
   );
+  const senderEmail = useSelector((state: AppState) => state.user.email);
   const platform = useSelector((state: AppState) => state.site.platform);
   const themeMode = useSelector((state: AppState) => state.site.themeMode);
   const autoFocusInput = useSelector(
@@ -75,10 +77,17 @@ const ImageTranslator: FC = () => {
     return saved === null ? true : saved === 'true';
   });
   const [sendingProofreadDraft, setSendingProofreadDraft] = useState(false);
+  const proofreadOperation = useRef<{ scope: string; key: string }>();
+  const proofreadInFlight = useRef(false);
 
   const handleSendProofreadDraft = async (overrideCc?: boolean) => {
-    if (!currentProject || !targetID) return;
+    if (!currentProject || !targetID || proofreadInFlight.current) return;
     const effectiveCc = overrideCc !== undefined ? overrideCc : ccMyself;
+    const scope = JSON.stringify([currentProject.id, targetID, effectiveCc]);
+    if (proofreadOperation.current?.scope !== scope) {
+      proofreadOperation.current = { scope, key: uuid() };
+    }
+    proofreadInFlight.current = true;
     setSendingProofreadDraft(true);
     const hideLoading = message.loading(
       formatMessage({ id: 'imageTranslator.sendingProofreadDraft' }),
@@ -89,7 +98,9 @@ const ImageTranslator: FC = () => {
         projectID: currentProject.id,
         targetID,
         ccMyself: effectiveCc,
+        idempotencyKey: proofreadOperation.current.key,
       });
+      proofreadOperation.current = undefined;
       hideLoading();
       message.success(
         res.data.message ||
@@ -109,6 +120,7 @@ const ImageTranslator: FC = () => {
       }
       message.error(formatMessage({ id: 'site.networkError' }));
     } finally {
+      proofreadInFlight.current = false;
       setSendingProofreadDraft(false);
     }
   };
@@ -121,6 +133,9 @@ const ImageTranslator: FC = () => {
         <div>
           <p style={{ marginBottom: 12 }}>
             {formatMessage({ id: 'imageTranslator.sendProofreadDraftConfirmContent' })}
+          </p>
+          <p style={{ marginBottom: 12, overflowWrap: 'anywhere' }}>
+            {formatMessage({ id: 'imageTranslator.proofreadEmailDisclosure' }, { email: senderEmail || '—' })}
           </p>
           <Checkbox
             defaultChecked={currentCc}

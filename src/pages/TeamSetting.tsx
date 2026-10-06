@@ -1,3 +1,4 @@
+import { NotificationEntry, NotificationWorkspace } from '@/components/notification/NotificationWorkspace';
 import React, { useEffect } from 'react';
 import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
@@ -52,6 +53,7 @@ const TeamSetting: FC<TeamSettingProps> = () => {
 
   const nav = currentTeam && (
     <NavTabs>
+      <NotificationEntry category="team" scopeId={teamID} to={`${url}/notifications`} />
       <NavTab to={`${url}/base`}>
         {formatMessage({ id: 'site.baseSetting' })}
       </NavTab>
@@ -104,6 +106,7 @@ const TeamSetting: FC<TeamSettingProps> = () => {
             // PC 版自动跳转到第一个导航
             <Redirect exact from={`${path}`} to={`${path}/base`} />
           )}
+          <Route path={`${path}/notifications`}><NotificationWorkspace category="team" scopeId={teamID} /></Route>
           <Route path={`${path}/base`}>
             <TeamSettingBase />
           </Route>

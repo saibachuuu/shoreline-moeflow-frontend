@@ -1,3 +1,4 @@
+import { NotificationWorkspace } from '@/components/notification/NotificationWorkspace';
 import { css } from '@emotion/core';
 import { useIntl } from 'react-intl';
 import { useSelector } from 'react-redux';
@@ -123,6 +124,7 @@ const ProjectSetting: FC<ProjectSettingProps> = ({ project }) => {
               // PC 版自动跳转到第一个导航
               <Redirect exact from={`${path}`} to={`${path}/base`} />
             )}
+            <Route path={`${path}/notifications`}><NotificationWorkspace category="project" scopeId={currentProject.id} /></Route>
             <Route path={`${path}/base`}>
               <ProjectSettingBase />
             </Route>

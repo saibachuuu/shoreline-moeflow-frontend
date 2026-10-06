@@ -1,3 +1,4 @@
+import { useNotificationCounts } from '@/hooks/useNotificationCounts';
 import { css } from '@emotion/core';
 import { Badge, MenuProps, Slider } from 'antd';
 import classNames from 'classnames';
@@ -68,6 +69,7 @@ export const DashboardMenu: FC<
   const collapsedWidth = MENU_COLLAPSED_WIDTH - 1;
   const uncollapsedWidth = MENU_UNCOLLAPSED_WIDTH - 1;
   const currentUser = useSelector((state: AppState) => state.user);
+  const notificationCounts = useNotificationCounts();
 
   const menuProps = useMenuProps(
     currentUser,
@@ -407,6 +409,12 @@ export const DashboardMenu: FC<
         }}
       />
       <TeamList className="Dashboard__TeamList" />
+      {!isMobile && notificationCounts.enabled && <button
+        type="button" aria-label={formatMessage({ id: 'notification.title' })}
+        title={formatMessage({ id: 'notification.title' })}
+        onClick={() => history.push('/dashboard/notifications')}
+        style={{ flexShrink: 0, padding: '12px 8px', background: 'transparent', color: 'inherit', border: 0, cursor: 'pointer', textAlign: 'center' }}
+      ><Badge count={notificationCounts.total} overflowCount={99}><span style={{ color: 'inherit' }}><Icon icon="bell" />{!collapsed && ` ${formatMessage({ id: 'notification.title' })}`}</span></Badge></button>}
       {!isMobile && (
         // 电脑端底部显示用户菜单，手机版在 TabBar
         <Dropdown

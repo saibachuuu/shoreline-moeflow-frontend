@@ -1,3 +1,4 @@
+import { NotificationWorkspace } from '@/components/notification/NotificationWorkspace';
 import { css, Global } from '@emotion/core';
 import { NavBar as NavBarM } from 'antd-mobile';
 import { Canceler } from 'axios';
@@ -150,6 +151,7 @@ const Dashboard: FC<DashboardProps> = () => {
       '/dashboard/projects',
       '/dashboard/teams',
       '/dashboard/me',
+      '/dashboard/notifications',
     ].includes(location.pathname);
   };
 
@@ -310,6 +312,8 @@ const Dashboard: FC<DashboardProps> = () => {
                 {menu}
               </Route>
             )}
+            {/* Core notification inbox, independent of optional modules. */}
+            <Route path={`${path}/notifications`}><NotificationWorkspace /></Route>
             {/* 主要内容路由 */}
             <Route path={`${path}/projects`}>
               <MyProject />
@@ -351,7 +355,7 @@ const Dashboard: FC<DashboardProps> = () => {
             ))}
           </Switch>
         </div>
-        {isMobile && location.pathname === url + '/teams' && (
+        {isMobile && [url + '/teams', url + '/notifications'].includes(location.pathname) && (
           // dashboard 手机版显示 TabBar
           <TabBarM />
         )}

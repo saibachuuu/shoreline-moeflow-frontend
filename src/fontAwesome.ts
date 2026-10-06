@@ -4,6 +4,7 @@
  */
 import { library } from '@fortawesome/fontawesome-svg-core';
 import {
+  faBell,
   faSyncAlt,
   faBars,
   faSearchMinus,
@@ -67,6 +68,7 @@ import { faKissWinkHeart as faKissWinkHeartRegular } from '@fortawesome/free-reg
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 library.add(
   ...([
+    faBell,
     faSyncAlt,
     faBars,
     faSearchMinus,

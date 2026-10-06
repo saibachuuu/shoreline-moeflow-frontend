@@ -1,0 +1,18 @@
+.NotificationWorkspace .ant-space {
+  max-width: 100%;
+}
+.NotificationWorkspace .ant-space-item {
+  min-width: 0;
+  max-width: 100%;
+}
+.NotificationWorkspace .ant-input-group-wrapper {
+  max-width: 100%;
+}
+.NotificationWorkspace blockquote {
+  margin: 8px 0;
+  padding: 8px 12px;
+  border-left: 3px solid currentColor;
+}
+.NotificationWorkspace .ant-list-item {
+  align-items: flex-start;
+}
