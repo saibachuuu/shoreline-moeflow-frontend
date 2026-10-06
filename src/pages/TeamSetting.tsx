@@ -53,10 +53,10 @@ const TeamSetting: FC<TeamSettingProps> = () => {
 
   const nav = currentTeam && (
     <NavTabs>
-      <NotificationEntry category="team" scopeId={teamID} to={`${url}/notifications`} />
       <NavTab to={`${url}/base`}>
         {formatMessage({ id: 'site.baseSetting' })}
       </NavTab>
+      <NotificationEntry category="team" scopeId={teamID} to={`${url}/notifications`} />
       <NavTab to={`${url}/member`}>
         {formatMessage({ id: 'site.memberSetting' })}
       </NavTab>

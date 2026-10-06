@@ -2886,3 +2886,16 @@ notification.lease_expired:
 notification.transport_interrupted:
   zhCn: SMTP 连接中断
   en: SMTP connection interrupted
+
+notification.inboxHint:
+  zhCn: 查看与你相关的站点、团队与项目消息
+  en: Updates from your site, teams and projects
+notification.managementHint:
+  zhCn: 管理发送记录，或创建一条新通知
+  en: Manage sent notices or create a new announcement
+notification.moreFilters:
+  zhCn: 更多筛选
+  en: More filters
+notification.updatesAvailable:
+  zhCn: 有新消息，点击查看更新
+  en: New messages available — view updates

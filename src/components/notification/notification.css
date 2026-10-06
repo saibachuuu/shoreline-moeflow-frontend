@@ -1,18 +1,309 @@
-.NotificationWorkspace .ant-space {
-  max-width: 100%;
-}
-.NotificationWorkspace .ant-space-item {
+/* Reuse the site's theme variables, spacing and content-title conventions. */
+.NotificationWorkspace {
+  width: 100%;
   min-width: 0;
-  max-width: 100%;
+  max-width: 1040px;
+  padding: 20px 24px 32px;
+  color: var(--text-color);
+  overflow-wrap: anywhere;
 }
+.NotificationWorkspace--scope {
+  max-width: 900px;
+  padding: 15px;
+}
+.NotificationWorkspace__heading {
+  margin-bottom: 22px;
+}
+.NotificationWorkspace__heading .ContentTitle {
+  margin-bottom: 5px;
+}
+.NotificationWorkspace__subtitle {
+  color: var(--text-color-secondary);
+  font-size: 13px;
+}
+.NotificationToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.NotificationToolbar__search {
+  flex: 1;
+  max-width: 360px;
+  min-width: 180px;
+}
+.NotificationToolbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.NotificationToolbar__actions .svg-inline--fa + span {
+  margin-left: 6px;
+}
+.NotificationFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  align-items: center;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color-light);
+}
+.NotificationFilters > .ant-select {
+  min-width: 120px;
+}
+.NotificationFilters .ant-checkbox-wrapper + .ant-checkbox-wrapper {
+  margin-left: 0;
+}
+.NotificationFilters__links {
+  display: flex;
+  gap: 14px;
+  margin-left: auto;
+  font-size: 12px;
+}
+.NotificationFilters__links a {
+  color: var(--text-color-secondary);
+}
+.NotificationFilters__links a:hover {
+  color: var(--primary-color);
+}
+.NotificationFilters__advanced {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border-color-light);
+}
+.NotificationFilters__advanced label {
+  min-width: 0;
+  font-size: 12px;
+  color: var(--text-color-secondary);
+}
+.NotificationFilters__advanced label > .ant-select,
+.NotificationFilters__advanced label > .ant-input {
+  width: 100%;
+  display: block;
+  margin-top: 5px;
+}
+.NotificationWorkspace .ant-alert {
+  margin: 12px 0;
+}
+.NotificationWorkspace .NotificationUpdates {
+  margin: 12px 0 0;
+  border-style: dashed;
+  color: var(--primary-color);
+  background: transparent;
+}
+.NotificationList .ant-list-item {
+  padding: 0;
+  border-bottom: 1px solid var(--border-color-light);
+}
+.NotificationRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 18px 4px;
+  color: var(--text-color);
+}
+.NotificationRow:hover {
+  color: var(--text-color);
+  background: var(--background-color-light);
+}
+.NotificationRow__icon {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-color-light);
+  border-radius: var(--border-radius-base);
+  color: var(--text-color-lightest);
+  background: var(--background-color-light);
+}
+.NotificationRow__main {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+}
+.NotificationRow__title {
+  line-height: 1.6;
+  font-size: 14px;
+}
+.NotificationList__unread .NotificationRow__title {
+  font-weight: 600;
+}
+.NotificationRow__dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  margin-right: 7px;
+  vertical-align: 2px;
+}
+.NotificationRow__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--text-color-secondary);
+  font-size: 12px;
+}
+.NotificationRow__meta > span + span::before {
+  content: '·';
+  padding-right: 8px;
+  color: var(--text-color-secondary-light);
+}
+.NotificationRow__excerpt {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-color-lightest);
+}
+.NotificationRow time {
+  flex: none;
+  font-size: 12px;
+  color: var(--text-color-secondary);
+  padding-top: 3px;
+  white-space: nowrap;
+}
+.NotificationRow__arrow {
+  margin-top: 6px;
+  color: var(--text-color-secondary-light);
+}
+.NotificationList__more {
+  margin-top: 16px;
+}
+.NotificationCompose,
+.NotificationDetail {
+  width: 100%;
+  max-width: 720px;
+}
+.NotificationCompose h4.ant-typography,
+.NotificationDetail h4.ant-typography {
+  font-size: 18px;
+  line-height: 1.6;
+  margin: 22px 0 12px;
+  color: var(--text-color);
+}
+.NotificationCompose .ant-form-item {
+  margin-bottom: 20px;
+}
+.NotificationCompose .ant-form-item-label > label {
+  color: var(--text-color-light);
+}
+.NotificationCompose__dates {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.NotificationDetail__meta {
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--text-color-secondary);
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border-color-light);
+}
+.NotificationDetail pre {
+  padding: 14px;
+  border: 1px solid var(--border-color-light);
+  border-radius: var(--border-radius-base);
+  line-height: 1.8;
+}
+.NotificationPolicy {
+  margin-top: 24px;
+  max-width: 720px;
+  border-top: 1px solid var(--border-color-light) !important;
+}
+.NotificationPolicy .ant-collapse-header {
+  color: var(--text-color-light) !important;
+  padding-left: 0 !important;
+}
+.NotificationPolicy .ant-collapse-content-box {
+  padding-left: 0 !important;
+}
+.NotificationWorkspace .ant-space,
+.NotificationWorkspace .ant-space-item,
 .NotificationWorkspace .ant-input-group-wrapper {
   max-width: 100%;
+  min-width: 0;
 }
 .NotificationWorkspace blockquote {
   margin: 8px 0;
   padding: 8px 12px;
-  border-left: 3px solid currentColor;
+  border-left: 3px solid var(--border-color-base);
 }
-.NotificationWorkspace .ant-list-item {
-  align-items: flex-start;
+@media (max-width: 767px) {
+  .NotificationWorkspace {
+    padding: 15px 15px 24px;
+  }
+  .NotificationWorkspace__heading {
+    margin-bottom: 18px;
+  }
+  .NotificationToolbar {
+    flex-wrap: wrap;
+  }
+  .NotificationToolbar__search {
+    min-width: 100%;
+    max-width: none;
+  }
+  .NotificationToolbar__actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .NotificationToolbar__actions > a {
+    margin-left: auto;
+  }
+  .NotificationFilters {
+    gap: 10px 12px;
+  }
+  .NotificationFilters__links {
+    width: 100%;
+    margin: 2px 0 0;
+  }
+  .NotificationFilters__advanced {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .NotificationRow {
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr) 10px;
+    gap: 5px 10px;
+    padding: 15px 0;
+  }
+  .NotificationRow__icon {
+    width: 28px;
+    height: 28px;
+    grid-row: 1 / 3;
+  }
+  .NotificationRow__main {
+    grid-column: 2;
+  }
+  .NotificationRow time {
+    grid-column: 2;
+    grid-row: 2;
+    font-size: 11px;
+  }
+  .NotificationRow__arrow {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .NotificationCompose__dates {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+}
+@media (max-width: 380px) {
+  .NotificationFilters__advanced {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .NotificationToolbar__actions {
+    gap: 6px;
+  }
+  .NotificationToolbar__actions .ant-btn {
+    padding: 4px 10px;
+  }
 }

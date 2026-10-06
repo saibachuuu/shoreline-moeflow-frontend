@@ -1,7 +1,8 @@
 import './notification.css';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Alert,
+  Collapse,
   Button,
   Checkbox,
   Empty,
@@ -25,10 +26,16 @@ import {
   NoticeInput,
   NotificationCategory,
   Preview,
-  Capabilities,
+  Page,
 } from '@/apis/notification';
 import { request } from '@/apis';
-import { refreshNotifications } from '@/hooks/useNotificationCounts';
+import {
+  refreshNotifications,
+  useNotificationSync,
+} from '@/hooks/useNotificationCounts';
+import { ContentTitle } from '@/components/shared/ContentTitle';
+import { NavTab } from '@/components/shared/NavTab';
+import { Icon } from '@/components/icon';
 import { NotificationContent } from './NotificationContent';
 
 const categories: NotificationCategory[] = ['system', 'team', 'project'];
@@ -61,9 +68,10 @@ export interface WorkspaceProps {
 
 export function NotificationWorkspace(props: WorkspaceProps) {
   const userId = useSelector((s: AppState) => s.user.id);
+  const token = useSelector((s: AppState) => s.user.token);
   return (
     <Workspace
-      key={`${userId}:${props.admin}:${props.category}:${props.scopeId}`}
+      key={`${userId}:${token}:${props.admin}:${props.category}:${props.scopeId}`}
       {...props}
     />
   );
@@ -72,60 +80,40 @@ function Workspace({ admin = false, category, scopeId }: WorkspaceProps) {
   const t = useText();
   const { url } = useRouteMatch();
   const location = useLocation();
-  const [caps, setCaps] = useState<Capabilities>();
-  const [error, setError] = useState('');
+  const [filters, setFilters] = useState<Record<string, unknown>>({});
+  const [advanced, setAdvanced] = useState(false);
   const mode = admin ? 'admin' : category ? 'scope' : 'inbox';
   const segment = location.pathname
     .slice(url.length)
     .split('/')
     .filter(Boolean);
-  useEffect(() => {
-    let controller: AbortController;
-    let active = true;
-    const check = () => {
-      if (document.visibilityState === 'hidden') return;
-      controller?.abort();
-      controller = new AbortController();
-      api
-        .capabilities(category, scopeId, controller.signal)
-        .then((r) => {
-          if (active) {
-            setCaps(r.data);
-            setError('');
-          }
-        })
-        .catch((e) => {
-          if (active && !controller.signal.aborted) {
-            setCaps(undefined);
-            setError(errorText(e));
-          }
-        });
-    };
-    check();
-    const timer = setInterval(check, 60000);
-    window.addEventListener('focus', check);
-    return () => {
-      active = false;
-      controller?.abort();
-      clearInterval(timer);
-      window.removeEventListener('focus', check);
-    };
-  }, [category, scopeId]);
+  const view =
+    segment[0] === 'new' ? 'compose' : segment[0] ? `${mode}_detail` : mode;
+  const sync = useNotificationSync({
+    ...(!segment.length ? filters : {}),
+    view,
+    category: category || filters.category,
+    scope_id: scopeId,
+    notification_id:
+      segment[0] && segment[0] !== 'new' ? segment[0] : undefined,
+    limit: 20,
+  });
+  const caps = sync.pending ? undefined : sync.data?.capabilities;
+  const error = sync.error
+    ? errorText(sync.error)
+    : sync.data?.view_error?.message;
   return (
-    <section
-      className="NotificationWorkspace"
-      style={{
-        padding: 16,
-        width: '100%',
-        maxWidth: 1100,
-        margin: '0 auto',
-        minWidth: 0,
-        overflowWrap: 'anywhere',
-      }}
-    >
-      <Typography.Title level={3}>
-        {t(admin ? 'management' : category ? 'scopeManagement' : 'title')}
-      </Typography.Title>
+    <section className={`NotificationWorkspace NotificationWorkspace--${mode}`}>
+      <header className="NotificationWorkspace__heading">
+        <div role="heading" aria-level={1}>
+          <ContentTitle>
+            {t(admin ? 'management' : category ? 'scopeManagement' : 'title')}
+          </ContentTitle>
+        </div>
+        <span className="NotificationWorkspace__subtitle">
+          {t(mode === 'inbox' ? 'inboxHint' : 'managementHint')}
+        </span>
+      </header>
       {error && <Alert type="error" message={error} showIcon />}
       {!caps ? (
         !error && <Spin />
@@ -145,6 +133,8 @@ function Workspace({ admin = false, category, scopeId }: WorkspaceProps) {
         <NoticeDetail
           key={segment.join('/')}
           id={segment[0]}
+          current={sync.data?.notice}
+          syncError={error}
           mode={mode}
           base={url}
           editing={segment[1] === 'edit'}
@@ -152,6 +142,12 @@ function Workspace({ admin = false, category, scopeId }: WorkspaceProps) {
       ) : (
         <>
           <NoticeList
+            key={JSON.stringify(filters)}
+            page={sync.pending ? undefined : sync.data?.page}
+            advanced={advanced}
+            setAdvanced={setAdvanced}
+            filters={filters}
+            setFilters={setFilters}
             canSend={caps.can_send}
             mode={mode}
             category={category}
@@ -173,150 +169,169 @@ function NoticeList({
   category,
   scopeId,
   base,
+  page,
+  filters,
+  setFilters,
+  advanced,
+  setAdvanced,
 }: {
   canSend: boolean;
+  advanced: boolean;
+  setAdvanced: React.Dispatch<React.SetStateAction<boolean>>;
   mode: 'admin' | 'scope' | 'inbox';
   category?: NotificationCategory;
   scopeId?: string;
   base: string;
+  page?: Page<Notice>;
+  filters: Record<string, unknown>;
+  setFilters: React.Dispatch<React.SetStateAction<Record<string, unknown>>>;
 }) {
   const t = useText();
-  const [filters, setFilters] = useState<Record<string, unknown>>({});
   const [items, setItems] = useState<Notice[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState('');
-  const [refresh, setRefresh] = useState(0);
+  const [pending, setPending] = useState<Page<Notice>>();
   const [prefs, setPrefs] = useState<{
     categories: Record<string, boolean>;
     version: number;
   }>();
-  const abort = useRef<AbortController>();
-  const generation = useRef(0);
-  const load = useCallback(
-    async (after?: string) => {
-      const ticket = ++generation.current;
-      abort.current?.abort();
-      abort.current = new AbortController();
-      setBusy(true);
-      setError('');
-      try {
-        const result = await api.list(
-          mode,
-          {
-            ...filters,
-            category: category || filters.category,
-            scope_id: scopeId,
-            cursor: after,
-            limit: 20,
-          },
-          abort.current.signal,
-        );
-        if (ticket === generation.current) {
-          setItems((old) =>
-            after ? [...old, ...result.data.items] : result.data.items,
-          );
-          setCursor(result.data.next_cursor);
-        }
-      } catch (e) {
-        if (ticket === generation.current) setError(errorText(e));
-      } finally {
-        if (ticket === generation.current) setBusy(false);
-      }
-    },
-    [mode, category, scopeId, filters],
-  );
-  const cancel = useCallback(() => {
-    generation.current += 1;
-    abort.current?.abort();
-  }, []);
+  const applied = useRef<Page<Notice>>();
+  const controller = useRef<AbortController>();
+  useEffect(() => () => controller.current?.abort(), []);
   useEffect(() => {
-    setItems([]);
-    void load();
-    return cancel;
-  }, [load, refresh, cancel]);
-  useEffect(() => {
-    const reload = () => setRefresh((v) => v + 1);
-    window.addEventListener('moeflow-notifications-changed', reload);
-    return () =>
-      window.removeEventListener('moeflow-notifications-changed', reload);
-  }, []);
-  useEffect(() => {
-    const refreshVisible = () => {
-      if (document.visibilityState !== 'hidden')
-        setRefresh((value) => value + 1);
-    };
-    const timer = setInterval(refreshVisible, 30000);
-    window.addEventListener('focus', refreshVisible);
-    return () => {
-      clearInterval(timer);
-      window.removeEventListener('focus', refreshVisible);
-    };
-  }, []);
+    if (!page || page === applied.current) return;
+    if (!applied.current) {
+      setItems(page.items);
+      setCursor(page.next_cursor);
+      setLoaded(true);
+      applied.current = page;
+      return;
+    }
+    // Count/capability updates do not imply that the list changed.
+    if (JSON.stringify(page) === JSON.stringify(applied.current)) return;
+    // Reconcile existing visible rows quietly; don't insert new rows or reset scroll/pagination.
+    const previousIds = new Set(applied.current.items.map((n) => n.id));
+    const fresh = new Map(page.items.map((n) => [n.id, n]));
+    const hasNew = page.items.some((n) => !previousIds.has(n.id));
+    if (hasNew) setPending(page);
+    else setPending(undefined);
+    {
+      setItems((old) =>
+        old
+          .filter((n) => !previousIds.has(n.id) || fresh.has(n.id))
+          .map((n) => fresh.get(n.id) || n),
+      );
+      if (!hasNew) applied.current = page;
+    }
+  }, [page]);
+  const applyPending = () => {
+    if (!pending) return;
+    setItems(pending.items);
+    setCursor(pending.next_cursor);
+    applied.current = pending;
+    setPending(undefined);
+  };
   const filter = (name: string, value: unknown) =>
     setFilters((old) => ({ ...old, [name]: value || undefined }));
+  const loadMore = async () => {
+    if (!cursor || busy) return;
+    const abort = new AbortController();
+    controller.current = abort;
+    setBusy(true);
+    setError('');
+    try {
+      const r = await api.list(
+        mode,
+        {
+          ...filters,
+          category: category || filters.category,
+          scope_id: scopeId,
+          cursor,
+          limit: 20,
+        },
+        abort.signal,
+      );
+      if (!abort.signal.aborted) {
+        setItems((old) => [
+          ...old,
+          ...r.data.items.filter((n) => !old.some((o) => o.id === n.id)),
+        ]);
+        setCursor(r.data.next_cursor);
+      }
+    } catch (e) {
+      if (!abort.signal.aborted) setError(errorText(e));
+    } finally {
+      if (!abort.signal.aborted) setBusy(false);
+    }
+  };
   return (
     <>
-      <Space wrap style={{ marginBottom: 16 }}>
-        {mode !== 'inbox' && canSend && (
-          <Link to={`${base}/new`}>
-            <Button type="primary">
-              {t(mode === 'admin' ? 'sendSystem' : 'send')}
-            </Button>
-          </Link>
-        )}
-        <Button onClick={() => setRefresh((v) => v + 1)}>{t('refresh')}</Button>
-        {mode === 'inbox' && (
-          <>
-            <Button
-              onClick={async () => {
-                try {
-                  await api.markRead(filters.category as string | undefined);
-                  refreshNotifications();
-                } catch (e) {
-                  setError(errorText(e));
-                }
-              }}
-            >
-              {t('markAllRead')}
-            </Button>
-            <Button
-              onClick={async () => {
-                try {
-                  setPrefs((await api.preferences()).data);
-                } catch (e) {
-                  setError(errorText(e));
-                }
-              }}
-            >
-              {t('preferences')}
-            </Button>
-          </>
-        )}
-      </Space>
-      {mode === 'inbox' && (
-        <p>
-          <Link to="/dashboard/user/invitations">{t('invitations')}</Link> ·{' '}
-          <Link to="/dashboard/user/related-applications">
-            {t('applications')}
-          </Link>
-        </p>
-      )}
-      <Space wrap style={{ marginBottom: 16 }}>
+      <div className="NotificationToolbar">
         <Input.Search
+          className="NotificationToolbar__search"
+          allowClear
+          defaultValue={filters.q as string}
           aria-label={t('search')}
           placeholder={t('search')}
-          allowClear
-          onSearch={(value) => filter('q', value)}
-          style={{ width: 240, maxWidth: '100%' }}
+          onSearch={(value) => filter('q', value.trim())}
         />
+        <div className="NotificationToolbar__actions">
+          <Button
+            aria-label={t('refresh')}
+            title={t('refresh')}
+            onClick={() => {
+              applyPending();
+              refreshNotifications();
+            }}
+            icon={<Icon icon="sync-alt" />}
+          />
+          {mode === 'inbox' ? (
+            <>
+              <Button
+                onClick={async () => {
+                  try {
+                    await api.markRead(filters.category as string | undefined);
+                    refreshNotifications();
+                  } catch (e) {
+                    setError(errorText(e));
+                  }
+                }}
+              >
+                {t('markAllRead')}
+              </Button>
+              <Button
+                onClick={async () => {
+                  try {
+                    setPrefs((await api.preferences()).data);
+                  } catch (e) {
+                    setError(errorText(e));
+                  }
+                }}
+              >
+                {t('preferences')}
+              </Button>
+            </>
+          ) : (
+            canSend && (
+              <Link to={`${base}/new`}>
+                <Button type="primary" icon={<Icon icon="plus" />}>
+                  {t(mode === 'admin' ? 'sendSystem' : 'send')}
+                </Button>
+              </Link>
+            )
+          )}
+        </div>
+      </div>
+      <div className="NotificationFilters">
         {!category && (
           <Select
+            allowClear
             aria-label={t('category')}
             placeholder={t('category')}
-            style={{ width: 140 }}
-            allowClear
-            onChange={(value) => filter('category', value)}
+            value={filters.category as string}
+            onChange={(v) => filter('category', v)}
             options={categories.map((value) => ({ value, label: t(value) }))}
           />
         )}
@@ -342,10 +357,10 @@ function NoticeList({
         ) : (
           <>
             <Select
+              allowClear
               aria-label={t('state')}
               placeholder={t('state')}
-              allowClear
-              style={{ width: 150 }}
+              value={filters.state as string}
               onChange={(v) => filter('state', v)}
               options={[
                 'draft',
@@ -357,6 +372,7 @@ function NoticeList({
               ].map((value) => ({ value, label: t(value) }))}
             />
             <Checkbox
+              checked={filters.revoked === 'true'}
               onChange={(e) =>
                 filter('revoked', e.target.checked ? 'true' : undefined)
               }
@@ -365,94 +381,159 @@ function NoticeList({
             </Checkbox>
           </>
         )}
-      </Space>
-      {mode === 'admin' && (
-        <Space wrap style={{ marginBottom: 16 }}>
-          <Select
-            style={{ width: 160 }}
-            allowClear
-            aria-label={t('emailStatus')}
-            placeholder={t('emailStatus')}
-            onChange={(value) => filter('delivery_state', value)}
-            options={[
-              'pending',
-              'leased',
-              'accepted',
-              'retry_wait',
-              'skipped',
-              'failed',
-              'unknown',
-              'cancelled',
-            ].map((value) => ({ value, label: t(value) }))}
-          />
+        {mode === 'admin' && (
+          <Button type="text" onClick={() => setAdvanced(!advanced)}>
+            {t('moreFilters')}{' '}
+            <Icon icon={advanced ? 'caret-up' : 'caret-down'} />
+          </Button>
+        )}
+        {mode === 'inbox' && (
+          <span className="NotificationFilters__links">
+            <Link to="/dashboard/user/invitations">{t('invitations')}</Link>
+            <Link to="/dashboard/user/related-applications">
+              {t('applications')}
+            </Link>
+          </span>
+        )}
+      </div>
+      {mode === 'admin' && advanced && (
+        <div className="NotificationFilters__advanced">
+          <label>
+            {t('emailStatus')}
+            <Select
+              allowClear
+              value={filters.delivery_state as string}
+              onChange={(v) => filter('delivery_state', v)}
+              options={[
+                'pending',
+                'leased',
+                'accepted',
+                'retry_wait',
+                'skipped',
+                'failed',
+                'unknown',
+                'cancelled',
+              ].map((value) => ({ value, label: t(value) }))}
+            />
+          </label>
+          {['team_id', 'project_id', 'actor_id', 'source', 'event_type'].map(
+            (name) => (
+              <label key={name}>
+                {t(name)}
+                <Input
+                  defaultValue={filters[name] as string}
+                  aria-label={t(name)}
+                  onPressEnter={(e) => filter(name, e.currentTarget.value)}
+                  onBlur={(e) => {
+                    if (e.target.value !== (filters[name] || ''))
+                      filter(name, e.target.value);
+                  }}
+                />
+              </label>
+            ),
+          )}
+          {['from', 'to'].map((name) => (
+            <label key={name}>
+              {t(name)}
+              <Input
+                type="datetime-local"
+                aria-label={t(name)}
+                onChange={(e) =>
+                  filter(
+                    name,
+                    e.target.value
+                      ? new Date(e.target.value).toISOString()
+                      : undefined,
+                  )
+                }
+              />
+            </label>
+          ))}
           <Checkbox
+            checked={filters.expired === 'true'}
             onChange={(e) =>
               filter('expired', e.target.checked ? 'true' : undefined)
             }
           >
             {t('expired')}
           </Checkbox>
-          {['team_id', 'project_id', 'actor_id', 'source', 'event_type'].map(
-            (name) => (
-              <Input
-                key={name}
-                placeholder={t(name)}
-                aria-label={t(name)}
-                style={{ width: 180 }}
-                onBlur={(e) => filter(name, e.target.value)}
-              />
-            ),
-          )}
-          <Input
-            type="datetime-local"
-            aria-label={t('from')}
-            onChange={(e) =>
-              filter(
-                'from',
-                e.target.value ? new Date(e.target.value).toISOString() : '',
-              )
-            }
-          />
-          <Input
-            type="datetime-local"
-            aria-label={t('to')}
-            onChange={(e) =>
-              filter(
-                'to',
-                e.target.value ? new Date(e.target.value).toISOString() : '',
-              )
-            }
-          />
-        </Space>
+        </div>
       )}
       {error && <Alert type="error" message={error} showIcon />}
+      {pending && (
+        <Button className="NotificationUpdates" block onClick={applyPending}>
+          {t('updatesAvailable')}
+        </Button>
+      )}
       <List
-        loading={busy}
+        className="NotificationList"
+        loading={!loaded}
         dataSource={items}
-        locale={{ emptyText: <Empty description={t('empty')} /> }}
+        locale={{
+          emptyText: (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={t('empty')}
+            />
+          ),
+        }}
         renderItem={(item) => (
-          <List.Item key={item.id}>
-            <div style={{ minWidth: 0, width: '100%' }}>
-              <Space wrap>
-                <Tag>{t(item.category)}</Tag>
-                <Tag>{t(item.revoked_at ? 'revoked' : item.state)}</Tag>
-                {mode === 'inbox' && !item.read && (
-                  <Tag color="blue">{t('unread')}</Tag>
+          <List.Item
+            key={item.id}
+            className={
+              mode === 'inbox' && !item.read ? 'NotificationList__unread' : ''
+            }
+          >
+            <Link className="NotificationRow" to={`${base}/${item.id}`}>
+              <span className="NotificationRow__icon">
+                <Icon
+                  icon={
+                    item.category === 'project'
+                      ? 'book'
+                      : item.category === 'team'
+                        ? 'home'
+                        : 'bell'
+                  }
+                />
+              </span>
+              <span className="NotificationRow__main">
+                <span className="NotificationRow__title">
+                  {mode === 'inbox' && !item.read && (
+                    <span
+                      className="NotificationRow__dot"
+                      aria-label={t('unread')}
+                    />
+                  )}
+                  {item.title}
+                </span>
+                {item.excerpt && (
+                  <span className="NotificationRow__excerpt">
+                    {item.excerpt}
+                  </span>
                 )}
-              </Space>
-              <div>
-                <Link to={`${base}/${item.id}`}>{item.title}</Link>
-              </div>
-              {item.excerpt && <p>{item.excerpt}</p>}
-              <Typography.Text type="secondary">
-                {item.actor_name} · {new Date(item.created_at).toLocaleString()}
-              </Typography.Text>
-            </div>
+                <span className="NotificationRow__meta">
+                  <span>{item.actor_name}</span>
+                  <span>{t(item.category)}</span>
+                  {(mode !== 'inbox' || item.state !== 'published') && (
+                    <span>{t(item.revoked_at ? 'revoked' : item.state)}</span>
+                  )}
+                </span>
+              </span>
+              <time dateTime={item.created_at}>
+                {new Date(item.created_at).toLocaleString()}
+              </time>
+              <Icon className="NotificationRow__arrow" icon="angle-right" />
+            </Link>
           </List.Item>
         )}
       />
       {cursor && (
-        <Button loading={busy} onClick={() => void load(cursor)}>
+        <Button
+          className="NotificationList__more"
+          block
+          loading={busy}
+          onClick={() => void loadMore()}
+        >
           {t('loadMore')}
         </Button>
       )}
@@ -468,7 +549,6 @@ function NoticeList({
             refreshNotifications();
           } catch (e) {
             setError(errorText(e));
-            setPrefs(undefined);
           }
         }}
       >
@@ -496,11 +576,15 @@ function NoticeList({
 
 function NoticeDetail({
   id,
+  current,
+  syncError,
   mode,
   base,
   editing,
 }: {
   id: string;
+  current?: Notice;
+  syncError?: string;
   mode: 'admin' | 'scope' | 'inbox';
   base: string;
   editing: boolean;
@@ -510,48 +594,29 @@ function NoticeDetail({
   const userId = useSelector((s: AppState) => s.user.id);
   const [note, setNote] = useState<Notice>();
   const [error, setError] = useState('');
-  const [reload, setReload] = useState(0);
   const [confirm, setConfirm] = useState(false);
   const [reason, setReason] = useState('');
   const [busy, setBusy] = useState(false);
   const operation = useRef(api.operationKey());
+  const readRequested = useRef(false);
   useEffect(() => {
-    const abort = new AbortController();
-    let active = true;
-    setNote(undefined);
-    setError('');
-    api
-      .detail(id, mode, abort.signal)
-      .then(async (r) => {
-        if (!active) return;
-        setNote(r.data);
-        if (mode === 'inbox' && !r.data.read) {
-          await api.receipt(id, { read: true });
-          if (active) refreshNotifications();
-        }
-      })
-      .catch((e) => {
-        if (active) setError(errorText(e));
-      });
-    return () => {
-      active = false;
-      abort.abort();
-    };
-  }, [id, mode, reload]);
-  useEffect(() => {
-    if (!note || note.revoked_at) return;
-    const preparing = ['preparing', 'dispatching'].includes(note.state);
-    const refreshVisible = () => {
-      if (document.visibilityState !== 'hidden')
-        setReload((value) => value + 1);
-    };
-    const timer = setInterval(refreshVisible, preparing ? 5000 : 30000);
-    window.addEventListener('focus', refreshVisible);
-    return () => {
-      clearInterval(timer);
-      window.removeEventListener('focus', refreshVisible);
-    };
-  }, [note]);
+    setNote(current);
+    if (
+      current &&
+      mode === 'inbox' &&
+      !current.read &&
+      !readRequested.current
+    ) {
+      readRequested.current = true;
+      api
+        .receipt(id, { read: true })
+        .then(refreshNotifications)
+        .catch((e) => {
+          readRequested.current = false;
+          setError(errorText(e));
+        });
+    }
+  }, [current, id, mode]);
   const canEdit =
     note &&
     note.actor_id === userId &&
@@ -569,13 +634,13 @@ function NoticeDetail({
       />
     );
   return (
-    <>
+    <div className="NotificationDetail">
       <Space wrap>
         <Button onClick={() => history.push(base)}>{t('back')}</Button>
         <Button
           onClick={() => {
             setConfirm(false);
-            setReload((v) => v + 1);
+            refreshNotifications();
           }}
         >
           {t('refresh')}
@@ -583,11 +648,13 @@ function NoticeDetail({
       </Space>
       {error && <Alert type="error" message={error} showIcon />}
       {!note ? (
-        !error && <Spin />
+        !error && !syncError && <Spin />
       ) : (
         <>
-          <Typography.Title level={4}>{note.title}</Typography.Title>
-          <p>
+          <Typography.Title className="NotificationDetail__title" level={4}>
+            {note.title}
+          </Typography.Title>
+          <p className="NotificationDetail__meta">
             {note.actor_name} · {new Date(note.created_at).toLocaleString()} ·{' '}
             {t(note.category)} · {t(note.revoked_at ? 'revoked' : note.state)}
           </p>
@@ -737,7 +804,7 @@ function NoticeDetail({
           </Modal>
         </>
       )}
-    </>
+    </div>
   );
 }
 
@@ -892,7 +959,7 @@ function Compose({
     />
   );
   return (
-    <>
+    <div className="NotificationCompose">
       <Button onClick={() => history.push(base)}>{t('back')}</Button>
       <Typography.Title level={4}>
         {t(admin ? 'sendSystem' : 'send')}
@@ -1056,35 +1123,37 @@ function Compose({
           </Checkbox>
           <p>{t('emailHint')}</p>
         </Form.Item>
-        <Form.Item label={t('schedule')}>
-          <Input
-            type="datetime-local"
-            onChange={(e) =>
-              update({
-                publish_at: e.target.value
-                  ? new Date(e.target.value).toISOString()
-                  : null,
-              })
-            }
-          />
-          <small>
-            {data.publish_at
-              ? new Date(data.publish_at).toLocaleString()
-              : t('immediate')}
-          </small>
-        </Form.Item>
-        <Form.Item label={t('expires')}>
-          <Input
-            type="datetime-local"
-            onChange={(e) =>
-              update({
-                expires_at: e.target.value
-                  ? new Date(e.target.value).toISOString()
-                  : null,
-              })
-            }
-          />
-        </Form.Item>
+        <div className="NotificationCompose__dates">
+          <Form.Item label={t('schedule')}>
+            <Input
+              type="datetime-local"
+              onChange={(e) =>
+                update({
+                  publish_at: e.target.value
+                    ? new Date(e.target.value).toISOString()
+                    : null,
+                })
+              }
+            />
+            <small>
+              {data.publish_at
+                ? new Date(data.publish_at).toLocaleString()
+                : t('immediate')}
+            </small>
+          </Form.Item>
+          <Form.Item label={t('expires')}>
+            <Input
+              type="datetime-local"
+              onChange={(e) =>
+                update({
+                  expires_at: e.target.value
+                    ? new Date(e.target.value).toISOString()
+                    : null,
+                })
+              }
+            />
+          </Form.Item>
+        </div>
         <Space wrap>
           <Button type="primary" htmlType="submit" loading={busy}>
             {t('preview')}
@@ -1179,7 +1248,7 @@ function Compose({
           }}
         />
       </Modal>
-    </>
+    </div>
   );
 }
 
@@ -1206,47 +1275,48 @@ function TeamPolicy({ id }: { id: string }) {
     };
   }, [id]);
   return (
-    <section style={{ marginTop: 28 }}>
-      <Typography.Title level={4}>{t('policy')}</Typography.Title>
-      {error && <Alert type="error" message={error} />}
-      {policy && (
-        <>
-          <p>
-            <Checkbox
-              checked={policy.team_admin}
-              onChange={(e) =>
-                setPolicy({ ...policy, team_admin: e.target.checked })
-              }
+    <Collapse ghost className="NotificationPolicy">
+      <Collapse.Panel header={t('policy')} key="policy">
+        {error && <Alert type="error" message={error} />}
+        {policy && (
+          <>
+            <p>
+              <Checkbox
+                checked={policy.team_admin}
+                onChange={(e) =>
+                  setPolicy({ ...policy, team_admin: e.target.checked })
+                }
+              >
+                {t('allowTeamAdmin')}
+              </Checkbox>
+            </p>
+            <p>
+              <Checkbox
+                checked={policy.project_admin}
+                onChange={(e) =>
+                  setPolicy({ ...policy, project_admin: e.target.checked })
+                }
+              >
+                {t('allowProjectAdmin')}
+              </Checkbox>
+            </p>
+            <Button
+              onClick={async () => {
+                try {
+                  await api.savePolicy(id, policy);
+                  setPolicy((await api.policy(id)).data);
+                  setError('');
+                } catch (e) {
+                  setError(errorText(e));
+                }
+              }}
             >
-              {t('allowTeamAdmin')}
-            </Checkbox>
-          </p>
-          <p>
-            <Checkbox
-              checked={policy.project_admin}
-              onChange={(e) =>
-                setPolicy({ ...policy, project_admin: e.target.checked })
-              }
-            >
-              {t('allowProjectAdmin')}
-            </Checkbox>
-          </p>
-          <Button
-            onClick={async () => {
-              try {
-                await api.savePolicy(id, policy);
-                setPolicy((await api.policy(id)).data);
-                setError('');
-              } catch (e) {
-                setError(errorText(e));
-              }
-            }}
-          >
-            {t('save')}
-          </Button>
-        </>
-      )}
-    </section>
+              {t('save')}
+            </Button>
+          </>
+        )}
+      </Collapse.Panel>
+    </Collapse>
   );
 }
 
@@ -1277,9 +1347,5 @@ export function NotificationEntry({
       controller.abort();
     };
   }, [category, scopeId, userId]);
-  return allowed ? (
-    <Link to={to}>
-      <Button>{t('scopeManagement')}</Button>
-    </Link>
-  ) : null;
+  return allowed ? <NavTab to={to}>{t('scopeManagement')}</NavTab> : null;
 }

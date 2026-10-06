@@ -1,4 +1,4 @@
-import { NotificationWorkspace } from '@/components/notification/NotificationWorkspace';
+import { NotificationEntry, NotificationWorkspace } from '@/components/notification/NotificationWorkspace';
 import { css } from '@emotion/core';
 import { useIntl } from 'react-intl';
 import { useSelector } from 'react-redux';
@@ -66,6 +66,7 @@ const ProjectSetting: FC<ProjectSettingProps> = ({ project }) => {
       <NavTab to={`${url}/base`}>
         {formatMessage({ id: 'site.baseSetting' })}
       </NavTab>
+      <NotificationEntry category="project" scopeId={currentProject.id} to={`${url}/notifications`} />
       {!isCompleted && (
         <>
           <NavTab to={`${url}/member`}>

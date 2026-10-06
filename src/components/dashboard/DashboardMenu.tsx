@@ -94,6 +94,7 @@ export const DashboardMenu: FC<
         css`
           width: 100%;
         `};
+        .Dashboard__NotificationLabel { display: flex; align-items: center; gap: 10px; }
         .Dashboard__ListItem {
           &.Dashboard__MenuOption {
             .ListItem__Top {
@@ -372,6 +373,15 @@ export const DashboardMenu: FC<
             logo={<Icon className="ListItem__LogoIcon" icon="book"></Icon>}
             name={formatMessage({ id: 'site.myProjects' })}
           />
+          {notificationCounts.enabled && (
+            <ListItem
+              onClick={() => history.push('/dashboard/notifications')}
+              active={matchPath(location.pathname, { path: '/dashboard/notifications' }) !== null}
+              className="Dashboard__ListItem Dashboard__MenuOption Dashboard__MenuOption--system"
+              logo={<Badge dot={collapsed && notificationCounts.total > 0}><Icon className="ListItem__LogoIcon" icon="bell" /></Badge>}
+              name={<span className="Dashboard__NotificationLabel">{formatMessage({ id: 'notification.title' })}<Badge count={notificationCounts.total} overflowCount={99} /></span>}
+            />
+          )}
           {/* 可选模块贡献的菜单项。零模块时 moduleMenuItems 为空。 */}
           {moduleMenuItems.map((item) => (
             <ListItem
@@ -409,12 +419,7 @@ export const DashboardMenu: FC<
         }}
       />
       <TeamList className="Dashboard__TeamList" />
-      {!isMobile && notificationCounts.enabled && <button
-        type="button" aria-label={formatMessage({ id: 'notification.title' })}
-        title={formatMessage({ id: 'notification.title' })}
-        onClick={() => history.push('/dashboard/notifications')}
-        style={{ flexShrink: 0, padding: '12px 8px', background: 'transparent', color: 'inherit', border: 0, cursor: 'pointer', textAlign: 'center' }}
-      ><Badge count={notificationCounts.total} overflowCount={99}><span style={{ color: 'inherit' }}><Icon icon="bell" />{!collapsed && ` ${formatMessage({ id: 'notification.title' })}`}</span></Badge></button>}
+
       {!isMobile && (
         // 电脑端底部显示用户菜单，手机版在 TabBar
         <Dropdown
