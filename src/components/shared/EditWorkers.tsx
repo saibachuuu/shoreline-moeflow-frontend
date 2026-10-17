@@ -309,17 +309,12 @@ export const EditWorkers = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [teamId, activeQuery]);
 
-  // Editable draft members holding a role, for the full panel's member list.
+  // Members holding a role, for the panel's member list.
   const draftForRole = (roleKey: string) =>
     draft.filter(
       (member) =>
         member.status !== 'removed' &&
-        member.tags.includes(roleKey) &&
-        canEditProjectMemberInQuickMenu(
-          member,
-          currentUserId,
-          canManageMembers,
-        ),
+        member.tags.includes(roleKey),
     );
 
   const selfMember = draft.find((member) => member.userId === currentUserId);
@@ -1680,14 +1675,20 @@ export const EditWorkers = ({
                                   })}
                                 </span>
                               )}
-                              <span
-                                className="EditWorkersSimple__ChipRemove"
-                                onClick={() => removeRole(member, roleKey)}
-                                role="button"
-                                tabIndex={0}
-                              >
-                                <Icon icon="times" />
-                              </span>
+                              {canEditProjectMemberInQuickMenu(
+                                member,
+                                currentUserId,
+                                canManageMembers,
+                              ) && (
+                                <span
+                                  className="EditWorkersSimple__ChipRemove"
+                                  onClick={() => removeRole(member, roleKey)}
+                                  role="button"
+                                  tabIndex={0}
+                                >
+                                  <Icon icon="times" />
+                                </span>
+                              )}
                             </span>
                           );
                         })}
@@ -1950,12 +1951,18 @@ export const EditWorkers = ({
                             </span>
                           </Tooltip>
                         )}
-                        <span
-                          className="EditWorkers__Remove"
-                          onClick={() => removeRole(member, role)}
-                        >
-                          <Icon icon="times" />
-                        </span>
+                        {canEditProjectMemberInQuickMenu(
+                          member,
+                          currentUserId,
+                          canManageMembers,
+                        ) && (
+                          <span
+                            className="EditWorkers__Remove"
+                            onClick={() => removeRole(member, role)}
+                          >
+                            <Icon icon="times" />
+                          </span>
+                        )}
                       </span>
                     </div>
                   );
