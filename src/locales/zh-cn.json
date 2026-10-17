@@ -792,6 +792,8 @@
   "fileList.order.continue": "继续编辑",
   "toolbar.tapAgain": "再次点击执行",
   "notification.title": "通知",
+  "notification.tabNotices": "消息通知",
+  "notification.tabInvitations": "收到的邀请",
   "notification.management": "全站消息管理",
   "notification.scopeManagement": "通知管理",
   "notification.disabled": "通知系统尚未启用",

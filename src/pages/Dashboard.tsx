@@ -21,7 +21,6 @@ import {
   Icon,
   TabBarM,
 } from '../components';
-import { UserInvitationList } from '@/components';
 import { APPLICATION_STATUS } from '@/constants';
 import { INVITATION_STATUS } from '@/constants';
 import { FC } from '@/interfaces';
@@ -313,7 +312,9 @@ const Dashboard: FC<DashboardProps> = () => {
               </Route>
             )}
             {/* Core notification inbox, independent of optional modules. */}
-            <Route path={`${path}/notifications`}><NotificationWorkspace /></Route>
+            <Route path={`${path}/notifications`}>
+              <NotificationWorkspace />
+            </Route>
             {/* 主要内容路由 */}
             <Route path={`${path}/projects`}>
               <MyProject />
@@ -324,9 +325,10 @@ const Dashboard: FC<DashboardProps> = () => {
             <Route path={`${path}/user/setting`}>
               <UserSetting />
             </Route>
-            <Route path={`${path}/user/invitations`}>
-              <UserInvitationList />
-            </Route>
+            <Redirect
+              from={`${path}/user/invitations`}
+              to={`${path}/notifications/invitations`}
+            />
             <Route path={`${path}/user/related-applications`}>
               <ApplicationList type="related" />
             </Route>
@@ -355,10 +357,13 @@ const Dashboard: FC<DashboardProps> = () => {
             ))}
           </Switch>
         </div>
-        {isMobile && [url + '/teams', url + '/notifications'].includes(location.pathname) && (
-          // dashboard 手机版显示 TabBar
-          <TabBarM />
-        )}
+        {isMobile &&
+          [url + '/teams', url + '/notifications'].includes(
+            location.pathname,
+          ) && (
+            // dashboard 手机版显示 TabBar
+            <TabBarM />
+          )}
         {!isMobile && <div className="Dashboard__CollapsibleMenuShade"></div>}
       </div>
     </>

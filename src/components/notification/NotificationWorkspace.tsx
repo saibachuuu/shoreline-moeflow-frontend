@@ -1,7 +1,9 @@
 import './notification.css';
 import React, { useEffect, useRef, useState } from 'react';
+import { css } from '@emotion/core';
 import {
   Alert,
+  Badge,
   Collapse,
   Button,
   Checkbox,
@@ -35,6 +37,8 @@ import {
 } from '@/hooks/useNotificationCounts';
 import { ContentTitle } from '@/components/shared/ContentTitle';
 import { NavTab } from '@/components/shared/NavTab';
+import { NavTabs } from '@/components/shared/NavTabs';
+import { UserInvitationList } from '@/components';
 import { Icon } from '@/components/icon';
 import { NotificationContent } from './NotificationContent';
 
@@ -80,6 +84,9 @@ function Workspace({ admin = false, category, scopeId }: WorkspaceProps) {
   const t = useText();
   const { url } = useRouteMatch();
   const location = useLocation();
+  const newInvitationsCount = useSelector(
+    (state: AppState) => state.site.newInvitationsCount,
+  );
   const [filters, setFilters] = useState<Record<string, unknown>>({});
   const [advanced, setAdvanced] = useState(false);
   const mode = admin ? 'admin' : category ? 'scope' : 'inbox';
@@ -87,15 +94,22 @@ function Workspace({ admin = false, category, scopeId }: WorkspaceProps) {
     .slice(url.length)
     .split('/')
     .filter(Boolean);
+  const isInvitations = mode === 'inbox' && segment[0] === 'invitations';
   const view =
-    segment[0] === 'new' ? 'compose' : segment[0] ? `${mode}_detail` : mode;
+    segment[0] === 'new'
+      ? 'compose'
+      : segment[0] && !isInvitations
+        ? `${mode}_detail`
+        : mode;
   const sync = useNotificationSync({
     ...(!segment.length ? filters : {}),
     view,
     category: category || filters.category,
     scope_id: scopeId,
     notification_id:
-      segment[0] && segment[0] !== 'new' ? segment[0] : undefined,
+      segment[0] && segment[0] !== 'new' && !isInvitations
+        ? segment[0]
+        : undefined,
     limit: 20,
   });
   const caps = sync.pending ? undefined : sync.data?.capabilities;
@@ -114,6 +128,38 @@ function Workspace({ admin = false, category, scopeId }: WorkspaceProps) {
           {t(mode === 'inbox' ? 'inboxHint' : 'managementHint')}
         </span>
       </header>
+      {mode === 'inbox' && (
+        <NavTabs
+          css={css`
+            margin-bottom: 20px;
+          `}
+        >
+          <NavTab to={url} exact>
+            {t('tabNotices')}
+            {sync.data?.counts?.total ? (
+              <Badge
+                css={css`
+                  margin-left: 8px;
+                `}
+                count={sync.data.counts.total}
+                size="small"
+              />
+            ) : null}
+          </NavTab>
+          <NavTab to={`${url}/invitations`}>
+            {t('tabInvitations')}
+            {newInvitationsCount > 0 && (
+              <Badge
+                css={css`
+                  margin-left: 8px;
+                `}
+                count={newInvitationsCount}
+                size="small"
+              />
+            )}
+          </NavTab>
+        </NavTabs>
+      )}
       {error && <Alert type="error" message={error} showIcon />}
       {!caps ? (
         !error && <Spin />
@@ -129,6 +175,8 @@ function Workspace({ admin = false, category, scopeId }: WorkspaceProps) {
           scopeId={scopeId}
           base={url}
         />
+      ) : isInvitations ? (
+        <UserInvitationList />
       ) : segment[0] ? (
         <NoticeDetail
           key={segment.join('/')}
@@ -389,7 +437,6 @@ function NoticeList({
         )}
         {mode === 'inbox' && (
           <span className="NotificationFilters__links">
-            <Link to="/dashboard/user/invitations">{t('invitations')}</Link>
             <Link to="/dashboard/user/related-applications">
               {t('applications')}
             </Link>

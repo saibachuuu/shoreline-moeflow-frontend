@@ -2416,6 +2416,14 @@ notification.title:
   zhCn: "通知"
   en: "Notifications"
 
+notification.tabNotices:
+  zhCn: "消息通知"
+  en: "Notices"
+
+notification.tabInvitations:
+  zhCn: "收到的邀请"
+  en: "Invitations"
+
 notification.management:
   zhCn: "全站消息管理"
   en: "Site-wide messages"

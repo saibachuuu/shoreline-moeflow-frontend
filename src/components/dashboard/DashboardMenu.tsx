@@ -71,11 +71,7 @@ export const DashboardMenu: FC<
   const currentUser = useSelector((state: AppState) => state.user);
   const notificationCounts = useNotificationCounts();
 
-  const menuProps = useMenuProps(
-    currentUser,
-    newInvitationsCount,
-    relatedApplicationsCount,
-  );
+  const menuProps = useMenuProps(currentUser, relatedApplicationsCount);
 
   return (
     <div
@@ -94,7 +90,11 @@ export const DashboardMenu: FC<
         css`
           width: 100%;
         `};
-        .Dashboard__NotificationLabel { display: flex; align-items: center; gap: 10px; }
+        .Dashboard__NotificationLabel {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
         .Dashboard__ListItem {
           &.Dashboard__MenuOption {
             .ListItem__Top {
@@ -376,10 +376,31 @@ export const DashboardMenu: FC<
           {notificationCounts.enabled && (
             <ListItem
               onClick={() => history.push('/dashboard/notifications')}
-              active={matchPath(location.pathname, { path: '/dashboard/notifications' }) !== null}
+              active={
+                matchPath(location.pathname, {
+                  path: '/dashboard/notifications',
+                }) !== null
+              }
               className="Dashboard__ListItem Dashboard__MenuOption Dashboard__MenuOption--system"
-              logo={<Badge dot={collapsed && notificationCounts.total > 0}><Icon className="ListItem__LogoIcon" icon="bell" /></Badge>}
-              name={<span className="Dashboard__NotificationLabel">{formatMessage({ id: 'notification.title' })}<Badge count={notificationCounts.total} overflowCount={99} /></span>}
+              logo={
+                <Badge
+                  dot={
+                    collapsed &&
+                    notificationCounts.total + newInvitationsCount > 0
+                  }
+                >
+                  <Icon className="ListItem__LogoIcon" icon="bell" />
+                </Badge>
+              }
+              name={
+                <span className="Dashboard__NotificationLabel">
+                  {formatMessage({ id: 'notification.title' })}
+                  <Badge
+                    count={notificationCounts.total + newInvitationsCount}
+                    overflowCount={99}
+                  />
+                </span>
+              }
             />
           )}
           {/* 可选模块贡献的菜单项。零模块时 moduleMenuItems 为空。 */}
@@ -436,7 +457,7 @@ export const DashboardMenu: FC<
                   className="TeamList__Avatar"
                   size={37}
                   type="user"
-                  dot={newInvitationsCount > 0 || relatedApplicationsCount > 0}
+                  dot={relatedApplicationsCount > 0}
                   url={currentUser.avatar}
                 />
               }
@@ -451,7 +472,6 @@ export const DashboardMenu: FC<
 
 function useMenuProps(
   currentUser: UserState,
-  newInvitationsCount: number,
   relatedApplicationsCount: number,
 ): MenuProps {
   const { formatMessage } = useIntl();
@@ -501,21 +521,6 @@ function useMenuProps(
           </a>
         ),
         key: 'auth.accountSetting',
-      },
-      {
-        label: (
-          <a css={buttonStyle} href={routes.dashboard.user.invitations}>
-            {formatMessage({ id: 'me.invitation.new' })}
-            {newInvitationsCount > 0 && (
-              <Badge
-                css={badgeStyle}
-                count={newInvitationsCount}
-                size="small"
-              ></Badge>
-            )}
-          </a>
-        ),
-        key: 'me.invitation.new',
       },
       {
         label: (

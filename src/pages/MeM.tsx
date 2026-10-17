@@ -26,9 +26,6 @@ const MeM: FC<MeMProps> = () => {
   useTitle(); // 设置标题
   const platform = useSelector((state: AppState) => state.site.platform);
   const isMobile = platform === 'mobile';
-  const newInvitationsCount = useSelector(
-    (state: AppState) => state.site.newInvitationsCount,
-  );
   const relatedApplicationsCount = useSelector(
     (state: AppState) => state.site.relatedApplicationsCount,
   );
@@ -111,22 +108,6 @@ const MeM: FC<MeMProps> = () => {
           }}
         >
           {formatMessage({ id: 'auth.accountSetting' })}
-        </Button>
-        <Button
-          className="MeM__Button"
-          color={style.textColor}
-          onClick={() => {
-            history.push('/dashboard/user/invitations');
-          }}
-        >
-          {formatMessage({ id: 'me.invitation.new' })}
-          {newInvitationsCount > 0 && (
-            <Badge
-              className="MeM__Badge"
-              count={newInvitationsCount}
-              size="small"
-            ></Badge>
-          )}
         </Button>
         <Button
           className="MeM__Button"

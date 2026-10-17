@@ -792,6 +792,8 @@
   "fileList.order.continue": "Keep editing",
   "toolbar.tapAgain": "Tap again to run",
   "notification.title": "Notifications",
+  "notification.tabNotices": "Notices",
+  "notification.tabInvitations": "Invitations",
   "notification.management": "Site-wide messages",
   "notification.scopeManagement": "Manage notifications",
   "notification.disabled": "Notifications are not enabled yet",

@@ -88,14 +88,21 @@ export const TabBarM: FC<TabBarProps> = ({ className }) => {
             history.replace('/dashboard/teams');
           }}
         ></TabBar.Item>
-        {notificationCounts.enabled && <TabBar.Item
-          key="notifications" title={formatMessage({ id: 'notification.title' })}
-          icon={<Icon className="tab-icon" icon="bell" />}
-          selectedIcon={<Icon className="tab-icon" icon="bell" />}
-          selected={checkActive({ path: '/dashboard/notifications', exact: true })}
-          badge={notificationCounts.total > 99 ? '99+' : notificationCounts.total || undefined}
-          onPress={() => history.replace('/dashboard/notifications')}
-        />}
+        {notificationCounts.enabled && (
+          <TabBar.Item
+            key="notifications"
+            title={formatMessage({ id: 'notification.title' })}
+            icon={<Icon className="tab-icon" icon="bell" />}
+            selectedIcon={<Icon className="tab-icon" icon="bell" />}
+            selected={checkActive({ path: '/dashboard/notifications' })}
+            badge={
+              notificationCounts.total + newInvitationsCount > 99
+                ? '99+'
+                : notificationCounts.total + newInvitationsCount || undefined
+            }
+            onPress={() => history.replace('/dashboard/notifications')}
+          />
+        )}
         <TabBar.Item
           icon={<Icon className="tab-icon" icon="user-circle"></Icon>}
           selectedIcon={<Icon className="tab-icon" icon="user-circle"></Icon>}
@@ -105,7 +112,7 @@ export const TabBarM: FC<TabBarProps> = ({ className }) => {
           onPress={() => {
             history.replace('/dashboard/me');
           }}
-          dot={newInvitationsCount > 0 || relatedApplicationsCount > 0}
+          dot={relatedApplicationsCount > 0}
         ></TabBar.Item>
       </TabBar>
     </div>
