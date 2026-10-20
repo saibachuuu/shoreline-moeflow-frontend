@@ -73,6 +73,8 @@ interface ImageViewerProps {
   loading: boolean;
   darkness?: number;
   onSettingButtonClick?: () => void;
+  onSendProofreadDraft?: (overrideCc?: boolean) => void;
+  sendingProofreadDraft?: boolean;
   readOnly?: boolean;
   className?: string;
 }
@@ -89,6 +91,8 @@ export const ImageViewer: FC<ImageViewerProps> = ({
   loading,
   darkness = 0,
   onSettingButtonClick,
+  onSendProofreadDraft,
+  sendingProofreadDraft = false,
   readOnly = false,
   className,
 }) => {
@@ -683,7 +687,10 @@ export const ImageViewer: FC<ImageViewerProps> = ({
               <MovableAreaColorBackground
                 color={style.translatorColorBackground}
               ></MovableAreaColorBackground>
-              <QuickCharacterHotKeyGuide />
+              <QuickCharacterHotKeyGuide
+                onSendProofreadDraft={onSendProofreadDraft}
+                sendingProofreadDraft={sendingProofreadDraft}
+              />
             </>
           }
         >

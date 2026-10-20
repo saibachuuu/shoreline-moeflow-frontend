@@ -1,4 +1,5 @@
 import { css } from '@emotion/core';
+import { Button } from 'antd';
 import classNames from 'classnames';
 import React from 'react';
 import { useIntl } from 'react-intl';
@@ -11,10 +12,14 @@ import style from '@/style';
 
 interface QuickCharacterHotKeyGuideProps {
   className?: string;
+  onSendProofreadDraft?: (overrideCc?: boolean) => void;
+  sendingProofreadDraft?: boolean;
 }
 
 export const QuickCharacterHotKeyGuide: FC<QuickCharacterHotKeyGuideProps> = ({
   className,
+  onSendProofreadDraft,
+  sendingProofreadDraft,
 }) => {
   const { formatMessage } = useIntl();
   const platform = useSelector((state: AppState) => state.site.platform);
@@ -352,6 +357,28 @@ export const QuickCharacterHotKeyGuide: FC<QuickCharacterHotKeyGuideProps> = ({
               : formatMessage({ id: 'quickChar.proofreadFeedbackGuideTipNoKey' })
             : formatMessage({ id: 'quickChar.guideFooterTip' })}
         </div>
+
+        {/* 校对/神模式：向翻译寄送校对稿 */}
+        {isProofreadOrGodMode && onSendProofreadDraft && (
+          <div
+            className="GuideActionRow"
+            css={css`
+              pointer-events: auto;
+              margin-top: 2px;
+            `}
+          >
+            <Button
+              className="GuideActionButton"
+              type="primary"
+              size="small"
+              block
+              loading={sendingProofreadDraft}
+              onClick={() => onSendProofreadDraft()}
+            >
+              {formatMessage({ id: 'imageTranslator.sendProofreadDraft' })}
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

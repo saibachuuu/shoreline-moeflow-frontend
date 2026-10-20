@@ -141,8 +141,6 @@ const ImageTranslator: FC = () => {
             defaultChecked={currentCc}
             onChange={(e) => {
               currentCc = e.target.checked;
-              setCcMyself(e.target.checked);
-              localStorage.setItem('proofread_draft_cc_myself', String(e.target.checked));
             }}
           >
             {formatMessage({ id: 'imageTranslator.ccMyself' })}
@@ -151,7 +149,12 @@ const ImageTranslator: FC = () => {
       ),
       okText: formatMessage({ id: 'site.confirm' }),
       cancelText: formatMessage({ id: 'site.cancel' }),
-      onOk: () => handleSendProofreadDraft(currentCc),
+      onOk: () => {
+        // 仅在确认发送时持久化，取消则不改动偏好
+        setCcMyself(currentCc);
+        localStorage.setItem('proofread_draft_cc_myself', String(currentCc));
+        return handleSendProofreadDraft(currentCc);
+      },
     });
   };
 
@@ -290,6 +293,8 @@ const ImageTranslator: FC = () => {
           height={imageTranslatorSize.height}
           loading={!currentProject || sourcesLoading}
           readOnly={projectReadOnly}
+          onSendProofreadDraft={confirmSendProofreadDraft}
+          sendingProofreadDraft={sendingProofreadDraft}
           onSettingButtonClick={() => {
             setSettingModalVisible(true);
           }}
@@ -426,22 +431,10 @@ const ImageTranslator: FC = () => {
               gap: 12px;
             `}
           >
-            <Checkbox
-              checked={ccMyself}
-              onChange={(e) => {
-                setCcMyself(e.target.checked);
-                localStorage.setItem(
-                  'proofread_draft_cc_myself',
-                  String(e.target.checked),
-                );
-              }}
-            >
-              {formatMessage({ id: 'imageTranslator.ccMyself' })}
-            </Checkbox>
             <Button
               type="primary"
               loading={sendingProofreadDraft}
-              onClick={() => handleSendProofreadDraft()}
+              onClick={() => confirmSendProofreadDraft()}
             >
               {formatMessage({ id: 'imageTranslator.sendProofreadDraft' })}
             </Button>
