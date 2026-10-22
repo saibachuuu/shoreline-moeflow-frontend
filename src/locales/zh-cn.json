@@ -252,6 +252,8 @@
   "project.onlyOneTargetTip": "仅有一个目标语言",
   "imageTranslator.translationPlaceholder": "请输入翻译",
   "imageTranslator.proofreadPlaceholder": "请输入校对",
+  "imageTranslator.proofreadTipPlaceholder": "输入批注，回车确认；上下键切换输入框",
+  "imageTranslator.proofreadTipAdded": "批注已添加",
   "imageTranslator.deleteLabelTitle": "此标签已有翻译，您确认要删除吗？",
   "imageTranslator.deleteLabelTip": "注意：将同时删除此标签下（包括其他目标语言中）的所有翻译和校对！",
   "imageTranslator.someSaveFailed": "部分内容保存失败",

@@ -1,11 +1,12 @@
 import { css } from '@emotion/core';
-import { Button, Popconfirm } from 'antd';
+import { Button, Popconfirm, message } from 'antd';
 import TextArea, { TextAreaRef } from 'antd/lib/input/TextArea';
 import classNames from 'classnames';
 import React, { useEffect, useRef, useState } from 'react';
 import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
 import { DebounceStatus } from '@/components';
+import { api } from '@/apis';
 import { TranslationUser } from '../TranslationUser';
 import { APITranslation } from '@/apis/translation';
 import { FC, File, InputDebounceStatus, Source as ISource } from '@/interfaces';
@@ -22,6 +23,9 @@ import { hover } from '@/utils/style';
 import { Source } from './Source';
 import { QuickCharacterButtons } from '../QuickCharacterButtons';
 import { insertCharacterAtSelection } from '../quickCharacters';
+
+/** 在批注框滑出时，用于触发它的字符 */
+const TIP_TRIGGER_CHARACTER = '_';
 
 /** 校对模式的属性接口 */
 interface ImageSourceViewerProofreaderProps {
@@ -47,9 +51,17 @@ export const ImageSourceViewerProofreader: FC<
   const domRefs = useRef<(HTMLDivElement | null)[]>([]);
   const translationTextAreaRef = useRef<TextAreaRef>(null);
   const proofreadTextAreaRef = useRef<TextAreaRef>(null);
+  const tipTextAreaRef = useRef<TextAreaRef>(null);
   const [activeInput, setActiveInput] = useState<'translation' | 'proofread'>(
     'proofread',
   );
+  /** 滑出的批注框，null 表示未滑出 */
+  const [tipDraft, setTipDraft] = useState<{
+    translationID: string;
+    /** 触发字符在校对内容中的位置，确认批注时要删掉它 */
+    index: number;
+    content: string;
+  } | null>(null);
   const currentUser = useSelector((state: AppState) => state.user);
   const batchSelecting = useSelector(
     (state: AppState) => state.source.batchSelecting,
@@ -158,6 +170,26 @@ export const ImageSourceViewerProofreader: FC<
     e: React.ChangeEvent<HTMLTextAreaElement>,
   ) => {
     const proofreadContent = e.target.value;
+    const previousContent = focusedTranslation?.proofreadContent || '';
+    // 只有新插入单个触发字符时才滑出批注框，粘贴多字符、替换选区都不触发
+    const caret =
+      typeof e.target.selectionStart === 'number'
+        ? e.target.selectionStart
+        : null;
+    if (
+      caret !== null &&
+      proofreadContent.length === previousContent.length + 1 &&
+      proofreadContent[caret - 1] === TIP_TRIGGER_CHARACTER
+    ) {
+      setTipDraft((previousDraft) => ({
+        translationID: focusedTranslationID,
+        index: caret - 1,
+        content:
+          previousDraft?.translationID === focusedTranslationID
+            ? previousDraft.content
+            : '',
+      }));
+    }
     dispatch(
       editProofreadSaga({
         sourceID: focusedSourceID,
@@ -165,6 +197,64 @@ export const ImageSourceViewerProofreader: FC<
         proofreadContent,
       }),
     );
+  };
+
+  /** 批注框是否处于滑出状态 */
+  const tipVisible =
+    !!tipDraft && tipDraft.translationID === focusedTranslationID && !readOnly;
+
+  /** 确认批注：提交到当前原文的 tips，并删掉校对内容里的触发字符 */
+  const submitTipDraft = () => {
+    if (!tipDraft) {
+      return;
+    }
+    const content = tipDraft.content.trim();
+    const { translationID, index } = tipDraft;
+
+    if (translationID === focusedTranslationID) {
+      const currentContent = focusedTranslation?.proofreadContent || '';
+      if (currentContent[index] === TIP_TRIGGER_CHARACTER) {
+        dispatch(
+          editProofreadSaga({
+            sourceID: focusedSourceID,
+            translationID,
+            proofreadContent:
+              currentContent.slice(0, index) +
+              currentContent.slice(index + 1),
+          }),
+        );
+      }
+    }
+
+    if (content) {
+      api.tip
+        .createTip({
+          sourceID: focusedSourceID,
+          data: { content, targetID },
+        })
+        .then(() => {
+          message.success(
+            formatMessage({ id: 'imageTranslator.proofreadTipAdded' }),
+          );
+        })
+        .catch((error: unknown) => {
+          if (
+            error &&
+            typeof error === 'object' &&
+            'default' in error &&
+            typeof error.default === 'function'
+          ) {
+            error.default();
+            return;
+          }
+          message.error(formatMessage({ id: 'site.networkError' }));
+        });
+    }
+
+    setTipDraft(null);
+    requestAnimationFrame(() => {
+      proofreadTextAreaRef.current?.focus({ cursor: 'end' });
+    });
   };
 
   const cloneTranslationContent = () => {
@@ -262,6 +352,8 @@ export const ImageSourceViewerProofreader: FC<
           color: ${style.textColorSecondary};
         }
         .ImageSourceViewerProofreader__Bottom {
+          position: relative;
+          overflow: hidden;
           display: flex;
           flex-direction: column;
           height: ${bottomHeight}px;
@@ -374,6 +466,41 @@ export const ImageSourceViewerProofreader: FC<
         }
         .ImageSourceViewerProofreader__TextArea--hasAvatar {
           text-indent: 38px;
+        }
+        .ImageSourceViewerProofreader__TipArea {
+          position: absolute;
+          right: 0;
+          bottom: 0;
+          left: 0;
+          z-index: 2;
+          display: flex;
+          flex-direction: column;
+          height: ${isMobile ? 84 : 132}px;
+          background-color: ${style.backgroundColorLight};
+          border-top: 1px solid ${style.borderColorBase};
+          box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+          transform: translateY(100%);
+          transition: transform 0.18s ease-out;
+          pointer-events: none;
+        }
+        .ImageSourceViewerProofreader__TipArea--visible {
+          transform: translateY(0);
+          pointer-events: auto;
+        }
+        .ImageSourceViewerProofreader__TipTextArea {
+          flex: auto;
+          text-indent: 0;
+          border-radius: 0;
+          border-width: 0;
+          padding: 4px 11px 6px;
+          resize: none;
+          &.ant-input {
+            border-right-width: 0px !important;
+            outline: 0;
+            box-shadow: none;
+            background: transparent !important;
+            background-color: transparent !important;
+          }
         }
       `}
     >
@@ -540,6 +667,16 @@ export const ImageSourceViewerProofreader: FC<
               })}
               onChange={readOnly ? undefined : handleProofreadContentChange}
               onFocus={() => setActiveInput('proofread')}
+              onKeyDown={(e) => {
+                // 批注框滑出时，上下键不再用于文本内换行/移动，改为切换输入框
+                if (!tipVisible) {
+                  return;
+                }
+                if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                  e.preventDefault();
+                  tipTextAreaRef.current?.focus();
+                }
+              }}
               value={focusedTranslation?.proofreadContent}
               placeholder={
                 focusedSourceCreating
@@ -565,6 +702,49 @@ export const ImageSourceViewerProofreader: FC<
               }
               readOnly={readOnly}
               ref={proofreadTextAreaRef}
+            ></TextArea>
+          </div>
+          <div
+            className={classNames('ImageSourceViewerProofreader__TipArea', {
+              'ImageSourceViewerProofreader__TipArea--visible': tipVisible,
+            })}
+          >
+            <TextArea
+              className="ImageSourceViewerProofreader__TipTextArea"
+              ref={tipTextAreaRef}
+              value={tipDraft?.content || ''}
+              onChange={(e) => {
+                const content = e.target.value;
+                setTipDraft((previousDraft) =>
+                  previousDraft ? { ...previousDraft, content } : previousDraft,
+                );
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                  e.preventDefault();
+                  proofreadTextAreaRef.current?.focus({ cursor: 'end' });
+                  return;
+                }
+                if (e.key === 'Escape') {
+                  // 取消批注：保留校对内容里的字符，也不提交
+                  e.preventDefault();
+                  setTipDraft(null);
+                  proofreadTextAreaRef.current?.focus({ cursor: 'end' });
+                  return;
+                }
+                if (
+                  e.key === 'Enter' &&
+                  !e.shiftKey &&
+                  !e.nativeEvent.isComposing
+                ) {
+                  e.preventDefault();
+                  submitTipDraft();
+                }
+              }}
+              placeholder={formatMessage({
+                id: 'imageTranslator.proofreadTipPlaceholder',
+              })}
+              tabIndex={tipVisible ? 0 : -1}
             ></TextArea>
           </div>
         </div>

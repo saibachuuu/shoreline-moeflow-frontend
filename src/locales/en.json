@@ -252,6 +252,8 @@
   "project.onlyOneTargetTip": "Only one target language",
   "imageTranslator.translationPlaceholder": "Please enter translation",
   "imageTranslator.proofreadPlaceholder": "Please enter proofreading",
+  "imageTranslator.proofreadTipPlaceholder": "Enter a tip, press Enter to confirm; use Up/Down to switch inputs",
+  "imageTranslator.proofreadTipAdded": "Tip added",
   "imageTranslator.deleteLabelTitle": "This label is already translated. Are you sure you want to delete it?",
   "imageTranslator.deleteLabelTip": "Note: This will also delete all translations and proofreadings under this label (including in other target languages)!",
   "imageTranslator.someSaveFailed": "Failed to save some content",

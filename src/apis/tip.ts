@@ -1,5 +1,6 @@
 import { AxiosRequestConfig } from 'axios';
 import { request } from '.';
+import { toUnderScoreCase } from '@/utils';
 import { APIUser } from './user';
 
 export interface APITip {
@@ -14,6 +15,7 @@ export interface APITip {
 /** 新增原文的请求数据 */
 interface CreateTipData {
   content: string;
+  targetID: string;
 }
 /** 新增原文 */
 const createTip = ({
@@ -28,7 +30,7 @@ const createTip = ({
   return request<APITip>({
     method: 'POST',
     url: `/v1/sources/${sourceID}/tips`,
-    data: data,
+    data: toUnderScoreCase(data),
     ...configs,
   });
 };

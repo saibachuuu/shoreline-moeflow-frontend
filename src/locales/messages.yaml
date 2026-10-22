@@ -770,6 +770,12 @@ imageTranslator.translationPlaceholder:
 imageTranslator.proofreadPlaceholder:
   zhCn: 请输入校对
   en: Please enter proofreading
+imageTranslator.proofreadTipPlaceholder:
+  zhCn: 输入批注，回车确认；上下键切换输入框
+  en: Enter a tip, press Enter to confirm; use Up/Down to switch inputs
+imageTranslator.proofreadTipAdded:
+  zhCn: 批注已添加
+  en: Tip added
 imageTranslator.deleteLabelTitle:
   zhCn: 此标签已有翻译，您确认要删除吗？
   en: "This label is already translated. Are you sure you want to delete it?"
