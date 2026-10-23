@@ -1364,8 +1364,11 @@ imageTranslator.proofreaderMode:
   zhCn: 校对模式
   en: Proofreading
 imageTranslator.copyTranslationContent:
-  zhCn: 复制翻译内容
-  en: Copy Translated Content
+  zhCn: 复制翻译
+  en: Copy Translation
+imageTranslator.specialSymbols:
+  zhCn: 特殊符号
+  en: Special Symbols
 imageTranslator.checkAllTranslation:
   zhCn: 确认以上所有翻译
   en: Confirm all of the above translations

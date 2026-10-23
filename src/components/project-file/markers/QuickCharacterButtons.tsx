@@ -1,17 +1,11 @@
 import { css } from '@emotion/core';
 import React, { useEffect, useState } from 'react';
 import { useIntl } from 'react-intl';
-import { useSelector } from 'react-redux';
 import store from 'store';
 import { FC } from '@/interfaces';
-import { AppState } from '@/store';
 import style from '@/style';
-import { MODIFIER_KEY_EVENT_KEYS } from '@/components/HotKey/constants';
-import {
-  getHotKeyDisplayName,
-  getHotKeyEvent,
-  isKeyboardElement,
-} from '@/components/HotKey/utils';
+import { getHotKeyDisplayName } from '@/components/HotKey/utils';
+import { useQuickCharacterHotKey } from './useQuickCharacterHotKey';
 const STORAGE_KEY = 'symbolInputterVisible';
 
 interface QuickCharacterButtonsProps {
@@ -24,60 +18,14 @@ export const QuickCharacterButtons: FC<QuickCharacterButtonsProps> = ({
   onInsert,
 }) => {
   const { formatMessage } = useIntl();
-  const quickCharacters = useSelector(
-    (state: AppState) => state.imageTranslator.quickCharacters,
-  );
   const [visible, setVisible] = useState(() =>
     store.get(STORAGE_KEY, false),
   );
+  const quickCharacters = useQuickCharacterHotKey(disabled, onInsert);
 
   useEffect(() => {
     store.set(STORAGE_KEY, visible);
   }, [visible]);
-
-  useEffect(() => {
-    if (disabled) return;
-
-    const handleKeyDown = (nativeEvent: KeyboardEvent) => {
-      if (MODIFIER_KEY_EVENT_KEYS.includes(nativeEvent.key)) return;
-
-      const target = nativeEvent.target as HTMLElement | null;
-      if (!target) return;
-
-      // Don't trigger if user is interacting with a modal
-      if (target.closest?.('.ant-modal, .ant-modal-mask')) return;
-
-      // Don't trigger if user is typing into any <input>
-      if (target.tagName === 'INPUT') return;
-
-      // If it is another keyboard element but not a textarea, don't trigger
-      if (isKeyboardElement(target) && target.tagName !== 'TEXTAREA') return;
-
-      const event = getHotKeyEvent(nativeEvent);
-
-      const matchedItem = quickCharacters.find((item) => {
-        const hotKey = item.hotKey;
-        if (!hotKey || !hotKey.key) return false;
-        if (event.key !== hotKey.key) return false;
-        if (Boolean(event.ctrl) !== Boolean(hotKey.ctrl)) return false;
-        if (Boolean(event.alt) !== Boolean(hotKey.alt)) return false;
-        if (Boolean(event.shift) !== Boolean(hotKey.shift)) return false;
-        if (Boolean(event.meta) !== Boolean(hotKey.meta)) return false;
-        return true;
-      });
-
-      if (matchedItem && matchedItem.character) {
-        nativeEvent.preventDefault();
-        nativeEvent.stopPropagation();
-        onInsert(matchedItem.character);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [disabled, quickCharacters, onInsert]);
 
   if (!visible) {
     return (

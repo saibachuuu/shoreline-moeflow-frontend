@@ -102,6 +102,28 @@ const SourceWithoutRef: React.ForwardRefRenderFunction<
     );
   };
 
+  /** 有内容的译文，批注挂在最后一条里面 */
+  const visibleTranslations = translations.filter(
+    (translation) => translation.content || translation.proofreadContent,
+  );
+  const lastVisibleTranslationID =
+    visibleTranslations[visibleTranslations.length - 1]?.id;
+  const tipsNode =
+    source.tips.length > 0 ? (
+      <div className="ImageSourceViewerProofreaderSource__Tips">
+        {source.tips.map((tip) => (
+          <div className="ImageSourceViewerProofreaderSource__Tip" key={tip.id}>
+            <Tooltip title={tip.user?.name} placement="top">
+              <Tag className="ImageSourceViewerProofreaderSource__TipTag">
+                {formatMessage({ id: 'imageTranslator.tipLabel' })}
+              </Tag>
+            </Tooltip>
+            {tip.content}
+          </div>
+        ))}
+      </div>
+    ) : null;
+
   return (
     <div
       className={classNames('ImageSourceViewerProofreaderSource', className, {
@@ -206,6 +228,8 @@ const SourceWithoutRef: React.ForwardRefRenderFunction<
         .ImageSourceViewerProofreaderSource__Translation--focus {
           background-color: ${style.backgroundFocus};
         }
+        /* 批注不再单独着色：它已在译文行内部，整行的选中色与 hover 色
+           会直接透上来；自己带背景反而会挡住父级 hover */
         .ImageSourceViewerProofreaderSource__Translation--hasProofread {
           .ImageSourceViewerProofreaderSource__TranslationContent {
             min-height: 30px;
@@ -214,7 +238,6 @@ const SourceWithoutRef: React.ForwardRefRenderFunction<
         .ImageSourceViewerProofreaderSource__TranslationContentWrapper {
           flex: auto;
           color: ${style.textColor};
-          ${clickEffect()};
         }
         .ImageSourceViewerProofreaderSource__TranslationContent {
           width: 100%;
@@ -272,6 +295,14 @@ const SourceWithoutRef: React.ForwardRefRenderFunction<
             border-color: #dbdbdb;
           }
         }
+        .ImageSourceViewerProofreaderSource__TranslationMain {
+          /* 译文行里靠左的内容列：译文、校对文与批注都住在这里，
+             右侧的复选框列由 align-items: stretch 撑满整列高度 */
+          flex: auto;
+          min-width: 0;
+          /* 内容列连同批注才是同一个选区；右侧复选框列不参与 hover */
+          ${clickEffect()};
+        }
         .ImageSourceViewerProofreaderSource__Tips {
           padding: 2px 5px 2px 32px;
         }
@@ -322,16 +353,21 @@ const SourceWithoutRef: React.ForwardRefRenderFunction<
                       translation.proofreadContent,
                     'ImageSourceViewerProofreaderSource__Translation--focus':
                       source.id === focusedSourceID &&
-                      translation.id === focusedTranslationID,
+                      (translation.id === focusedTranslationID ||
+                        (!focusedTranslationID &&
+                          translation.id === lastVisibleTranslationID)),
                   },
                 )}
               >
+                {/* 内容列：译文、校对文与批注同处一列，
+                    右侧复选框列才能跟着撑满到批注底部 */}
                 <div
-                  className="ImageSourceViewerProofreaderSource__TranslationContentWrapper"
+                  className="ImageSourceViewerProofreaderSource__TranslationMain"
                   onClick={() => {
                     handleFocusTranslation(translation);
                   }}
                 >
+                <div className="ImageSourceViewerProofreaderSource__TranslationContentWrapper">
                   <div className="ImageSourceViewerProofreaderSource__TranslationContent">
                     {translation.content}
                     {(isMyTranslation || isNoTranslation) && (
@@ -366,9 +402,13 @@ const SourceWithoutRef: React.ForwardRefRenderFunction<
                     </div>
                   )}
                 </div>
+                {translation.id === lastVisibleTranslationID && tipsNode}
+                </div>
                 <div
                   className="ImageSourceViewerProofreaderSource__TranslationCheckbox"
-                  onClick={() => {
+                  onClick={(event) => {
+                    // 整行已能聚焦，勾选这里不要重复触发
+                    event.stopPropagation();
                     if (!readOnly && !source.selecting) {
                       handleSelectTranslation(translation);
                     }
@@ -391,36 +431,17 @@ const SourceWithoutRef: React.ForwardRefRenderFunction<
                   source.id === focusedSourceID,
               },
             )}
+            onClick={handleFocusSource}
           >
-            <div
-              className="ImageSourceViewerProofreaderSource__TranslationContentWrapper"
-              onClick={() => {
-                handleFocusSource();
-              }}
-            >
+            <div className="ImageSourceViewerProofreaderSource__TranslationContentWrapper">
               <div className="ImageSourceViewerProofreaderSource__TranslationContent">
                 [{formatMessage({ id: 'label.defaultContent' })}]
               </div>
             </div>
           </div>
         )}
-        {source.tips.length > 0 && (
-          <div className="ImageSourceViewerProofreaderSource__Tips">
-            {source.tips.map((tip) => (
-              <div
-                className="ImageSourceViewerProofreaderSource__Tip"
-                key={tip.id}
-              >
-                <Tooltip title={tip.user?.name} placement="top">
-                  <Tag className="ImageSourceViewerProofreaderSource__TipTag">
-                    {formatMessage({ id: 'imageTranslator.tipLabel' })}
-                  </Tag>
-                </Tooltip>
-                {tip.content}
-              </div>
-            ))}
-          </div>
-        )}
+        {/* 没有任何可见译文时，批注仍要显示 */}
+        {visibleTranslations.length === 0 && tipsNode}
       </div>
     </div>
   );

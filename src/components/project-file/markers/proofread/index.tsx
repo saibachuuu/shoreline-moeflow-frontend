@@ -1,8 +1,8 @@
 import { css } from '@emotion/core';
-import { Button, Popconfirm, message } from 'antd';
+import { Button, Popconfirm, Tag, message } from 'antd';
 import TextArea, { TextAreaRef } from 'antd/lib/input/TextArea';
 import classNames from 'classnames';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
 import { DebounceStatus } from '@/components';
@@ -24,7 +24,7 @@ import { toLowerCamelCase } from '@/utils';
 import { getBestTranslation } from '@/utils/source';
 import { hover } from '@/utils/style';
 import { Source } from './Source';
-import { QuickCharacterButtons } from '../QuickCharacterButtons';
+import { ProofreadSymbolPanel } from './SymbolPanel';
 import { insertCharacterAtSelection } from '../quickCharacters';
 
 /** 在批注框滑出时，用于触发它的字符 */
@@ -52,6 +52,9 @@ export const ImageSourceViewerProofreader: FC<
     (state: AppState) => state.site.imageTranslatorAutoFocusInput,
   );
   const domRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const bottomDomRef = useRef<HTMLDivElement>(null);
+  const functionBarDomRef = useRef<HTMLDivElement>(null);
+  const proofreaderWrapperDomRef = useRef<HTMLDivElement>(null);
   const translationTextAreaRef = useRef<TextAreaRef>(null);
   const proofreadTextAreaRef = useRef<TextAreaRef>(null);
   const tipTextAreaRef = useRef<TextAreaRef>(null);
@@ -67,6 +70,8 @@ export const ImageSourceViewerProofreader: FC<
     /** 已有批注的 id，有值时表示编辑已有批注 */
     tipID?: string;
   } | null>(null);
+  /** 符号面板是否滑出 */
+  const [symbolsVisible, setSymbolsVisible] = useState(false);
   const currentUser = useSelector((state: AppState) => state.user);
   const batchSelecting = useSelector(
     (state: AppState) => state.source.batchSelecting,
@@ -243,6 +248,66 @@ export const ImageSourceViewerProofreader: FC<
   const tipVisible =
     !!tipDraft && tipDraft.translationID === focusedTranslationID && !readOnly;
 
+  // 校对区顶部相对底部面板顶部的距离。
+  // 批注框起点要藏在校对区后面，展开时滑到面板顶部。
+  const [tipRise, setTipRise] = useState(0);
+  /** 按钮行高度：批注框展开后顶边要正好落在它下沿，不压住按钮 */
+  const [functionBarHeight, setFunctionBarHeight] = useState(0);
+  const tipHeight = isMobile ? 52 : 64;
+  // 起点位置：先尽量对准校对区顶部，让批注框整个藏在校对框后面；
+  // 若校对区比批注框还矮（PC 端译文区占得高），改贴面板底部，
+  // 否则批注框会伸到面板外面，动画一开场就是悬空的
+  const tipStart = Math.min(
+    tipRise,
+    Math.max(bottomHeight - tipHeight, 0),
+  );
+  // 终点位置：顶边对齐按钮行下沿。
+  // 移动端面板只有 100px（按钮 28 + 校对区 72），放不下整条，
+  // 改成底边贴按钮行下沿、向上探出 24px，否则会被校对区整个盖住
+  const tipEnd = isMobile
+    ? functionBarHeight - tipHeight + 24
+    : functionBarHeight;
+  useLayoutEffect(() => {
+    const bottom = bottomDomRef.current;
+    const wrapper = proofreaderWrapperDomRef.current;
+    if (!bottom || !wrapper) return undefined;
+    const measure = () => {
+      const next =
+        wrapper.getBoundingClientRect().top - bottom.getBoundingClientRect().top;
+      setTipRise((previous) =>
+        Math.abs(previous - next) < 1 ? previous : next,
+      );
+      const bar = functionBarDomRef.current;
+      if (bar) {
+        const nextBarHeight = bar.offsetHeight;
+        setFunctionBarHeight((previous) =>
+          previous === nextBarHeight ? previous : nextBarHeight,
+        );
+      }
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(bottom);
+    observer.observe(wrapper);
+    if (functionBarDomRef.current) {
+      observer.observe(functionBarDomRef.current);
+    }
+    window.addEventListener('resize', measure);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+    // Bottom 是在 focusedSource 存在时才挂载的，必须等它出现后再量一次，
+    // 否则 PC 端量不到、tipRise 停在 0，批注框会变成从面板顶部闪现
+  }, [focusedSourceID, isNoTranslation, readOnly]);
+
+  // 批注框与符号面板都贴着底部面板滑出，同时出现会互相遮挡，批注优先
+  useEffect(() => {
+    if (tipVisible) {
+      setSymbolsVisible(false);
+    }
+  }, [tipVisible]);
+
   const handleTipRequestError = (error: unknown) => {
     if (
       error &&
@@ -414,7 +479,9 @@ export const ImageSourceViewerProofreader: FC<
         .ImageSourceViewerProofreader__Bottom {
           position: relative;
           isolation: isolate;
-          overflow: hidden;
+          /* 高于译文列表（z-index 1）：批注框与符号面板上滑探出面板时，
+             要盖住上方的 label 列表 */
+          z-index: 2;
           display: flex;
           flex-direction: column;
           height: ${bottomHeight}px;
@@ -444,16 +511,19 @@ export const ImageSourceViewerProofreader: FC<
             background-color: ${style.backgroundColorLight};
           }
         }
-        .ImageSourceViewerProofreader__FunctionBar,
-        .ImageSourceViewerProofreader__Bottom > .QuickCharacters {
-          position: relative;
-          z-index: 0;
-        }
         .ImageSourceViewerProofreader__FunctionBar {
+          position: relative;
+          /* 层级 1：夹在符号面板/译文区（0）与批注框（2）之间——
+             面板上滑时头藏在按钮后面，批注框上滑时又盖过按钮 */
+          z-index: 1;
           padding: 5px 5px 0;
           background-color: ${style.backgroundColorLight};
           display: flex;
           justify-content: space-between;
+        }
+        .ImageSourceViewerProofreader__FunctionBarButtons {
+          display: flex;
+          align-items: center;
         }
         .ImageSourceViewerProofreader__FunctionBarButton {
           margin-right: 6px;
@@ -470,6 +540,11 @@ export const ImageSourceViewerProofreader: FC<
           }
           &.ant-popover-disabled-compatible-wrapper {
             border: none;
+          }
+          &.ImageSourceViewerProofreader__FunctionBarButton--active,
+          &.ImageSourceViewerProofreader__FunctionBarButton--active button {
+            border-color: ${style.primaryColor};
+            color: ${style.primaryColor};
           }
         }
         .ImageSourceViewerProofreader__TranslationArea {
@@ -497,7 +572,8 @@ export const ImageSourceViewerProofreader: FC<
         }
         .ImageSourceViewerProofreader__ProofreaderArea {
           position: relative;
-          z-index: 2;
+          /* 层级 3：最高。校对区始终盖住藏在后面的批注与符号面板 */
+          z-index: 3;
           flex: auto;
           width: 100%;
           overflow-y: auto;
@@ -548,10 +624,14 @@ export const ImageSourceViewerProofreader: FC<
         }
         .ImageSourceViewerProofreader__TipArea {
           position: absolute;
+          /* __Bottom 的直接子元素，top: 0 即面板顶边；
+             实际起点由 transform 下移到校对区处（见 tipRise） */
           top: 0;
           right: 0;
           left: 0;
-          z-index: 1;
+          /* 层级 2：盖住按钮行（1）与译文区/符号面板（0），
+             只被校对区（3）盖住 */
+          z-index: 2;
           display: flex;
           flex-direction: column;
           height: ${isMobile ? 52 : 64}px;
@@ -564,25 +644,43 @@ export const ImageSourceViewerProofreader: FC<
           );
           border-top: 1px solid ${style.borderColorBase};
           box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
-          /* 起点与校对区重叠、被它遮住；打开时向上抽出一整条。 */
-          transform: translateY(0);
+          /* 起点对准校对区，整个藏在校对区（z-index 3）后面 */
+          transform: translateY(${tipStart}px);
           visibility: hidden;
           transition:
-            transform 0.18s ease-out,
-            visibility 0s 0.18s;
+            transform 0.24s ease-out,
+            visibility 0s 0.24s;
           pointer-events: none;
         }
         .ImageSourceViewerProofreader__TipArea--visible {
-          transform: translateY(-100%);
+          /* 停在按钮行下沿：按钮完整露出，下方紧接批注框，整条都在面板内 */
+          transform: translateY(${tipEnd}px);
           visibility: visible;
           transition:
-            transform 0.18s ease-out,
+            transform 0.24s ease-out,
             visibility 0s;
           pointer-events: auto;
         }
+        .ImageSourceViewerProofreader__TipTag {
+          /* 与校对区的头像、图标一样，浮在输入框开头占位 */
+          position: absolute;
+          top: 5px;
+          left: 11px;
+          z-index: 1;
+          margin: 0;
+          padding: 0 5px;
+          font-size: 11px;
+          line-height: 16px;
+          color: ${style.textColorLight};
+          background-color: ${style.hoverColor};
+          border-color: ${style.borderColorBase};
+          border-radius: ${style.borderRadiusSm};
+          pointer-events: none;
+        }
         .ImageSourceViewerProofreader__TipTextArea {
           flex: auto;
-          text-indent: 0;
+          /* 让开开头的批注标签 */
+          text-indent: 38px;
           border-radius: 0;
           border-width: 0;
           padding: 4px 11px 6px;
@@ -594,6 +692,41 @@ export const ImageSourceViewerProofreader: FC<
             background: transparent !important;
             background-color: transparent !important;
           }
+        }
+        .ImageSourceViewerProofreader__SymbolArea {
+          position: absolute;
+          top: 0;
+          right: 0;
+          left: 0;
+          /* 层级 0，与译文区同层（DOM 靠后所以盖得住它），低于按钮行（1）：
+             上滑时头从按钮后面探出，永远盖不住按钮 */
+          z-index: 0;
+          max-height: 96px;
+          overflow-y: auto;
+          border-top: 1px solid ${style.borderColorBase};
+          box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+          /* 半透明，露出下方的校对内容 */
+          background-color: color-mix(
+            in srgb,
+            ${style.backgroundColorLight} 86%,
+            transparent
+          );
+          /* 起点与按钮条重叠、藏在它后面（按钮 z-index 1 更高，压得住）；
+             打开时向上抽出一整条，探出底部面板、盖住上方的 label 列表 */
+          transform: translateY(0);
+          visibility: hidden;
+          transition:
+            transform 0.18s ease-out,
+            visibility 0s 0.18s;
+          pointer-events: none;
+        }
+        .ImageSourceViewerProofreader__SymbolArea--visible {
+          transform: translateY(-100%);
+          visibility: visible;
+          transition:
+            transform 0.18s ease-out,
+            visibility 0s;
+          pointer-events: auto;
         }
       `}
     >
@@ -631,6 +764,7 @@ export const ImageSourceViewerProofreader: FC<
       </div>
       {focusedSource && (
         <div
+          ref={bottomDomRef}
           className={classNames('ImageSourceViewerProofreader__Bottom', {
             'ImageSourceViewerProofreader__Bottom--disabled':
               focusedSourceCreating || focusedSourceDeleting,
@@ -640,54 +774,68 @@ export const ImageSourceViewerProofreader: FC<
               isMyTranslation,
           })}
         >
-          <div className="ImageSourceViewerProofreader__FunctionBar">
-            {!readOnly && (
-              <Popconfirm
-                title={formatMessage({
-                  id: 'translation.copyToProofreadNotEmptyTip',
-                })}
-                onConfirm={cloneTranslationContent}
-                okText={formatMessage({ id: 'translation.cover' })}
-                cancelText={formatMessage({ id: 'site.cancel' })}
-                disabled={!focusedTranslation?.proofreadContent}
-                placement={isMobile ? 'topLeft' : 'top'}
-              >
+          <div
+            ref={functionBarDomRef}
+            className="ImageSourceViewerProofreader__FunctionBar"
+          >
+            <div className="ImageSourceViewerProofreader__FunctionBarButtons">
+              {!readOnly && (
+                <Popconfirm
+                  title={formatMessage({
+                    id: 'translation.copyToProofreadNotEmptyTip',
+                  })}
+                  onConfirm={cloneTranslationContent}
+                  okText={formatMessage({ id: 'translation.cover' })}
+                  cancelText={formatMessage({ id: 'site.cancel' })}
+                  disabled={!focusedTranslation?.proofreadContent}
+                  placement={isMobile ? 'topLeft' : 'top'}
+                >
+                  <button
+                    type="button"
+                    className="ImageSourceViewerProofreader__FunctionBarButton"
+                    onClick={() => {
+                      if (!focusedTranslation?.proofreadContent) {
+                        cloneTranslationContent();
+                      }
+                    }}
+                    disabled={
+                      focusedSourceCreating ||
+                      focusedSourceDeleting ||
+                      isNoTranslation
+                    }
+                  >
+                    {formatMessage({
+                      id: 'imageTranslator.copyTranslationContent',
+                    })}
+                  </button>
+                </Popconfirm>
+              )}
+              {!readOnly && (
                 <button
                   type="button"
-                  className="ImageSourceViewerProofreader__FunctionBarButton"
-                  onClick={() => {
-                    if (!focusedTranslation?.proofreadContent) {
-                      cloneTranslationContent();
-                    }
-                  }}
+                  className={classNames(
+                    'ImageSourceViewerProofreader__FunctionBarButton',
+                    {
+                      'ImageSourceViewerProofreader__FunctionBarButton--active':
+                        symbolsVisible,
+                    },
+                  )}
+                  onClick={() => setSymbolsVisible((previous) => !previous)}
                   disabled={
                     focusedSourceCreating ||
                     focusedSourceDeleting ||
                     isNoTranslation
                   }
                 >
-                  {formatMessage({
-                    id: 'imageTranslator.copyTranslationContent',
-                  })}
+                  {formatMessage({ id: 'imageTranslator.specialSymbols' })}
                 </button>
-              </Popconfirm>
-            )}
+              )}
+            </div>
             <DebounceStatus
               className="ImageSourceViewerProofreader__DebounceStatus"
               status={mergedStatus}
             />
           </div>
-          {!readOnly && (
-            <QuickCharacterButtons
-              disabled={
-                focusedSourceCreating ||
-                focusedSourceDeleting ||
-                focusedSource.myTranslationContentStatus === 'saving' ||
-                focusedSource.myTranslationContentStatus === 'debouncing'
-              }
-              onInsert={insertQuickCharacter}
-            />
-          )}
           <div className="ImageSourceViewerProofreader__TranslationArea">
             <TranslationUser
               className="ImageSourceViewerProofreader__TranslationUser"
@@ -746,7 +894,10 @@ export const ImageSourceViewerProofreader: FC<
             )}
           </div>
           <div className="ImageSourceViewerProofreader__AreaLine" />
-          <div className="ImageSourceViewerProofreader__ProofreaderWrapper">
+          <div
+            ref={proofreaderWrapperDomRef}
+            className="ImageSourceViewerProofreader__ProofreaderWrapper"
+          >
             <div className="ImageSourceViewerProofreader__ProofreaderArea">
               <TranslationUser
                 className="ImageSourceViewerProofreader__TranslationUser"
@@ -802,11 +953,16 @@ export const ImageSourceViewerProofreader: FC<
                 ref={proofreadTextAreaRef}
               ></TextArea>
             </div>
+          </div>
+          {!readOnly && !isNoTranslation && (
             <div
               className={classNames('ImageSourceViewerProofreader__TipArea', {
                 'ImageSourceViewerProofreader__TipArea--visible': tipVisible,
               })}
             >
+              <Tag className="ImageSourceViewerProofreader__TipTag">
+                {formatMessage({ id: 'imageTranslator.tipLabel' })}
+              </Tag>
               <TextArea
                 className="ImageSourceViewerProofreader__TipTextArea"
                 ref={tipTextAreaRef}
@@ -849,7 +1005,28 @@ export const ImageSourceViewerProofreader: FC<
                 tabIndex={tipVisible ? 0 : -1}
               ></TextArea>
             </div>
-          </div>
+          )}
+          {!readOnly && (
+            <div
+              className={classNames(
+                'ImageSourceViewerProofreader__SymbolArea',
+                {
+                  'ImageSourceViewerProofreader__SymbolArea--visible':
+                    symbolsVisible,
+                },
+              )}
+            >
+              <ProofreadSymbolPanel
+                disabled={
+                  focusedSourceCreating ||
+                  focusedSourceDeleting ||
+                  focusedSource.myTranslationContentStatus === 'saving' ||
+                  focusedSource.myTranslationContentStatus === 'debouncing'
+                }
+                onInsert={insertQuickCharacter}
+              />
+            </div>
+          )}
         </div>
       )}
     </div>
