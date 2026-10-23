@@ -353,6 +353,7 @@ export const ImageSourceViewerProofreader: FC<
         }
         .ImageSourceViewerProofreader__Bottom {
           position: relative;
+          isolation: isolate;
           overflow: hidden;
           display: flex;
           flex-direction: column;
@@ -369,7 +370,7 @@ export const ImageSourceViewerProofreader: FC<
             background-color: ${style.backgroundColorLight};
           }
           .ImageSourceViewerProofreader__AreaLine,
-          .ImageSourceViewerProofreader__ProofreaderArea {
+          .ImageSourceViewerProofreader__ProofreaderWrapper {
             display: none;
           }
         }
@@ -382,6 +383,11 @@ export const ImageSourceViewerProofreader: FC<
           .ImageSourceViewerProofreader__TranslationArea {
             background-color: ${style.backgroundColorLight};
           }
+        }
+        .ImageSourceViewerProofreader__FunctionBar,
+        .ImageSourceViewerProofreader__Bottom > .QuickCharacters {
+          position: relative;
+          z-index: 0;
         }
         .ImageSourceViewerProofreader__FunctionBar {
           padding: 5px 5px 0;
@@ -408,6 +414,7 @@ export const ImageSourceViewerProofreader: FC<
         }
         .ImageSourceViewerProofreader__TranslationArea {
           position: relative;
+          z-index: 0;
           display: ${isMobile ? 'none' : 'block'};
           max-height: 78px;
           overflow-y: auto;
@@ -419,11 +426,23 @@ export const ImageSourceViewerProofreader: FC<
           margin-left: 11px;
           border-bottom: 1px dashed ${style.borderColorBase};
         }
+        .ImageSourceViewerProofreader__ProofreaderWrapper {
+          position: relative;
+          display: flex;
+          flex: auto;
+          min-height: 0;
+          width: 100%;
+          /* 不创建独立图层，让批注能覆盖上方的译文和符号栏。 */
+          overflow: visible;
+        }
         .ImageSourceViewerProofreader__ProofreaderArea {
           position: relative;
+          z-index: 2;
           flex: auto;
           width: 100%;
           overflow-y: auto;
+          /* 校对区始终盖住藏在后面的批注，包括其中的文字和阴影。 */
+          background-color: ${style.backgroundColorLight};
         }
         .ImageSourceViewerProofreader__TranslationUser {
           position: absolute;
@@ -469,22 +488,30 @@ export const ImageSourceViewerProofreader: FC<
         }
         .ImageSourceViewerProofreader__TipArea {
           position: absolute;
+          top: 0;
           right: 0;
-          bottom: 0;
           left: 0;
-          z-index: 2;
+          z-index: 1;
           display: flex;
           flex-direction: column;
-          height: ${isMobile ? 84 : 132}px;
+          height: ${isMobile ? 52 : 64}px;
           background-color: ${style.backgroundColorLight};
           border-top: 1px solid ${style.borderColorBase};
           box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
-          transform: translateY(100%);
-          transition: transform 0.18s ease-out;
+          /* 起点与校对区重叠、被它遮住；打开时向上抽出一整条。 */
+          transform: translateY(0);
+          visibility: hidden;
+          transition:
+            transform 0.18s ease-out,
+            visibility 0s 0.18s;
           pointer-events: none;
         }
         .ImageSourceViewerProofreader__TipArea--visible {
-          transform: translateY(0);
+          transform: translateY(-100%);
+          visibility: visible;
+          transition:
+            transform 0.18s ease-out,
+            visibility 0s;
           pointer-events: auto;
         }
         .ImageSourceViewerProofreader__TipTextArea {
@@ -653,99 +680,106 @@ export const ImageSourceViewerProofreader: FC<
             )}
           </div>
           <div className="ImageSourceViewerProofreader__AreaLine" />
-          <div className="ImageSourceViewerProofreader__ProofreaderArea">
-            <TranslationUser
-              className="ImageSourceViewerProofreader__TranslationUser"
-              iconType="proofread"
-              avatar={focusedTranslation?.proofreader?.avatar}
-            />
-            <TextArea
-              autoSize
-              className={classNames('ImageSourceViewerProofreader__TextArea', {
-                'ImageSourceViewerProofreader__TextArea--hasAvatar':
-                  focusedTranslation?.proofreader?.avatar,
+          <div className="ImageSourceViewerProofreader__ProofreaderWrapper">
+            <div className="ImageSourceViewerProofreader__ProofreaderArea">
+              <TranslationUser
+                className="ImageSourceViewerProofreader__TranslationUser"
+                iconType="proofread"
+                avatar={focusedTranslation?.proofreader?.avatar}
+              />
+              <TextArea
+                autoSize
+                className={classNames(
+                  'ImageSourceViewerProofreader__TextArea',
+                  {
+                    'ImageSourceViewerProofreader__TextArea--hasAvatar':
+                      focusedTranslation?.proofreader?.avatar,
+                  },
+                )}
+                onChange={readOnly ? undefined : handleProofreadContentChange}
+                onFocus={() => setActiveInput('proofread')}
+                onKeyDown={(e) => {
+                  // 批注框滑出时，上下键不再用于文本内换行/移动，改为切换输入框
+                  if (!tipVisible) {
+                    return;
+                  }
+                  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    tipTextAreaRef.current?.focus();
+                  }
+                }}
+                value={focusedTranslation?.proofreadContent}
+                placeholder={
+                  focusedSourceCreating
+                    ? formatMessage({ id: 'imageTranslator.sourceCreating' })
+                    : focusedSourceDeleting
+                      ? formatMessage({ id: 'imageTranslator.sourceDeleting' })
+                      : isNoTranslation
+                        ? formatMessage({
+                            id: 'imageTranslator.noTranslationForProofread',
+                          })
+                        : formatMessage({
+                            id: 'imageTranslator.proofreadPlaceholder',
+                          })
+                }
+                // 新创建翻译时，focusedTranslation 会是一个 id 为空的虚拟对象，所以这里用 focusedTranslationID 判断
+                disabled={
+                  !readOnly &&
+                  (focusedSourceCreating ||
+                    focusedSourceDeleting ||
+                    isNoTranslation ||
+                    focusedSource.myTranslationContentStatus === 'saving' ||
+                    focusedSource.myTranslationContentStatus === 'debouncing')
+                }
+                readOnly={readOnly}
+                ref={proofreadTextAreaRef}
+              ></TextArea>
+            </div>
+            <div
+              className={classNames('ImageSourceViewerProofreader__TipArea', {
+                'ImageSourceViewerProofreader__TipArea--visible': tipVisible,
               })}
-              onChange={readOnly ? undefined : handleProofreadContentChange}
-              onFocus={() => setActiveInput('proofread')}
-              onKeyDown={(e) => {
-                // 批注框滑出时，上下键不再用于文本内换行/移动，改为切换输入框
-                if (!tipVisible) {
-                  return;
-                }
-                if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-                  e.preventDefault();
-                  tipTextAreaRef.current?.focus();
-                }
-              }}
-              value={focusedTranslation?.proofreadContent}
-              placeholder={
-                focusedSourceCreating
-                  ? formatMessage({ id: 'imageTranslator.sourceCreating' })
-                  : focusedSourceDeleting
-                    ? formatMessage({ id: 'imageTranslator.sourceDeleting' })
-                    : isNoTranslation
-                      ? formatMessage({
-                          id: 'imageTranslator.noTranslationForProofread',
-                        })
-                      : formatMessage({
-                          id: 'imageTranslator.proofreadPlaceholder',
-                        })
-              }
-              // 新创建翻译时，focusedTranslation 会是一个 id 为空的虚拟对象，所以这里用 focusedTranslationID 判断
-              disabled={
-                !readOnly &&
-                (focusedSourceCreating ||
-                  focusedSourceDeleting ||
-                  isNoTranslation ||
-                  focusedSource.myTranslationContentStatus === 'saving' ||
-                  focusedSource.myTranslationContentStatus === 'debouncing')
-              }
-              readOnly={readOnly}
-              ref={proofreadTextAreaRef}
-            ></TextArea>
-          </div>
-          <div
-            className={classNames('ImageSourceViewerProofreader__TipArea', {
-              'ImageSourceViewerProofreader__TipArea--visible': tipVisible,
-            })}
-          >
-            <TextArea
-              className="ImageSourceViewerProofreader__TipTextArea"
-              ref={tipTextAreaRef}
-              value={tipDraft?.content || ''}
-              onChange={(e) => {
-                const content = e.target.value;
-                setTipDraft((previousDraft) =>
-                  previousDraft ? { ...previousDraft, content } : previousDraft,
-                );
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-                  e.preventDefault();
-                  proofreadTextAreaRef.current?.focus({ cursor: 'end' });
-                  return;
-                }
-                if (e.key === 'Escape') {
-                  // 取消批注：保留校对内容里的字符，也不提交
-                  e.preventDefault();
-                  setTipDraft(null);
-                  proofreadTextAreaRef.current?.focus({ cursor: 'end' });
-                  return;
-                }
-                if (
-                  e.key === 'Enter' &&
-                  !e.shiftKey &&
-                  !e.nativeEvent.isComposing
-                ) {
-                  e.preventDefault();
-                  submitTipDraft();
-                }
-              }}
-              placeholder={formatMessage({
-                id: 'imageTranslator.proofreadTipPlaceholder',
-              })}
-              tabIndex={tipVisible ? 0 : -1}
-            ></TextArea>
+            >
+              <TextArea
+                className="ImageSourceViewerProofreader__TipTextArea"
+                ref={tipTextAreaRef}
+                value={tipDraft?.content || ''}
+                onChange={(e) => {
+                  const content = e.target.value;
+                  setTipDraft((previousDraft) =>
+                    previousDraft
+                      ? { ...previousDraft, content }
+                      : previousDraft,
+                  );
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    proofreadTextAreaRef.current?.focus({ cursor: 'end' });
+                    return;
+                  }
+                  if (e.key === 'Escape') {
+                    // 取消批注：保留校对内容里的字符，也不提交
+                    e.preventDefault();
+                    setTipDraft(null);
+                    proofreadTextAreaRef.current?.focus({ cursor: 'end' });
+                    return;
+                  }
+                  if (
+                    e.key === 'Enter' &&
+                    !e.shiftKey &&
+                    !e.nativeEvent.isComposing
+                  ) {
+                    e.preventDefault();
+                    submitTipDraft();
+                  }
+                }}
+                placeholder={formatMessage({
+                  id: 'imageTranslator.proofreadTipPlaceholder',
+                })}
+                tabIndex={tipVisible ? 0 : -1}
+              ></TextArea>
+            </div>
           </div>
         </div>
       )}
