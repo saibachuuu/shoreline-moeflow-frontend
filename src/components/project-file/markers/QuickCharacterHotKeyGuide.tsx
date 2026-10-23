@@ -346,16 +346,42 @@ export const QuickCharacterHotKeyGuide: FC<QuickCharacterHotKeyGuideProps> = ({
             text-align: center;
             margin-top: 2px;
             line-height: 1.4;
+
+            .GuideFooterTip__Line {
+              display: block;
+            }
+
+            .GuideFooterTip__TipTrigger {
+              display: inline-block;
+              vertical-align: middle;
+              margin: 0 3px;
+            }
           `}
         >
-          {isProofreadOrGodMode
-            ? hotKeyDisplay
-              ? formatMessage(
-                  { id: 'quickChar.proofreadFeedbackGuideTip' },
-                  { hotKey: `[${hotKeyDisplay}]` },
-                )
-              : formatMessage({ id: 'quickChar.proofreadFeedbackGuideTipNoKey' })
-            : formatMessage({ id: 'quickChar.guideFooterTip' })}
+          {isProofreadOrGodMode ? (
+            <>
+              <span className="GuideFooterTip__Line">
+                {formatMessage({ id: 'quickChar.proofreadTipInputHintPrefix' })}
+                {/* 与校对模式的批注触发字符保持一致 */}
+                <span className="GuideItem__KeyBadge GuideFooterTip__TipTrigger">
+                  _
+                </span>
+                {formatMessage({ id: 'quickChar.proofreadTipInputHintSuffix' })}
+              </span>
+              <span className="GuideFooterTip__Line">
+                {hotKeyDisplay
+                  ? formatMessage(
+                      { id: 'quickChar.proofreadFeedbackGuideTip' },
+                      { hotKey: `[${hotKeyDisplay}]` },
+                    )
+                  : formatMessage({
+                      id: 'quickChar.proofreadFeedbackGuideTipNoKey',
+                    })}
+              </span>
+            </>
+          ) : (
+            formatMessage({ id: 'quickChar.guideFooterTip' })
+          )}
         </div>
 
         {/* 校对/神模式：向翻译寄送校对稿 */}

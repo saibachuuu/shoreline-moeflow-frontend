@@ -15,9 +15,12 @@ import {
   batchSelectTranslationSaga,
   editMyTranslationSaga,
   editProofreadSaga,
+  removeSourceTip,
+  upsertSourceTip,
 } from '@/store/source/slice';
 import { focusTranslation } from '@/store/translation/slice';
 import style from '@/style';
+import { toLowerCamelCase } from '@/utils';
 import { getBestTranslation } from '@/utils/source';
 import { hover } from '@/utils/style';
 import { Source } from './Source';
@@ -61,6 +64,8 @@ export const ImageSourceViewerProofreader: FC<
     /** 触发字符在校对内容中的位置，确认批注时要删掉它 */
     index: number;
     content: string;
+    /** 已有批注的 id，有值时表示编辑已有批注 */
+    tipID?: string;
   } | null>(null);
   const currentUser = useSelector((state: AppState) => state.user);
   const batchSelecting = useSelector(
@@ -181,14 +186,30 @@ export const ImageSourceViewerProofreader: FC<
       proofreadContent.length === previousContent.length + 1 &&
       proofreadContent[caret - 1] === TIP_TRIGGER_CHARACTER
     ) {
+      // 每个校对对每个标签只能有一条批注，已有批注时读取出来编辑
+      const myExistingTip = focusedSource?.tips.find(
+        (tip) => tip.user?.id === currentUser.id,
+      );
       setTipDraft((previousDraft) => ({
         translationID: focusedTranslationID,
         index: caret - 1,
-        content:
-          previousDraft?.translationID === focusedTranslationID
+        content: myExistingTip
+          ? myExistingTip.content
+          : previousDraft?.translationID === focusedTranslationID
             ? previousDraft.content
             : '',
+        tipID: myExistingTip?.id,
       }));
+    } else if (tipDraft) {
+      // 内容变化后光标不再紧跟在触发字符后面时，收回批注框
+      const stillAfterTrigger =
+        caret !== null &&
+        tipDraft.translationID === focusedTranslationID &&
+        caret === tipDraft.index + 1 &&
+        proofreadContent[tipDraft.index] === TIP_TRIGGER_CHARACTER;
+      if (!stillAfterTrigger) {
+        setTipDraft(null);
+      }
     }
     dispatch(
       editProofreadSaga({
@@ -199,17 +220,49 @@ export const ImageSourceViewerProofreader: FC<
     );
   };
 
+  /** 光标离开触发字符后面时收回批注框 */
+  const handleProofreadSelect = (
+    e: React.SyntheticEvent<HTMLTextAreaElement>,
+  ) => {
+    if (!tipDraft) {
+      return;
+    }
+    const textArea = e.currentTarget;
+    const caret = textArea.selectionStart;
+    if (
+      tipDraft.translationID !== focusedTranslationID ||
+      caret !== textArea.selectionEnd ||
+      caret !== tipDraft.index + 1 ||
+      textArea.value[tipDraft.index] !== TIP_TRIGGER_CHARACTER
+    ) {
+      setTipDraft(null);
+    }
+  };
+
   /** 批注框是否处于滑出状态 */
   const tipVisible =
     !!tipDraft && tipDraft.translationID === focusedTranslationID && !readOnly;
 
-  /** 确认批注：提交到当前原文的 tips，并删掉校对内容里的触发字符 */
+  const handleTipRequestError = (error: unknown) => {
+    if (
+      error &&
+      typeof error === 'object' &&
+      'default' in error &&
+      typeof error.default === 'function'
+    ) {
+      error.default();
+      return;
+    }
+    message.error(formatMessage({ id: 'site.networkError' }));
+  };
+
+  /** 确认批注：提交或删除批注，并删掉校对内容里的触发字符 */
   const submitTipDraft = () => {
     if (!tipDraft) {
       return;
     }
     const content = tipDraft.content.trim();
-    const { translationID, index } = tipDraft;
+    const { translationID, index, tipID } = tipDraft;
 
     if (translationID === focusedTranslationID) {
       const currentContent = focusedTranslation?.proofreadContent || '';
@@ -219,36 +272,43 @@ export const ImageSourceViewerProofreader: FC<
             sourceID: focusedSourceID,
             translationID,
             proofreadContent:
-              currentContent.slice(0, index) +
-              currentContent.slice(index + 1),
+              currentContent.slice(0, index) + currentContent.slice(index + 1),
           }),
         );
       }
     }
 
     if (content) {
-      api.tip
-        .createTip({
-          sourceID: focusedSourceID,
-          data: { content, targetID },
-        })
-        .then(() => {
+      const request = tipID
+        ? api.tip.editTip({ tipID, data: { content } })
+        : api.tip.createTip({
+            sourceID: focusedSourceID,
+            data: { content, targetID },
+          });
+      request
+        .then((result) => {
+          dispatch(
+            upsertSourceTip({
+              sourceID: focusedSourceID,
+              tip: toLowerCamelCase(result.data),
+            }),
+          );
           message.success(
             formatMessage({ id: 'imageTranslator.proofreadTipAdded' }),
           );
         })
-        .catch((error: unknown) => {
-          if (
-            error &&
-            typeof error === 'object' &&
-            'default' in error &&
-            typeof error.default === 'function'
-          ) {
-            error.default();
-            return;
-          }
-          message.error(formatMessage({ id: 'site.networkError' }));
-        });
+        .catch(handleTipRequestError);
+    } else if (tipID) {
+      // 提交空白表示删除已有批注
+      api.tip
+        .deleteTip({ tipID })
+        .then(() => {
+          dispatch(removeSourceTip({ sourceID: focusedSourceID, tipID }));
+          message.success(
+            formatMessage({ id: 'imageTranslator.proofreadTipDeleted' }),
+          );
+        })
+        .catch(handleTipRequestError);
     }
 
     setTipDraft(null);
@@ -496,6 +556,12 @@ export const ImageSourceViewerProofreader: FC<
           flex-direction: column;
           height: ${isMobile ? 52 : 64}px;
           background-color: ${style.backgroundColorLight};
+          /* 半透明，露出下方的译文与符号栏，同时保持文字可读 */
+          background-color: color-mix(
+            in srgb,
+            ${style.backgroundColorLight} 86%,
+            transparent
+          );
           border-top: 1px solid ${style.borderColorBase};
           box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
           /* 起点与校对区重叠、被它遮住；打开时向上抽出一整条。 */
@@ -533,34 +599,34 @@ export const ImageSourceViewerProofreader: FC<
     >
       <div className="ImageSourceViewerProofreader__TranslationsWrapper">
         <div className="ImageSourceViewerProofreader__Translations">
-        {sources.map((source, index) => (
-          <Source
-            ref={(ref) => (domRefs.current[index] = ref)}
-            source={source}
-            index={index}
-            key={source.id}
-            targetID={targetID}
-            readOnly={readOnly}
-          />
-        ))}
-        {!readOnly && file && sources.length > 0 && (
-          <div className="ImageSourceViewerProofreader__TranslationsBottom">
-            <div className="ImageSourceViewerProofreader__TranslationsButtons">
-              <Button
-                loading={batchSelecting}
-                className="ImageSourceViewerProofreader__TranslationsButton"
-                onClick={batchSelectTranslation}
-              >
-                {formatMessage({ id: 'imageTranslator.checkAllTranslation' })}
-              </Button>
+          {sources.map((source, index) => (
+            <Source
+              ref={(ref) => (domRefs.current[index] = ref)}
+              source={source}
+              index={index}
+              key={source.id}
+              targetID={targetID}
+              readOnly={readOnly}
+            />
+          ))}
+          {!readOnly && file && sources.length > 0 && (
+            <div className="ImageSourceViewerProofreader__TranslationsBottom">
+              <div className="ImageSourceViewerProofreader__TranslationsButtons">
+                <Button
+                  loading={batchSelecting}
+                  className="ImageSourceViewerProofreader__TranslationsButton"
+                  onClick={batchSelectTranslation}
+                >
+                  {formatMessage({ id: 'imageTranslator.checkAllTranslation' })}
+                </Button>
+              </div>
+              <div className="ImageSourceViewerProofreader__TranslationsButtonsTip">
+                {formatMessage({
+                  id: 'imageTranslator.checkAllTranslationTip',
+                })}
+              </div>
             </div>
-            <div className="ImageSourceViewerProofreader__TranslationsButtonsTip">
-              {formatMessage({
-                id: 'imageTranslator.checkAllTranslationTip',
-              })}
-            </div>
-          </div>
-        )}
+          )}
         </div>
       </div>
       {focusedSource && (
@@ -697,6 +763,7 @@ export const ImageSourceViewerProofreader: FC<
                   },
                 )}
                 onChange={readOnly ? undefined : handleProofreadContentChange}
+                onSelect={handleProofreadSelect}
                 onFocus={() => setActiveInput('proofread')}
                 onKeyDown={(e) => {
                   // 批注框滑出时，上下键不再用于文本内换行/移动，改为切换输入框
@@ -775,7 +842,9 @@ export const ImageSourceViewerProofreader: FC<
                   }
                 }}
                 placeholder={formatMessage({
-                  id: 'imageTranslator.proofreadTipPlaceholder',
+                  id: tipDraft?.tipID
+                    ? 'imageTranslator.proofreadTipEditPlaceholder'
+                    : 'imageTranslator.proofreadTipPlaceholder',
                 })}
                 tabIndex={tipVisible ? 0 : -1}
               ></TextArea>

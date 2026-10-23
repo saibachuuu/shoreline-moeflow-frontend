@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { APITip } from '@/apis/tip';
 import { BatchSelectTranslationData } from '@/apis/translation';
 import { InputDebounceStatus, Source } from '@/interfaces';
 import { User } from '@/interfaces/user';
@@ -141,6 +142,39 @@ const slice = createSlice({
             target: {} as any,
           };
         }
+      }
+    },
+    upsertSourceTip(
+      state,
+      action: PayloadAction<{ sourceID: string; tip: APITip }>,
+    ) {
+      const index = state.sources.findIndex(
+        (source) => source.id === action.payload.sourceID,
+      );
+      if (index > -1) {
+        const tips = state.sources[index].tips;
+        const tipIndex = tips.findIndex(
+          (tip) => tip.id === action.payload.tip.id,
+        );
+        if (tipIndex > -1) {
+          tips[tipIndex] = action.payload.tip;
+        } else {
+          // 后端按 create_time 倒序返回，最新的批注放最前面
+          tips.unshift(action.payload.tip);
+        }
+      }
+    },
+    removeSourceTip(
+      state,
+      action: PayloadAction<{ sourceID: string; tipID: string }>,
+    ) {
+      const index = state.sources.findIndex(
+        (source) => source.id === action.payload.sourceID,
+      );
+      if (index > -1) {
+        state.sources[index].tips = state.sources[index].tips.filter(
+          (tip) => tip.id !== action.payload.tipID,
+        );
       }
     },
     deleteSourceSaga(state, action: PayloadAction<{ id: string }>) {},
@@ -345,6 +379,8 @@ export const {
   editSourceMyTranslationContent,
   rerankSourceSaga,
   rerankSource,
+  upsertSourceTip,
+  removeSourceTip,
   deleteSourceSaga,
   deleteSource,
   focusSource,

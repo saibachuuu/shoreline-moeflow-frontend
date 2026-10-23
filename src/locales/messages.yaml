@@ -773,9 +773,18 @@ imageTranslator.proofreadPlaceholder:
 imageTranslator.proofreadTipPlaceholder:
   zhCn: 输入批注，回车确认；上下键切换输入框
   en: Enter a tip, press Enter to confirm; use Up/Down to switch inputs
+imageTranslator.proofreadTipEditPlaceholder:
+  zhCn: 修改批注，清空内容后回车可删除；上下键切换输入框
+  en: Edit the tip; clear the text and press Enter to delete; use Up/Down to switch inputs
 imageTranslator.proofreadTipAdded:
   zhCn: 批注已添加
   en: Tip added
+imageTranslator.proofreadTipDeleted:
+  zhCn: 批注已删除
+  en: Tip deleted
+imageTranslator.tipLabel:
+  zhCn: 批注
+  en: Tip
 imageTranslator.deleteLabelTitle:
   zhCn: 此标签已有翻译，您确认要删除吗？
   en: "This label is already translated. Are you sure you want to delete it?"
@@ -2207,6 +2216,12 @@ quickChar.hotKeyGuideTitle:
 quickChar.guideFooterTip:
   zhCn: 可进入左上角设置页查看、修改详情
   en: Open settings in the top-left corner to view and modify details
+quickChar.proofreadTipInputHintPrefix:
+  zhCn: 按
+  en: Press
+quickChar.proofreadTipInputHintSuffix:
+  zhCn: 可输入批注
+  en: to add an annotation
 quickChar.proofreadFeedbackGuideTip:
   zhCn: 按下{hotKey}或进入设置以将校对稿反馈至翻译
   en: Press {hotKey} or enter settings to send proofread feedback to translators

@@ -1,5 +1,5 @@
 import { css } from '@emotion/core';
-import { Checkbox } from 'antd';
+import { Checkbox, Tag } from 'antd';
 import classNames from 'classnames';
 import { clearFix } from 'polished';
 import React, { useEffect } from 'react';
@@ -76,9 +76,7 @@ const SourceWithoutRef: React.ForwardRefRenderFunction<
     dispatch(
       focusSource({
         id: source.id,
-        effects: autoFocusInput
-          ? ['focusLabel', 'focusInput']
-          : ['focusLabel'],
+        effects: autoFocusInput ? ['focusLabel', 'focusInput'] : ['focusLabel'],
         noises: autoFocusInput ? ['focusInput'] : [],
       }),
     );
@@ -229,7 +227,7 @@ const SourceWithoutRef: React.ForwardRefRenderFunction<
         .ImageSourceViewerProofreaderSource__TranslationContentProofread {
           padding: 4px 0;
           margin: 0 5px;
-           border-top: 1px dashed ${style.borderColorBase};
+          border-top: 1px dashed ${style.borderColorBase};
           white-space: pre-wrap;
           word-break: break-all;
         }
@@ -273,6 +271,26 @@ const SourceWithoutRef: React.ForwardRefRenderFunction<
           .ant-checkbox-input:focus + .ant-checkbox-inner {
             border-color: #dbdbdb;
           }
+        }
+        .ImageSourceViewerProofreaderSource__Tips {
+          padding: 2px 5px 2px 32px;
+        }
+        .ImageSourceViewerProofreaderSource__Tip {
+          padding: 2px 0;
+          color: ${style.textColor};
+          white-space: pre-wrap;
+          word-break: break-all;
+        }
+        .ImageSourceViewerProofreaderSource__TipTag {
+          margin: 0 4px 0 0;
+          font-size: 12px;
+          line-height: 18px;
+          padding: 0 6px;
+          color: ${style.textColorLight};
+          background-color: ${style.hoverColor};
+          border-color: ${style.borderColorBase};
+          border-radius: ${style.borderRadiusSm};
+          cursor: default;
         }
       `}
     >
@@ -384,6 +402,23 @@ const SourceWithoutRef: React.ForwardRefRenderFunction<
                 [{formatMessage({ id: 'label.defaultContent' })}]
               </div>
             </div>
+          </div>
+        )}
+        {source.tips.length > 0 && (
+          <div className="ImageSourceViewerProofreaderSource__Tips">
+            {source.tips.map((tip) => (
+              <div
+                className="ImageSourceViewerProofreaderSource__Tip"
+                key={tip.id}
+              >
+                <Tooltip title={tip.user?.name} placement="top">
+                  <Tag className="ImageSourceViewerProofreaderSource__TipTag">
+                    {formatMessage({ id: 'imageTranslator.tipLabel' })}
+                  </Tag>
+                </Tooltip>
+                {tip.content}
+              </div>
+            ))}
           </div>
         )}
       </div>
