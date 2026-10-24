@@ -285,7 +285,8 @@ export const FileList: FC<FileListProps> = ({
             z-index: 10;
           }
           .List__Items {
-            padding: 0 ${style.paddingBase}px;
+            /* 顶部留白 = paddingBase + wrapper 水平 gutter(4px)，与左右可见留白一致 */
+            padding: ${style.paddingBase + 4}px ${style.paddingBase}px;
             .List__ItemWrapper {
               flex: none;
               margin-bottom: 10px;
@@ -308,6 +309,16 @@ export const FileList: FC<FileListProps> = ({
         .FileList__Header {
           display: flex;
           justify-content: stretch;
+        }
+        /* 恢复旧版右对齐：首个按钮吸收剩余宽度，把后续按钮推到最右。
+           ResponsiveToolbar 重构（53318c9）删掉了这条规则；compact 态（窄屏均分图标）
+           的样式特异性相近，用 :not() 排除，避免依赖样式注册顺序。 */
+        .FileList__Header:not(.ResponsiveToolbar--compact)
+          .FileList__ChangeTargetButton {
+          flex: auto;
+          .Button__Content {
+            justify-content: flex-start;
+          }
         }
       `}
     >
