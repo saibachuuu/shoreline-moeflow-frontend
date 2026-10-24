@@ -2931,3 +2931,25 @@ notification.moreFilters:
 notification.updatesAvailable:
   zhCn: 有新消息，点击查看更新
   en: New messages available — view updates
+
+site.memberList.positionLock.title:
+  zhCn: 职位锁定
+  en: Position locks
+site.memberList.positionLock.level1Tip:
+  zhCn: 开启后，项目管理员与团队自定义职位的成员指派仅团队创建者可操作
+  en: When enabled, assigning project admins and team custom tags is restricted to the team creator
+site.memberList.positionLock.level2Title:
+  zhCn: "额外锁定以下工种："
+  en: "Additionally lock these roles:"
+site.memberList.positionLock.active:
+  zhCn: 部分职位已被团队创建者锁定
+  en: Some positions are locked by the team creator
+site.memberList.positionLock.readonlyTip:
+  zhCn: 职位指派由团队创建者控制
+  en: Position assignments are controlled by the team creator
+site.memberList.positionLock.saved:
+  zhCn: 职位锁定设置已保存
+  en: Position lock settings saved
+site.memberList.positionLock.clearTags:
+  zhCn: 清空工种锁定
+  en: Clear role locks

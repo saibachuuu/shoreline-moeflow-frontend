@@ -11,6 +11,51 @@ export interface ProjectMemberDraft {
   isOwner?: boolean;
 }
 
+/** 职位锁定的最小项目信息（来自 project.to_api 的 camelCase 字段）。 */
+export interface PositionLockInfo {
+  positionLockEnabled?: boolean;
+  positionLockTags?: string[];
+  team?: { baseTag?: 'creator' | 'admin' | 'member' } | null;
+}
+
+const BUILTIN_PROJECT_TAGS = new Set([
+  'creator',
+  'admin',
+  'raw_provider',
+  'scanner',
+  'cropper',
+  'cleaner',
+  'translator',
+  'proofreader',
+  'typesetter',
+]);
+
+/**
+ * 职位是否被团队创建者锁定：一级总开关开启时 admin 与所有团队自定义
+ * 职位（非内置 tag）受锁，二级为七工种多选。
+ */
+export const isPositionLocked = (
+  project: PositionLockInfo,
+  tag: string,
+): boolean => {
+  if (!project.positionLockEnabled) return false;
+  if (tag === 'admin') return true;
+  if ((project.positionLockTags || []).includes(tag)) return true;
+  return !BUILTIN_PROJECT_TAGS.has(tag);
+};
+
+/** 当前操作者是否为团队创建者（不受锁限制）。 */
+export const isTeamCreatorOf = (project: PositionLockInfo): boolean =>
+  project.team?.baseTag === 'creator';
+
+/** 成员是否持有受锁职位（整体移除连带受锁）。 */
+export const isMemberRemovalLocked = (
+  project: PositionLockInfo,
+  member: Pick<ProjectMemberDraft, 'tags'>,
+): boolean =>
+  project.positionLockEnabled === true &&
+  (member.tags || []).some((tag) => isPositionLocked(project, tag));
+
 /**
  * Project worker tags are backed by the target user's team qualifications.
  * External identities do not have a team qualification requirement.

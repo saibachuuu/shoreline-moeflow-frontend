@@ -6,7 +6,11 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { Avatar, EditingStatusBadge, Icon, Tooltip } from '@/components';
 import { useProjectHeartbeat } from '@/hooks';
 import { api } from '@/apis';
-import { APIProjectMember, PROJECT_WORKER_ROLES } from '@/apis/project';
+import {
+  APIProject,
+  APIProjectMember,
+  PROJECT_WORKER_ROLES,
+} from '@/apis/project';
 import { APIUser } from '@/apis/user';
 import { TeamMember } from '@/apis/member';
 import {
@@ -19,6 +23,8 @@ import {
   mergeExternalMemberWithoutTags,
   mergeMemberTag,
   mergeMemberWithoutTags,
+  isPositionLocked,
+  isTeamCreatorOf,
   projectMemberDisplayLabel,
   projectMemberOperationId,
   teamSearchResultLabel,
@@ -83,6 +89,24 @@ export const EditWorkers = ({
 }: EditWorkersProps) => {
   const { formatMessage } = useIntl();
   const { presence } = useProjectHeartbeat(projectId, { action: 'staff' });
+  // 职位锁定：拉取项目以判定受锁职位与团队创建者身份（失败时按未锁定处理，后端仍会拦截）
+  const [projectInfo, setProjectInfo] = useState<APIProject | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    api.project
+      .getProject({ id: projectId })
+      .then((result) => {
+        if (!cancelled) setProjectInfo(result.data as APIProject);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [projectId]);
+  const positionLockActive = projectInfo?.positionLockEnabled === true;
+  const lockExempt = isTeamCreatorOf(projectInfo || {});
+  const tagLocked = (roleKey: string) =>
+    positionLockActive && !lockExempt && isPositionLocked(projectInfo || {}, roleKey);
 
   /** 将 PROJECT_WORKER_ROLES 的职位名本地化，未知职位保留原文 */
   const projectRoleLabel = (roleKey: string) => {
@@ -329,6 +353,7 @@ export const EditWorkers = ({
     },
     roleKey: string,
   ) => {
+    if (tagLocked(roleKey)) return false;
     const teamMember = member.userId
       ? teamMembers.find((item) => item.userId === member.userId)
       : undefined;
@@ -572,6 +597,7 @@ export const EditWorkers = ({
   };
 
   const removeRole = (member: ProjectMemberDraft, roleKey: string) => {
+    if (tagLocked(roleKey)) return;
     if (
       !canEditProjectMemberInQuickMenu(member, currentUserId, canManageMembers)
     )

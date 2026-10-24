@@ -46,6 +46,8 @@ export interface APIProject {
   effectivePermissions?: string[];
   memberSummary?: APIProjectMemberSummary[];
   staffListPage?: number | null;
+  positionLockEnabled?: boolean;
+  positionLockTags?: string[];
   activePresence?: ProjectActivePresence | null;
 }
 
@@ -288,15 +290,18 @@ const uploadFile = ({
   });
 };
 
-/** 修改项目的请求数据 */
+/** 修改项目的请求数据（后端 schema 全部字段可选，仅提交的字段会被更新） */
 interface EditProjectData {
-  name: string;
-  intro: string;
-  allowApplyType: number;
-  applicationCheckType: number;
+  name?: string;
+  intro?: string;
+  allowApplyType?: number;
+  applicationCheckType?: number;
   /** 导出人员名单的植入页序号：非零整数；null 表示未设置（跟随团队/默认）。 */
   staffListPage?: number | null;
-  defaultRole: string;
+  defaultRole?: string;
+  /** 职位锁定（仅团队创建者可改） */
+  positionLockEnabled?: boolean;
+  positionLockTags?: string[];
 }
 /** 修改项目 */
 const editProject = ({

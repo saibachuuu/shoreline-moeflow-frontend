@@ -17,9 +17,13 @@ import { toLowerCamelCase } from '@/utils';
 import { clickEffect } from '@/utils/style';
 import {
   diffProjectMembers,
+  isMemberRemovalLocked,
+  isPositionLocked,
+  isTeamCreatorOf,
   projectMemberOperationId,
   projectMemberPrimaryName,
 } from '@/utils/projectMembers';
+import { PositionLockCard } from '@/components/shared-form/PositionLockCard';
 import {
   mergeProjectIdentityTags,
   preferredDefaultMember,
@@ -437,6 +441,12 @@ export const MemberList: FC<MemberListProps> = ({
       `}
     >
       <aside className="IdentityMemberList__Aside">
+        {groupType === 'project' && (
+          <PositionLockCard
+            project={currentGroup as Project}
+            onProjectUpdated={onProjectUpdated}
+          />
+        )}
         <Input
           className="IdentityMemberList__Search"
           value={word}
@@ -605,6 +615,9 @@ const MemberDetail = ({
       member &&
       member.status !== 'removed' &&
       !member.isOwner &&
+      (project === undefined ||
+        !isMemberRemovalLocked(project, member) ||
+        isTeamCreatorOf(project)) &&
       (canManageMembers ||
         (member.status === 'active' && member.userId === currentUserID)),
   );
@@ -1127,7 +1140,16 @@ const MemberDetail = ({
               onChange={setIdentity}
             >
               {identityOptions.map((code) => (
-                <Select.Option key={code} value={code}>
+                <Select.Option
+                  key={code}
+                  value={code}
+                  disabled={
+                    code === 'admin' &&
+                    project !== undefined &&
+                    !isTeamCreatorOf(project) &&
+                    isPositionLocked(project, 'admin')
+                  }
+                >
                   {formatMessage({ id: identityLabelId(code) })}
                 </Select.Option>
               ))}
@@ -1152,7 +1174,15 @@ const MemberDetail = ({
                     (tag.assignable !== false || jobTags.includes(tag.code)),
                 )
                 .map((tag) => (
-                  <Select.Option key={tag.code} value={tag.code}>
+                  <Select.Option
+                    key={tag.code}
+                    value={tag.code}
+                    disabled={
+                      project !== undefined &&
+                      !isTeamCreatorOf(project) &&
+                      isPositionLocked(project, tag.code)
+                    }
+                  >
                     {formatTag(tag.code, tag.name || tag.code)}
                   </Select.Option>
                 ))}
