@@ -1968,6 +1968,18 @@ site.teamSetting.workerQualificationCheck:
 site.teamSetting.workerQualificationTip:
   zhCn: 开启后不校验团队成员的工作人员资格，全员可加入项目的任意职位
   en: When enabled, team members' worker qualifications are not checked, and anyone can join any position of a project
+site.teamSetting.proofreadMarker:
+  zhCn: 校对稿邮件标记
+  en: Proofread draft markers
+site.teamSetting.proofreadMarkerTip:
+  zhCn: 开启后寄送给翻译的校对稿邮件会内嵌带定位圆点的页面图（颜色区分框内/框外），关闭则直接使用原图
+  en: When enabled, proofread draft emails sent to translators embed page images with position dots (color-coded in/out of box); when disabled, original images are used
+site.teamSetting.proofreadMarkerOpacity:
+  zhCn: 圆点不透明度
+  en: Dot opacity
+site.teamSetting.proofreadMarkerOpacityTip:
+  zhCn: 定位圆点的不透明度（0-100），条目编号数字始终不透明以保证可读性；改动只影响之后寄送的校对稿
+  en: Opacity of the position dots (0-100); label numbers always stay opaque for readability. Changes only affect proofread drafts sent afterwards
 site.projectSetting.operationFailed:
   zhCn: 操作失败
   en: Operation failed

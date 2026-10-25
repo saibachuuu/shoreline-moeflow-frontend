@@ -1,6 +1,6 @@
 import { css } from '@emotion/core';
 import { FormItem, Icon } from '@/components';
-import { Button, Input, message, Modal, Switch, Tag } from 'antd';
+import { Button, Input, message, Modal, Slider, Switch, Tag } from 'antd';
 import { useState, useEffect } from 'react';
 import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
@@ -46,9 +46,16 @@ export const TeamSettingBase: FC<TeamSettingBaseProps> = ({ className }) => {
   const userID = useSelector((state: AppState) => state.user.id);
   const [permissionsVisible, setPermissionsVisible] = useState(false);
   const platform = useSelector((state: AppState) => state.site.platform);
+  const [markerLoading, setMarkerLoading] = useState(false);
+  const [markerOpacity, setMarkerOpacity] = useState(
+    currentTeam.proofreadMarkerOpacity ?? 92,
+  );
   useEffect(() => {
     setArchiveApiUrlInput(currentTeam.archiveApiUrl || '');
   }, [currentTeam.archiveApiUrl]);
+  useEffect(() => {
+    setMarkerOpacity(currentTeam.proofreadMarkerOpacity ?? 92);
+  }, [currentTeam.proofreadMarkerOpacity]);
   const isMobile = platform === 'mobile';
   const reportError = (error: any) => {
     if (typeof error?.default === 'function') {
@@ -82,6 +89,46 @@ export const TeamSettingBase: FC<TeamSettingBaseProps> = ({ className }) => {
         reportError(error);
       })
       .finally(() => setWqmLoading(false));
+  };
+
+  /** 校对稿标记开关（仅团队创建者，即时提交） */
+  const setProofreadMarkerEnabled = (enabled: boolean) => {
+    setMarkerLoading(true);
+    api
+      .editTeam({
+        id: currentTeam.id,
+        data: { proofreadMarkerEnabled: enabled },
+      })
+      .then((result) => {
+        const data = toLowerCamelCase(result.data);
+        dispatch(editTeam(data.team));
+        dispatch(setCurrentTeam(data.team));
+        message.success(data.message);
+      })
+      .catch((error) => {
+        reportError(error);
+      })
+      .finally(() => setMarkerLoading(false));
+  };
+
+  /** 校对稿圆点不透明度（拖动结束才提交） */
+  const saveProofreadMarkerOpacity = (opacity: number) => {
+    setMarkerLoading(true);
+    api
+      .editTeam({
+        id: currentTeam.id,
+        data: { proofreadMarkerOpacity: opacity },
+      })
+      .then((result) => {
+        const data = toLowerCamelCase(result.data);
+        dispatch(editTeam(data.team));
+        dispatch(setCurrentTeam(data.team));
+        message.success(data.message);
+      })
+      .catch((error) => {
+        reportError(error);
+      })
+      .finally(() => setMarkerLoading(false));
   };
 
   /** 保存画廊归档 API key 列表（整体提交，后端按 id 增删改） */
@@ -345,6 +392,84 @@ export const TeamSettingBase: FC<TeamSettingBaseProps> = ({ className }) => {
             >
               {formatMessage({ id: 'site.teamSetting.workerQualificationTip' })}
             </span>
+          </ContentItem>
+        </Content>
+      )}
+      {/* 校对稿邮件烤图标记（仅团队创建者可改）：开关控制是否在邮件里
+          内嵌带定位圆点的页面图；透明度只影响圆点，编号数字保持不透明。 */}
+      {currentTeam.baseTag === 'creator' && (
+        <Content>
+          <ContentTitle>
+            {formatMessage({ id: 'site.teamSetting.proofreadMarker' })}
+          </ContentTitle>
+          <ContentItem>
+            <Switch
+              checked={currentTeam.proofreadMarkerEnabled !== false}
+              loading={markerLoading}
+              onChange={(checked) => setProofreadMarkerEnabled(checked)}
+            />
+            <span
+              css={css`
+                margin-left: 8px;
+                color: ${style.textColorSecondary};
+                font-size: 12px;
+              `}
+            >
+              {formatMessage({ id: 'site.teamSetting.proofreadMarkerTip' })}
+            </span>
+          </ContentItem>
+          <ContentItem>
+            <div
+              css={css`
+                display: flex;
+                align-items: center;
+                width: 100%;
+                .TeamSettingBase__MarkerOpacityLabel {
+                  margin-right: 12px;
+                  white-space: nowrap;
+                }
+                .TeamSettingBase__MarkerOpacitySlider {
+                  flex: auto;
+                  max-width: 280px;
+                  margin: 0 12px 0 0;
+                }
+                .TeamSettingBase__MarkerOpacityTip {
+                  color: ${style.textColorSecondary};
+                  font-size: 12px;
+                }
+              `}
+            >
+              <span className="TeamSettingBase__MarkerOpacityLabel">
+                {formatMessage({ id: 'site.teamSetting.proofreadMarkerOpacity' })}
+              </span>
+              <Slider
+                className="TeamSettingBase__MarkerOpacitySlider"
+                min={0}
+                max={100}
+                step={1}
+                disabled={currentTeam.proofreadMarkerEnabled === false}
+                value={markerOpacity}
+                onChange={(value) => setMarkerOpacity(value as number)}
+                onAfterChange={(value) =>
+                  saveProofreadMarkerOpacity(value as number)
+                }
+              />
+              <span className="TeamSettingBase__MarkerOpacityTip">
+                {markerOpacity}%
+              </span>
+            </div>
+            <div
+              css={css`
+                width: 100%;
+                margin-top: 4px;
+                color: ${style.textColorSecondary};
+                font-size: 12px;
+              `}
+            >
+              {formatMessage({
+                id: 'site.teamSetting.proofreadMarkerOpacityTip',
+              })}
+            </div>
           </ContentItem>
         </Content>
       )}

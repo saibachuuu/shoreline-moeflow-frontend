@@ -94,6 +94,10 @@ interface EditTeamData {
   defaultRole?: string;
   /** 工作人员资格校验模式：qualified 校验 / open 全员可加入任意职位（仅团队创建者可改）。 */
   workerQualificationMode?: 'qualified' | 'open';
+  /** 校对稿邮件烤图标记开关（仅团队创建者可改）。 */
+  proofreadMarkerEnabled?: boolean;
+  /** 校对稿邮件烤图标记圆点不透明度百分比 0-100（仅团队创建者可改）。 */
+  proofreadMarkerOpacity?: number;
   /** 团队内项目默认的导出人员名单植入页序号（非零整数；null 表示未设置）。 */
   staffListPage?: number | null;
   /** 画廊归档导入的第三方档案 API key 列表：含 id 的项保留/更新，含 key 的项新增，未引用的旧 id 被删除。 */

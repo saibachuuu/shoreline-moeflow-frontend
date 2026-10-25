@@ -21,6 +21,10 @@ export interface Team {
   maxUser: number;
   userCount: number;
   workerQualificationMode?: 'qualified' | 'open';
+  /** 校对稿邮件烤图标记开关（仅团队创建者可改）。 */
+  proofreadMarkerEnabled?: boolean;
+  /** 校对稿邮件烤图标记圆点不透明度百分比 0-100。 */
+  proofreadMarkerOpacity?: number;
   /** 团队内项目默认的导出人员名单植入页序号（null=未设置）。 */
   staffListPage?: number | null;
   createTime: string;
