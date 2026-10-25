@@ -1135,6 +1135,12 @@ hotKey.goNextPage:
 hotKey.sendProofreadDraft:
   zhCn: 向翻译寄送校对稿
   en: Send Proofread Draft
+hotKey.tipTriggerCharacter:
+  zhCn: 批注触发字符
+  en: Annotation Trigger Character
+hotKey.tipTriggerCharacterDesc:
+  zhCn: 校对时键入此字符会滑出批注输入框，确认批注后该字符将被移除。建议使用正文中不常出现的单个字符。
+  en: Type this character while proofreading to open the annotation box; it is removed once the annotation is confirmed. Prefer a character that rarely appears in your text.
 mouse.function:
   zhCn: 功能
   en: Operation
@@ -2183,12 +2189,6 @@ adminSite.loadFailedRetry:
 adminSite.retry:
   zhCn: 重试
   en: Retry
-quickChar.showSymbolTools:
-  zhCn: 显示符号工具
-  en: Show Symbol Tools
-quickChar.hideSymbolTools:
-  zhCn: 隐藏符号工具
-  en: Hide Symbol Tools
 quickChar.symbolSettingTitle:
   zhCn: 符号输入器设置
   en: Symbol Inputter Settings

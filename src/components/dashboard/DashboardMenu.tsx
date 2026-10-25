@@ -105,6 +105,10 @@ export const DashboardMenu: FC<
                   border: 1px solid ${style.borderColorLight};
                   border-radius: ${style.borderRadiusBase};
                   background-color: ${style.backgroundColorLight};
+                  /* 通知铃铛外层的 antd Badge 自带深灰 color，会打断继承 */
+                  .ant-badge {
+                    color: inherit;
+                  }
                 }
               }
             }

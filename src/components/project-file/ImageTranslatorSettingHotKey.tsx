@@ -1,11 +1,18 @@
 import { css } from '@emotion/core';
 import classNames from 'classnames';
-import React from 'react';
+import { Input } from 'antd';
+import React, { useState } from 'react';
 import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
 import { FC } from '@/interfaces';
 import { AppState } from '@/store';
+import style from '@/style';
 import { HotKeyState, setHotKey } from '@/store/hotKey/slice';
+import { setTipTriggerCharacter } from '@/store/imageTranslator/slice';
+import {
+  isValidTipTriggerCharacter,
+  saveTipTriggerCharacter,
+} from '@/components/project-file/markers/proofread/tipTriggerCharacter';
 import { saveHotKey } from '@/utils/storage';
 import { HotKeyRecorder } from '@/components/HotKey';
 import {
@@ -42,6 +49,24 @@ export const ImageTranslatorSettingHotKey: FC<
   const sendProofreadDraftHotKeyOptions = useSelector(
     (state: AppState) => state.hotKey.sendProofreadDraft,
   );
+  const tipTriggerCharacter = useSelector(
+    (state: AppState) => state.imageTranslator.tipTriggerCharacter,
+  );
+  /** 触发字符输入框的暂存值，null 表示显示当前生效值 */
+  const [tipTriggerDraft, setTipTriggerDraft] = useState<string | null>(null);
+
+  const handleTipTriggerChange = (value: string) => {
+    // 取末位字符：键入新字符（框内已有值时被追加在末尾）或一次粘贴多字符都只取最后一个
+    const lastChar = value.slice(-1);
+    if (isValidTipTriggerCharacter(lastChar)) {
+      setTipTriggerDraft(null);
+      dispatch(setTipTriggerCharacter(lastChar));
+      saveTipTriggerCharacter(lastChar);
+    } else {
+      // 空串或空白：仅暂存显示，不生效，失焦时回退当前生效值
+      setTipTriggerDraft(value);
+    }
+  };
 
   const handleHotKeyChange = ({
     name,
@@ -195,6 +220,29 @@ export const ImageTranslatorSettingHotKey: FC<
           handleHotKeyChange({ name: 'sendProofreadDraft', index: 1, hotKey });
         }}
       />
+      <div className="ImageTranslatorSettingHotKey__Label">
+        {formatMessage({ id: 'hotKey.tipTriggerCharacter' })}
+      </div>
+      <Input
+        className="ImageTranslatorSettingHotKey__TipTriggerInput"
+        css={css`
+          width: 80px;
+        `}
+        value={tipTriggerDraft ?? tipTriggerCharacter}
+        onChange={(e) => handleTipTriggerChange(e.target.value)}
+        onBlur={() => setTipTriggerDraft(null)}
+      />
+      <div
+        className="ImageTranslatorSettingHotKey__TipTriggerDesc"
+        css={css`
+          grid-column: 1 / -1;
+          font-size: 12px;
+          color: ${style.textColorSecondary};
+          line-height: 1.5;
+        `}
+      >
+        {formatMessage({ id: 'hotKey.tipTriggerCharacterDesc' })}
+      </div>
     </div>
   );
 };

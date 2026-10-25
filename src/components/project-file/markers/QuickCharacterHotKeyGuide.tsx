@@ -32,6 +32,9 @@ export const QuickCharacterHotKeyGuide: FC<QuickCharacterHotKeyGuideProps> = ({
   const quickCharacters = useSelector(
     (state: AppState) => state.imageTranslator.quickCharacters,
   );
+  const tipTriggerCharacter = useSelector(
+    (state: AppState) => state.imageTranslator.tipTriggerCharacter,
+  );
   const focusPrevSourceOptions = useSelector(
     (state: AppState) => state.hotKey.focusPrevSource,
   );
@@ -362,9 +365,8 @@ export const QuickCharacterHotKeyGuide: FC<QuickCharacterHotKeyGuideProps> = ({
             <>
               <span className="GuideFooterTip__Line">
                 {formatMessage({ id: 'quickChar.proofreadTipInputHintPrefix' })}
-                {/* 与校对模式的批注触发字符保持一致 */}
                 <span className="GuideItem__KeyBadge GuideFooterTip__TipTrigger">
-                  _
+                  {tipTriggerCharacter}
                 </span>
                 {formatMessage({ id: 'quickChar.proofreadTipInputHintSuffix' })}
               </span>

@@ -4,19 +4,19 @@ import { useIntl } from 'react-intl';
 import { FC } from '@/interfaces';
 import style from '@/style';
 import { getHotKeyDisplayName } from '@/components/HotKey/utils';
-import { useQuickCharacterHotKey } from '../useQuickCharacterHotKey';
+import { useQuickCharacterHotKey } from './useQuickCharacterHotKey';
 
-/** 校对模式符号面板的属性接口 */
-interface ProofreadSymbolPanelProps {
+/** 符号面板的属性接口 */
+interface SymbolPanelProps {
   disabled?: boolean;
   onInsert: (character: string) => void;
 }
 /**
- * 校对模式的符号面板
+ * 符号面板（校对/翻译/原文模式共用）
  *
- * 只渲染符号按钮本身，展开与收起的动画由外层的滑出容器负责。
+ * 只渲染符号按钮本身，展开与收起的动画由外层的收展条（SymbolPanelStrip）负责。
  */
-export const ProofreadSymbolPanel: FC<ProofreadSymbolPanelProps> = ({
+export const SymbolPanel: FC<SymbolPanelProps> = ({
   disabled = false,
   onInsert,
 }) => {
@@ -25,7 +25,7 @@ export const ProofreadSymbolPanel: FC<ProofreadSymbolPanelProps> = ({
 
   return (
     <div
-      className="ProofreadSymbolPanel"
+      className="SymbolPanel"
       css={css`
         display: flex;
         flex-wrap: wrap;

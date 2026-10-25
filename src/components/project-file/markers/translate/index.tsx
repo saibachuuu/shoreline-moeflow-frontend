@@ -1,7 +1,7 @@
 import { css } from '@emotion/core';
 import TextArea, { TextAreaRef } from 'antd/lib/input/TextArea';
 import classNames from 'classnames';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
 import { DebounceStatus, Icon, Tooltip } from '@/components';
@@ -14,7 +14,15 @@ import style from '@/style';
 import { getBestTranslation } from '@/utils/source';
 import { clickEffect, hover } from '@/utils/style';
 import { can } from '@/utils/user';
-import { QuickCharacterButtons } from '../QuickCharacterButtons';
+import {
+  BottomDragHandle,
+  useBottomHeightResize,
+} from '../BottomDragHandle';
+import { FunctionBarButton } from '../FunctionBarButton';
+import {
+  SymbolPanelStrip,
+  useSymbolPanelVisible,
+} from '../SymbolPanelStrip';
 import { insertCharacterAtSelection } from '../quickCharacters';
 
 /** 翻译模式的属性接口 */
@@ -39,6 +47,9 @@ export const ImageSourceViewerTranslator: FC<
   );
   const domRefs = useRef<(HTMLDivElement | null)[]>([]);
   const textAreaRef = useRef<TextAreaRef>(null);
+  const translationsDomRef = useRef<HTMLDivElement>(null);
+  /** 符号面板是否展开（localStorage 持久化，三模式共用偏好） */
+  const [symbolsVisible, setSymbolsVisible] = useSymbolPanelVisible();
   const currentProject = useSelector(
     (state: AppState) => state.project.currentProject,
   );
@@ -69,50 +80,9 @@ export const ImageSourceViewerTranslator: FC<
   const focusedSourceCreating = focusedSource?.labelStatus === 'creating';
   const focusedSourceDeleting = focusedSource?.labelStatus === 'deleting';
 
-  const responsiveHeight = isMobile ? 100 : 240;
-  const minBottomHeight = 80;
-  const maxBottomHeight = 500;
-  const [adjustedBottomHeight, setAdjustedBottomHeight] = useState<number | null>(null);
-  const effectiveResponsiveHeight = adjustedBottomHeight ?? responsiveHeight;
-  const bottomHeight = focusedSource ? effectiveResponsiveHeight : 0;
-  const bottomHeightRef = useRef(bottomHeight);
-  bottomHeightRef.current = bottomHeight;
-  const isDraggingHeight = useRef(false);
-  const dragStartYHeight = useRef(0);
-  const dragStartHeightValue = useRef(0);
-
-  const handleHeightDragStart = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      e.currentTarget.setPointerCapture(e.pointerId);
-      isDraggingHeight.current = true;
-      dragStartYHeight.current = e.clientY;
-      dragStartHeightValue.current = bottomHeightRef.current;
-    },
-    [],
-  );
-
-  const handleHeightDragMove = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>) => {
-      if (!isDraggingHeight.current) return;
-      const deltaY = dragStartYHeight.current - e.clientY;
-      const newHeight = Math.min(
-        Math.max(dragStartHeightValue.current + deltaY, minBottomHeight),
-        maxBottomHeight,
-      );
-      setAdjustedBottomHeight(newHeight);
-    },
-    [],
-  );
-
-  const handleHeightDragEnd = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>) => {
-      if (!isDraggingHeight.current) return;
-      isDraggingHeight.current = false;
-      e.currentTarget.releasePointerCapture(e.pointerId);
-    },
-    [],
-  );
+  const { bottomHeight: adjustedPanelHeight, dragHandlers } =
+    useBottomHeightResize({ baseHeight: isMobile ? 100 : 240 });
+  const bottomHeight = focusedSource ? adjustedPanelHeight : 0;
 
   useEffect(() => {
     if (autoFocusInput && focusedSourceEffects.includes('focusInput')) {
@@ -170,9 +140,13 @@ export const ImageSourceViewerTranslator: FC<
       className={classNames('ImageSourceViewerTranslator', className)}
       css={css`
         height: 100%;
+        display: flex;
+        flex-direction: column;
         .ImageSourceViewerTranslator__TranslationsWrapper {
           position: relative;
-          height: calc(100% - ${bottomHeight}px);
+          /* 符号面板收展条在文档流中，呼出时把本区挤矮、列表整体上移 */
+          flex: 1 1 auto;
+          min-height: 0;
           overflow: hidden;
         }
         .ImageSourceViewerTranslator__Translations {
@@ -268,28 +242,16 @@ export const ImageSourceViewerTranslator: FC<
           color: ${style.textColorSecondaryLighter};
         }
         .ImageSourceViewerTranslator__Bottom {
+          flex: none;
           display: flex;
           flex-direction: column;
           height: ${bottomHeight}px;
         }
-        .ImageSourceViewerTranslator__DragHandle {
-          flex: none;
-          height: 12px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: ns-resize;
-          touch-action: none;
-          user-select: none;
+
+        .ImageSourceViewerTranslator__FunctionBar {
+          padding: 5px 5px 0;
           background-color: ${style.backgroundColorLight};
-          border-top: 3px solid ${style.borderColorBase};
-          border-bottom: 1px solid ${style.borderColorBase};
-        }
-        .ImageSourceViewerTranslator__DragHandleBar {
-          width: 30px;
-          height: 4px;
-          border-radius: 2px;
-          background-color: ${style.borderColorBase};
+          display: flex;
         }
         .ImageSourceViewerTranslator__TextArea {
           flex: auto;
@@ -316,7 +278,10 @@ export const ImageSourceViewerTranslator: FC<
       `}
     >
       <div className="ImageSourceViewerTranslator__TranslationsWrapper">
-        <div className="ImageSourceViewerTranslator__Translations">
+        <div
+          ref={translationsDomRef}
+          className="ImageSourceViewerTranslator__Translations"
+        >
         {myTranslations.map((myTranslation, i) => {
           const source = sources[i];
           const othersBestTranslation = othersBestTranslations[i];
@@ -424,26 +389,37 @@ export const ImageSourceViewerTranslator: FC<
         })}
         </div>
       </div>
+      {focusedSourceIndex > -1 && !readOnly && (
+        <SymbolPanelStrip
+          visible={symbolsVisible}
+          disabled={
+            !can(currentProject, PROJECT_PERMISSION.ADD_TRA) ||
+            focusedSourceCreating ||
+            focusedSourceDeleting
+          }
+          onInsert={insertQuickCharacter}
+          scrollContainerRef={translationsDomRef}
+        />
+      )}
       {focusedSourceIndex > -1 && (
         <div className="ImageSourceViewerTranslator__Bottom">
-          <div
-            className="ImageSourceViewerTranslator__DragHandle"
-            onPointerDown={handleHeightDragStart}
-            onPointerMove={handleHeightDragMove}
-            onPointerUp={handleHeightDragEnd}
-            onPointerCancel={handleHeightDragEnd}
-          >
-            <div className="ImageSourceViewerTranslator__DragHandleBar" />
-          </div>
+          <BottomDragHandle {...dragHandlers} />
           {!readOnly && (
-            <QuickCharacterButtons
-              disabled={
-                !can(currentProject, PROJECT_PERMISSION.ADD_TRA) ||
-                focusedSourceCreating ||
-                focusedSourceDeleting
-              }
-              onInsert={insertQuickCharacter}
-            />
+            <div className="ImageSourceViewerTranslator__FunctionBar">
+              <FunctionBarButton
+                active={symbolsVisible}
+                onClick={() =>
+                  setSymbolsVisible((previous) => !previous)
+                }
+                disabled={
+                  !can(currentProject, PROJECT_PERMISSION.ADD_TRA) ||
+                  focusedSourceCreating ||
+                  focusedSourceDeleting
+                }
+              >
+                {formatMessage({ id: 'imageTranslator.specialSymbols' })}
+              </FunctionBarButton>
+            </div>
           )}
           <TextArea
             className="ImageSourceViewerTranslator__TextArea"

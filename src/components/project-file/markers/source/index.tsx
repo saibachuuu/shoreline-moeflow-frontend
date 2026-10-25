@@ -14,7 +14,11 @@ import style from '@/style';
 import { getBestTranslation } from '@/utils/source';
 import { clickEffect, hover } from '@/utils/style';
 import { can } from '@/utils/user';
-import { QuickCharacterButtons } from '../QuickCharacterButtons';
+import { FunctionBarButton } from '../FunctionBarButton';
+import {
+  SymbolPanelStrip,
+  useSymbolPanelVisible,
+} from '../SymbolPanelStrip';
 import { insertCharacterAtSelection } from '../quickCharacters';
 
 interface ImageSourceViewerSourceProps {
@@ -41,6 +45,9 @@ export const ImageSourceViewerSource: FC<ImageSourceViewerSourceProps> = ({
   );
   const domRefs = useRef<(HTMLDivElement | null)[]>([]);
   const textAreaRef = useRef<TextAreaRef>(null);
+  const translationsDomRef = useRef<HTMLDivElement>(null);
+  /** 符号面板是否展开（localStorage 持久化，三模式共用偏好） */
+  const [symbolsVisible, setSymbolsVisible] = useSymbolPanelVisible();
   const currentProject = useSelector(
     (state: AppState) => state.project.currentProject,
   );
@@ -130,10 +137,14 @@ export const ImageSourceViewerSource: FC<ImageSourceViewerSourceProps> = ({
       className={classNames('ImageSourceViewerTranslator', className)}
       css={css`
         height: 100%;
+        display: flex;
+        flex-direction: column;
 
         .ImageSourceViewerTranslator__TranslationsWrapper {
           position: relative;
-          height: calc(100% - ${bottomHeight}px);
+          /* 符号面板收展条在文档流中，呼出时把本区挤矮、列表整体上移 */
+          flex: 1 1 auto;
+          min-height: 0;
           overflow: hidden;
         }
 
@@ -248,10 +259,17 @@ export const ImageSourceViewerSource: FC<ImageSourceViewerSourceProps> = ({
         }
 
         .ImageSourceViewerTranslator__Bottom {
+          flex: none;
           display: flex;
           flex-direction: column;
           height: ${bottomHeight}px;
           border-top: 3px solid ${style.borderColorBase};
+        }
+
+        .ImageSourceViewerTranslator__FunctionBar {
+          padding: 5px 5px 0;
+          background-color: ${style.backgroundColorLight};
+          display: flex;
         }
 
         .ImageSourceViewerTranslator__TextArea {
@@ -282,7 +300,10 @@ export const ImageSourceViewerSource: FC<ImageSourceViewerSourceProps> = ({
       `}
     >
       <div className="ImageSourceViewerTranslator__TranslationsWrapper">
-        <div className="ImageSourceViewerTranslator__Translations">
+        <div
+          ref={translationsDomRef}
+          className="ImageSourceViewerTranslator__Translations"
+        >
         {myTranslations.map((myTranslation, i) => {
           const source = sources[i];
           const othersBestTranslation = othersBestTranslations[i];
@@ -390,8 +411,37 @@ export const ImageSourceViewerSource: FC<ImageSourceViewerSourceProps> = ({
         })}
         </div>
       </div>
+      {focusedSourceIndex > -1 && !readOnly && (
+        <SymbolPanelStrip
+          visible={symbolsVisible}
+          disabled={
+            !can(currentProject, PROJECT_PERMISSION.ADD_TRA) ||
+            focusedSourceCreating ||
+            focusedSourceDeleting
+          }
+          onInsert={insertQuickCharacter}
+          scrollContainerRef={translationsDomRef}
+        />
+      )}
       {focusedSourceIndex > -1 && (
         <div className="ImageSourceViewerTranslator__Bottom">
+          {!readOnly && (
+            <div className="ImageSourceViewerTranslator__FunctionBar">
+              <FunctionBarButton
+                active={symbolsVisible}
+                onClick={() =>
+                  setSymbolsVisible((previous) => !previous)
+                }
+                disabled={
+                  !can(currentProject, PROJECT_PERMISSION.ADD_TRA) ||
+                  focusedSourceCreating ||
+                  focusedSourceDeleting
+                }
+              >
+                {formatMessage({ id: 'imageTranslator.specialSymbols' })}
+              </FunctionBarButton>
+            </div>
+          )}
           <TextArea
             className="ImageSourceViewerTranslator__TextArea"
             onChange={readOnly ? undefined : handleTranslationContentChange}
@@ -420,16 +470,6 @@ export const ImageSourceViewerSource: FC<ImageSourceViewerSourceProps> = ({
             readOnly={readOnly}
             ref={textAreaRef}
           ></TextArea>
-          {!readOnly && (
-            <QuickCharacterButtons
-              disabled={
-                !can(currentProject, PROJECT_PERMISSION.ADD_TRA) ||
-                focusedSourceCreating ||
-                focusedSourceDeleting
-              }
-              onInsert={insertQuickCharacter}
-            />
-          )}
           <div className="ImageSourceViewerTranslator__StatusBar">
             <DebounceStatus
               className="ImageSourceViewerTranslator__DebounceStatus"
