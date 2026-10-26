@@ -14,6 +14,8 @@ export interface File {
   saveName: string;
   type: FileTypes;
   sourceCount: number;
+  /** 原图大小，单位 KB（取整）。展示时 ×1024 当近似字节，带「≈」。 */
+  fileSize?: number | null;
   translatedSourceCount: number;
   checkedSourceCount: number;
   fileNotExistReason: FileNotExistReasons;

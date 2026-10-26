@@ -10,6 +10,11 @@ interface TranslationProgressProps {
   translatedSourceCount: number;
   checkedSourceCount: number;
   type?: 'all' | 'text' | 'line';
+  /**
+   * 进度条左端的装饰插槽（当前用于容量徽标）。
+   * 不传时渲染结果与加这个属性之前完全一致。
+   */
+  leading?: React.ReactNode;
   className?: string;
 }
 /**
@@ -20,6 +25,7 @@ export const TranslationProgress: FC<TranslationProgressProps> = ({
   translatedSourceCount,
   checkedSourceCount,
   type = 'all',
+  leading,
   className,
 }) => {
   const { formatMessage } = useIntl();
@@ -34,6 +40,19 @@ export const TranslationProgress: FC<TranslationProgressProps> = ({
     }
   }
 
+  const lineBase = (
+    <div className="TranslationProgress__LineBase">
+      <div
+        className="TranslationProgress__Line TranslationProgress__ProgressTranslatedSourceCount"
+        style={{ width: `${translatedSourcePercent}%` }}
+      ></div>
+      <div
+        className="TranslationProgress__Line TranslationProgress__ProgressCheckedSourceCount"
+        style={{ width: `${checkedSourcePercent}%` }}
+      ></div>
+    </div>
+  );
+
   return (
     <div
       className={classNames('TranslationProgress', className, {
@@ -44,6 +63,23 @@ export const TranslationProgress: FC<TranslationProgressProps> = ({
         display: flex;
         align-items: center;
         justify-content: flex-start;
+        .TranslationProgress__LineRow {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          width: 100%;
+          min-width: 0;
+        }
+        .TranslationProgress__Leading {
+          display: inline-flex;
+          flex: none;
+        }
+        .TranslationProgress__LineRow .TranslationProgress__LineBase {
+          /* 徽标占了左边一格，bar 自己收窄，而不是叠上去盖掉低进度的部分 */
+          flex: 1;
+          width: auto;
+          min-width: 0;
+        }
         .TranslationProgress__LineBase {
           position: relative;
           width: 100%;
@@ -173,18 +209,15 @@ export const TranslationProgress: FC<TranslationProgressProps> = ({
           )}
         </div>
       )}
-      {(type === 'all' || type === 'line') && (
-        <div className="TranslationProgress__LineBase">
-          <div
-            className="TranslationProgress__Line TranslationProgress__ProgressTranslatedSourceCount"
-            style={{ width: `${translatedSourcePercent}%` }}
-          ></div>
-          <div
-            className="TranslationProgress__Line TranslationProgress__ProgressCheckedSourceCount"
-            style={{ width: `${checkedSourcePercent}%` }}
-          ></div>
-        </div>
-      )}
+      {(type === 'all' || type === 'line') &&
+        (leading ? (
+          <div className="TranslationProgress__LineRow">
+            <span className="TranslationProgress__Leading">{leading}</span>
+            {lineBase}
+          </div>
+        ) : (
+          lineBase
+        ))}
     </div>
   );
 };

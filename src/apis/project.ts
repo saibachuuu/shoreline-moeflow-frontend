@@ -31,6 +31,12 @@ export interface APIProject {
   autoBecomeProjectAdmin?: boolean;
   sourceLanguage: Language;
   targetCount: number;
+  /** 项目总占用（KB，含派生图与导出产物的近似）—— 容量徽标用 */
+  fileSize?: number | null;
+  /** 派生图（缩略图）占用（bytes，精确） */
+  derivedBytes?: number | null;
+  /** 导出产物占用（bytes，精确） */
+  outputBytes?: number | null;
   sourceCount: number;
   translatedSourceCount: number;
   checkedSourceCount: number;

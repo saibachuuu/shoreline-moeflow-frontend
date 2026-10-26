@@ -9,6 +9,7 @@ import {
   Icon,
   TranslationProgress,
   MemberStats,
+  SizeBadge,
 } from '@/components';
 import {
   PROJECT_PERMISSION,
@@ -269,6 +270,17 @@ export const ProjectItem: FC<ProjectItemProps> = ({
           translatedSourceCount={project.translatedSourceCount}
           checkedSourceCount={project.checkedSourceCount}
           type="line"
+          leading={
+            <SizeBadge
+              bytes={
+                project.fileSize === null || project.fileSize === undefined
+                  ? null
+                  : project.fileSize * 1024
+              }
+              scale="project"
+              scope="project"
+            />
+          }
         />
         <div className="ProjectItem__Bottom">
           <TranslationProgress

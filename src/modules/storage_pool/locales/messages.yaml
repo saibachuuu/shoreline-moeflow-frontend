@@ -1,0 +1,266 @@
+storagePool.menuTitle:
+  zhCn: 存储池
+  en: Storage Pool
+storagePool.tabSources:
+  zhCn: 存储来源
+  en: Sources
+storagePool.tabTransfers:
+  zhCn: 迁移记录
+  en: Transfers
+storagePool.addSource:
+  zhCn: 新增来源
+  en: Add Source
+storagePool.editSource:
+  zhCn: 编辑来源
+  en: Edit Source
+storagePool.name:
+  zhCn: 名称
+  en: Name
+storagePool.bucket:
+  zhCn: 存储桶
+  en: Bucket
+storagePool.subPath:
+  zhCn: 子路径
+  en: Sub Path
+storagePool.subPathTip:
+  zhCn: 这就是该来源的对象总前缀，默认 storage/ 与站点默认存储一致（迁移时对象路径不变，只换桶）
+  en: This is the source's object key prefix. Keeping the default storage/ makes migrations a pure bucket swap.
+storagePool.subPathInvalid:
+  zhCn: 只能包含字母、数字、点、下划线、连字符与斜杠
+  en: Only letters, digits, dot, underscore, hyphen and slash are allowed
+storagePool.subPathLockedReason:
+  zhCn: 该来源已有项目迁入。修改子路径会让这些项目的文件全部读不到——请先把项目回迁到默认存储，再修改。
+  en: Projects have already been migrated here. Changing the sub path would make their files unreachable — restore those projects first.
+storagePool.locked:
+  zhCn: 已锁定
+  en: locked
+storagePool.region:
+  zhCn: 区域
+  en: Region
+storagePool.addressingStyle:
+  zhCn: 寻址方式
+  en: Addressing
+storagePool.verifySsl:
+  zhCn: 校验 TLS 证书
+  en: Verify TLS
+storagePool.accessKey:
+  zhCn: Access Key ID
+  en: Access Key ID
+storagePool.secretKey:
+  zhCn: Secret Access Key
+  en: Secret Access Key
+storagePool.credentialKeepTip:
+  zhCn: 留空表示不修改现有凭据
+  en: Leave blank to keep the current credential
+storagePool.publicDomain:
+  zhCn: 公开访问域名（可选）
+  en: Public Domain (optional)
+storagePool.publicDomainTip:
+  zhCn: 填了就走这个域名直链；留空则生成 S3 预签名 URL
+  en: When set, files are served from this domain; otherwise signed S3 URLs are used
+storagePool.inactiveDays:
+  zhCn: 冷数据天数
+  en: Inactive Days
+storagePool.inactiveDaysTip:
+  zhCn: 超过这么多天没有改动过的项目才允许自动迁入
+  en: Only projects untouched for this many days are migrated automatically
+storagePool.maxObjectsPerRun:
+  zhCn: 单轮对象上限
+  en: Max Objects per Run
+storagePool.enabled:
+  zhCn: 启用
+  en: Enabled
+storagePool.hasData:
+  zhCn: 已有项目
+  en: Has Data
+storagePool.yes:
+  zhCn: 有
+  en: Yes
+storagePool.actions:
+  zhCn: 操作
+  en: Actions
+storagePool.test:
+  zhCn: 测试
+  en: Test
+storagePool.edit:
+  zhCn: 编辑
+  en: Edit
+storagePool.delete:
+  zhCn: 删除
+  en: Delete
+storagePool.deleteConfirm:
+  zhCn: 确定删除该来源？已有项目迁入时无法删除。
+  en: Delete this source? Sources with migrated projects cannot be deleted.
+storagePool.testOk:
+  zhCn: 连通性正常
+  en: Connection OK
+storagePool.testFailed:
+  zhCn: 连通性测试失败
+  en: Connection test failed
+storagePool.saved:
+  zhCn: 已保存
+  en: Saved
+storagePool.saveFailed:
+  zhCn: 保存失败
+  en: Save failed
+storagePool.deleted:
+  zhCn: 已删除
+  en: Deleted
+storagePool.deleteFailed:
+  zhCn: 删除失败
+  en: Delete failed
+storagePool.loadFailed:
+  zhCn: 加载失败
+  en: Load failed
+storagePool.project:
+  zhCn: 项目
+  en: Project
+storagePool.sourceName:
+  zhCn: 来源
+  en: Source
+storagePool.direction:
+  zhCn: 方向
+  en: Direction
+storagePool.status:
+  zhCn: 状态
+  en: Status
+storagePool.progress:
+  zhCn: 进度
+  en: Progress
+storagePool.lastError:
+  zhCn: 最后错误
+  en: Last Error
+storagePool.retry:
+  zhCn: 重试
+  en: Retry
+storagePool.retried:
+  zhCn: 已重新排队
+  en: Requeued
+storagePool.retryFailed:
+  zhCn: 重试失败
+  en: Retry failed
+storagePool.statSources:
+  zhCn: 来源总数
+  en: Sources
+storagePool.statEnabled:
+  zhCn: 已启用
+  en: Enabled
+storagePool.statMigrated:
+  zhCn: 已迁入项目
+  en: Migrated Projects
+storagePool.statActive:
+  zhCn: 进行中任务
+  en: Active Transfers
+
+storagePool.autoScan:
+  zhCn: 自动巡查
+  en: Automatic Scan
+storagePool.scanEnabled:
+  zhCn: 每日自动挑选冷项目
+  en: Pick cold projects daily
+storagePool.scanEnabledTip:
+  zhCn: 关闭后不再自动挑选新项目；进行中的迁移不受影响。
+  en: When off, no new projects are picked automatically. Transfers already running are unaffected.
+storagePool.nextRunAt:
+  zhCn: 下次触发：{time}
+  en: "Next run: {time}"
+storagePool.scheduleFallback:
+  zhCn: 每日 03:00（服务器时区）
+  en: Daily at 03:00 (server timezone)
+storagePool.lastScanTime:
+  zhCn: 上次巡查
+  en: Last scan
+storagePool.neverScanned:
+  zhCn: 尚未执行过巡查
+  en: Never scanned yet
+storagePool.scanNow:
+  zhCn: 立即巡查一次
+  en: Scan Now
+storagePool.scanNowConfirm:
+  zhCn: 会真的开始挑选并搬运文件，确定现在执行？
+  en: This will really pick and move files. Run it now?
+storagePool.scanQueued:
+  zhCn: 巡查任务已排队
+  en: Scan queued
+storagePool.scanFailed:
+  zhCn: 触发巡查失败
+  en: Failed to trigger scan
+storagePool.emergencyStop:
+  zhCn: 紧急停止
+  en: Emergency Stop
+storagePool.emergencyStopTip:
+  zhCn: 打开后已排队的迁移会停在待执行，恢复后从断点续搬。
+  en: Queued transfers stop at pending and resume from where they left off when switched back.
+storagePool.switchOn:
+  zhCn: 已开启
+  en: Enabled
+storagePool.switchOff:
+  zhCn: 已关闭
+  en: Disabled
+storagePool.switchFailed:
+  zhCn: 切换失败
+  en: Failed to toggle
+storagePool.confirm:
+  zhCn: 确定
+  en: OK
+storagePool.cancel:
+  zhCn: 取消
+  en: Cancel
+
+storagePool.quota:
+  zhCn: 运行配额
+  en: Run quota
+storagePool.quotaBytes:
+  zhCn: 单轮字节预算
+  en: Byte budget per run
+storagePool.quotaObjects:
+  zhCn: 单次对象数上限
+  en: Objects per call
+storagePool.quotaProjects:
+  zhCn: 单轮项目数上限
+  en: Projects per run
+storagePool.saveQuota:
+  zhCn: 保存配额
+  en: Save quota
+storagePool.quotaSaved:
+  zhCn: 配额已保存
+  en: Quota saved
+storagePool.quotaTip:
+  zhCn: 预算只决定这一轮开工哪几个项目，不会切分单个项目；不足时留到下一轮。
+  en: The budget only decides which projects start this run. A single project is never split; leftovers wait for the next run.
+storagePool.pendingSummary:
+  zhCn: 待迁 {projects} 个项目 / {size}
+  en: "{projects} projects / {size} pending"
+storagePool.usage:
+  zhCn: 全站用量
+  en: Total usage
+storagePool.usageTotal:
+  zhCn: 项目占用合计
+  en: Total project size
+storagePool.usageDerived:
+  zhCn: 其中缩略图
+  en: Thumbnails
+storagePool.usageOutput:
+  zhCn: 其中导出产物
+  en: Exports
+storagePool.usageProjects:
+  zhCn: 项目数
+  en: Projects
+storagePool.usageBySource:
+  zhCn: 按存储来源分布
+  en: By storage source
+storagePool.usageTop:
+  zhCn: 占用最大的项目
+  en: Largest projects
+storagePool.usageNote:
+  zhCn: 以上均按项目记账求和，不含桶里没有项目指向的孤儿对象；与桶账单的差额需自行核对。
+  en: These numbers come from per-project accounting and exclude orphan objects no project points to. Reconcile any difference against the bucket bill.
+storagePool.defaultStorage:
+  zhCn: 默认存储
+  en: Default storage
+storagePool.breakdownOrigin:
+  zhCn: 原图
+  en: Images
+storagePool.breakdownOutput:
+  zhCn: 导出
+  en: Exports

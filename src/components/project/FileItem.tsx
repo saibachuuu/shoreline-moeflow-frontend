@@ -5,6 +5,7 @@ import { useIntl } from 'react-intl';
 import { Icon } from '@/components';
 import { FileUploadProgress } from './FileUploadProgress';
 import { TranslationProgress } from '@/components/shared/TranslationProgress';
+import { SizeBadge } from '@/components/shared/SizeBadge';
 import { ImageOCRProgress } from '@/components/unused/ImageOCRProgress';
 import { FILE_NOT_EXIST_REASON, IMAGE_COVER } from '@/constants';
 import { FC, File } from '@/interfaces';
@@ -249,6 +250,17 @@ export const FileItem: FC<FileItemProps> = ({
               translatedSourceCount={translatedSourceCount}
               checkedSourceCount={checkedSourceCount}
               type="line"
+              leading={
+                <SizeBadge
+                  bytes={
+                    file.fileSize === null || file.fileSize === undefined
+                      ? null
+                      : file.fileSize * 1024
+                  }
+                  scale="file"
+                  scope="file"
+                />
+              }
             />
           </>
         )}

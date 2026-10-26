@@ -54,6 +54,7 @@ export { TeamSearchList } from './team/TeamSearchList';
 export { TeamSettingBase } from './team/TeamSettingBase';
 export { Tooltip } from './shared/Tooltip';
 export { TranslationProgress } from './shared/TranslationProgress';
+export { SizeBadge } from './shared/SizeBadge';
 export { MemberStats } from './shared/MemberStats';
 export { EditingStatusBadge } from './shared/EditingStatusBadge';
 export { EditWorkers } from './shared/EditWorkers';

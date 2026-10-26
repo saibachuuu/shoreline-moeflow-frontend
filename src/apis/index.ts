@@ -35,6 +35,7 @@ import user from './user';
 import group from './group';
 import insight from './insight';
 import siteSetting from './siteSetting';
+import storage from './storage';
 import { lazyThenable } from '@jokester/ts-commonutil/lib/concurrency/lazy-thenable';
 import { configureApiClient } from '@/services/runtimeExtensions';
 
@@ -322,6 +323,7 @@ export const api = {
   project,
   projectSet,
   siteSetting,
+  storage,
   source,
   target,
   team,
@@ -354,4 +356,5 @@ export default {
   ...output,
   ...insight,
   ...siteSetting,
+  ...storage,
 };
