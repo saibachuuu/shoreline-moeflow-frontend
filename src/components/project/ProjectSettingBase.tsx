@@ -32,6 +32,7 @@ import { can } from '@/utils/user';
 import { projectMemberOperationId } from '@/utils/projectMembers';
 import { formatPermissionLabel } from '@/utils/identityLabels';
 import { ProjectEditForm } from './ProjectEditForm';
+import { ProjectStorageMove } from '@/modules/storage_pool/ProjectStorageMove';
 
 interface ProjectSettingBaseProps {
   className?: string;
@@ -310,6 +311,8 @@ export const ProjectSettingBase: FC<ProjectSettingBaseProps> = ({
             </ContentItem>
           )}
       </Content>
+      {/* 存储搬迁：仅站长可见，非站长时组件内部直接返回 null。 */}
+      <ProjectStorageMove projectId={currentProject.id} />
     </div>
   );
 };

@@ -37,6 +37,12 @@ export interface APIProject {
   derivedBytes?: number | null;
   /** 导出产物占用（bytes，精确） */
   outputBytes?: number | null;
+  /** 存储来源 id：null = 默认存储，否则为存储池来源 id（站长手动搬迁用） */
+  storageSourceId?: string | null;
+  /** 上次切换存储来源的时间 */
+  storageSourceSwitchedTime?: string | null;
+  /** 存储锁定：锁住后自动巡查跳过、手动搬迁全拒 */
+  storagePoolLocked?: boolean | null;
   sourceCount: number;
   translatedSourceCount: number;
   checkedSourceCount: number;

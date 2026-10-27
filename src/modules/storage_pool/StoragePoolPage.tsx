@@ -74,6 +74,7 @@ export const StoragePoolPage: React.FC = () => {
   const [editing, setEditing] = useState<StorageSource | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [testing, setTesting] = useState<string | null>(null);
+  const [togglingSourceId, setTogglingSourceId] = useState<string | null>(null);
   const [form] = Form.useForm<StorageSourceInput>();
 
   const reload = useCallback(() => {
@@ -243,6 +244,37 @@ export const StoragePoolPage: React.FC = () => {
         error?.data?.message || fm({ id: 'storagePool.retryFailed' }),
       );
     }
+  };
+
+  /** 表格里的启用开关：停用有项目的来源会让那些项目读不到文件，先警告。 */
+  const doToggleEnabled = async (source: StorageSource, checked: boolean) => {
+    setTogglingSourceId(source.id);
+    try {
+      await updateSource(source.id, { enabled: checked });
+      message.success(fm({ id: 'storagePool.saved' }));
+      reload();
+    } catch (error: any) {
+      message.error(
+        error?.data?.message || fm({ id: 'storagePool.saveFailed' }),
+      );
+    } finally {
+      setTogglingSourceId(null);
+    }
+  };
+
+  const handleToggleEnabled = (source: StorageSource, checked: boolean) => {
+    if (!checked && source.hasData) {
+      Modal.confirm({
+        title: fm({ id: 'storagePool.disableConfirm' }),
+        content: fm({ id: 'storagePool.disableConfirmContent' }),
+        okType: 'danger',
+        okText: fm({ id: 'storagePool.confirm' }),
+        cancelText: fm({ id: 'storagePool.cancel' }),
+        onOk: () => doToggleEnabled(source, checked),
+      });
+      return;
+    }
+    doToggleEnabled(source, checked);
   };
 
   /** 开关走乐观更新：先翻 UI，失败再翻回来并提示。 */
@@ -730,8 +762,13 @@ export const StoragePoolPage: React.FC = () => {
                 {
                   title: fm({ id: 'storagePool.enabled' }),
                   dataIndex: 'enabled',
-                  render: (value: boolean) => (
-                    <Switch size="small" checked={value} disabled />
+                  render: (value: boolean, record: StorageSource) => (
+                    <Switch
+                      size="small"
+                      checked={value}
+                      loading={togglingSourceId === record.id}
+                      onChange={(checked) => handleToggleEnabled(record, checked)}
+                    />
                   ),
                 },
                 {
@@ -933,7 +970,11 @@ export const StoragePoolPage: React.FC = () => {
           )}
           <Row gutter={16}>
             <Col span={8}>
-              <Form.Item name="region" label={fm({ id: 'storagePool.region' })}>
+              <Form.Item
+                name="region"
+                label={fm({ id: 'storagePool.region' })}
+                tooltip={fm({ id: 'storagePool.regionTip' })}
+              >
                 <Input placeholder="auto" />
               </Form.Item>
             </Col>

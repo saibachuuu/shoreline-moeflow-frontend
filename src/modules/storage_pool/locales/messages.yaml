@@ -37,6 +37,9 @@ storagePool.locked:
 storagePool.region:
   zhCn: 区域
   en: Region
+storagePool.regionTip:
+  zhCn: 必须和服务端配置一字不差，错了连通性测试会报 400（比如这家要填 usagis，填 auto 就不通）
+  en: Must match the server exactly, or the connection test fails with 400 (e.g. this provider needs usagis, auto does not work)
 storagePool.addressingStyle:
   zhCn: 寻址方式
   en: Addressing
@@ -70,6 +73,12 @@ storagePool.maxObjectsPerRun:
 storagePool.enabled:
   zhCn: 启用
   en: Enabled
+storagePool.disableConfirm:
+  zhCn: 确定停用该来源？
+  en: Disable this source?
+storagePool.disableConfirmContent:
+  zhCn: 已有项目迁入该来源。停用后这些项目会退化为读默认存储，文件将打不开——除非你马上把它们回迁。确定要停吗？
+  en: Projects have already been migrated here. After disabling, they fall back to default storage and their files become unreadable — unless you restore them right away. Disable anyway?
 storagePool.hasData:
   zhCn: 已有项目
   en: Has Data
@@ -264,3 +273,48 @@ storagePool.breakdownOrigin:
 storagePool.breakdownOutput:
   zhCn: 导出
   en: Exports
+storagePool.moveTitle:
+  zhCn: 存储搬迁（仅站长）
+  en: Storage Move (admin only)
+storagePool.moveCurrent:
+  zhCn: 当前存储位置
+  en: Current location
+storagePool.moveSourceGone:
+  zhCn: 来源已删除：
+  en: "Source deleted: "
+storagePool.movePickSource:
+  zhCn: 选择目标来源
+  en: Select target source
+storagePool.movePickTarget:
+  zhCn: 选择目标位置
+  en: Select destination
+storagePool.moveConfirm:
+  zhCn: 确定把这个项目的媒体搬到该来源？搬完之前不要删改项目文件。
+  en: Move this project's media to this source? Do not modify project files until it finishes.
+storagePool.moveIn:
+  zhCn: 迁入存储池
+  en: Move to Pool
+storagePool.moveGo:
+  zhCn: 搬到这里
+  en: Move Here
+storagePool.lockedTag:
+  zhCn: 已锁定
+  en: Locked
+storagePool.lockHint:
+  zhCn: 锁定存储位置（锁住后自动巡查跳过，手动搬迁也全部拒绝）
+  en: Lock storage location (skips auto scan and blocks all manual moves)
+storagePool.restoreBack:
+  zhCn: 回迁到默认存储
+  en: Restore to Default
+storagePool.restoreConfirm:
+  zhCn: 确定把这个项目搬回默认存储？
+  en: Move this project back to default storage?
+storagePool.moveQueued:
+  zhCn: 搬迁任务已排队，可在下方看进度
+  en: Transfer queued, see progress below
+storagePool.moveFailed:
+  zhCn: 搬迁失败
+  en: Transfer failed
+storagePool.refreshProgress:
+  zhCn: 刷新进度
+  en: Refresh progress
