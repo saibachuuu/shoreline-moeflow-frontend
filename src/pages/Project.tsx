@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Route, Switch, useParams, useRouteMatch } from 'react-router-dom';
-import { useTitle } from '@/hooks';
+import { useProjectHeartbeat, useTitle } from '@/hooks';
 import { FC } from '@/interfaces';
 import { AppState } from '@/store';
 import {
@@ -29,6 +29,10 @@ const Project: FC<ProjectProps> = () => {
   const currentProject = useSelector(
     (state: AppState) => state.project.currentProject,
   );
+
+  // 活跃状态心跳保护：只要进入本项目任一页面（文件、预览、设置等），即向后端维持活跃 presence，
+  // 避免巡查或后台任务误判为无人使用的闲置冷项目
+  useProjectHeartbeat(projectID, { action: 'browsing' });
 
   // 设置当前目标 project
   useEffect(() => {

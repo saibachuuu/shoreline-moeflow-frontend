@@ -830,8 +830,15 @@ export const StoragePoolPage: React.FC = () => {
                 },
                 {
                   title: fm({ id: 'storagePool.sourceName' }),
-                  render: (_: unknown, record: TransferRecord) =>
-                    record.source?.name || '—',
+                  render: (_: unknown, record: TransferRecord) => {
+                    const hasTarget =
+                      record.targetSource?.id &&
+                      record.targetSource.id !== record.source?.id;
+                    if (hasTarget) {
+                      return `${record.source?.name || '—'} → ${record.targetSource?.name || '—'}`;
+                    }
+                    return record.source?.name || '—';
+                  },
                 },
                 {
                   title: fm({ id: 'storagePool.direction' }),

@@ -41,6 +41,7 @@ export function useProjectHeartbeat(
   const store = useStore<AppState>();
   const currentUser = useSelector((state: AppState) => state.user);
   const [serverUsers, setServerUsers] = useState<ActivePresenceUser[]>([]);
+  const lastHeartbeatAtRef = useRef<number>(0);
 
   const actionRef = useRef(action);
   actionRef.current = action;
@@ -116,6 +117,7 @@ export function useProjectHeartbeat(
       ) {
         return;
       }
+      lastHeartbeatAtRef.current = Date.now();
       postProjectHeartbeat({
         projectID: currentProjectID,
         action: actionRef.current,
@@ -149,12 +151,27 @@ export function useProjectHeartbeat(
         sendHeartbeat();
       }
     };
+    // 当用户正在编辑文本/操作表单时（打字输入），5秒节流触发一次即时心跳，
+    // 确保活跃状态租约始终保持充盈，避免巡查或后台任务撞车
+    const handleUserActivity = () => {
+      if (Date.now() - lastHeartbeatAtRef.current > 5000) {
+        sendHeartbeat();
+      }
+    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('keydown', handleUserActivity, { passive: true });
+      window.addEventListener('input', handleUserActivity, { passive: true });
+    }
     if (typeof document !== 'undefined') {
       document.addEventListener('visibilitychange', handleVisibilityChange);
     }
 
     return () => {
       clearInterval(timer);
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('keydown', handleUserActivity);
+        window.removeEventListener('input', handleUserActivity);
+      }
       if (typeof document !== 'undefined') {
         document.removeEventListener(
           'visibilitychange',
