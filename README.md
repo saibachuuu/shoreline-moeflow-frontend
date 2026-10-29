@@ -4,7 +4,7 @@
 [![Chinese README](https://img.shields.io/badge/README-Chinese-red)](README_zh.md)
 [![English README](https://img.shields.io/badge/README-English-blue)](README.md)
 
-**Due to API adjustments, please update the MoeFlow backend to Version 1.2.6 before continuing to use.**
+**Due to API adjustments, please update the MoeFlow backend to Version 1.2.7 before continuing to use.**
 
 ## Deployment
 
@@ -150,6 +150,11 @@ First open-source version of the MoeFlow frontend and backend.
 - **Permission & Entry Fixes**: Regular members can view the project worker list read-only; the site administrator assignment entry is shown only to the configured site owner; restored the mobile top-right theme toggle shortcut.
 - **UI & Modularization**: Restored toolbar right alignment and the file card top gap; extracted optional features such as direct/CDN route switching into optional modules (`network_route`), introducing a shared responsive toolbar component and improved mobile preview controls.
 
-### Version NEXT
+### Version 1.2.7
 
-- [diff](https://github.com/moeflow-com/moeflow-frontend/compare/v1.1.1...main)
+- **Storage Pool Admin Page**: Manage pool sources, toggle daily scanning, edit run quotas, and inspect migration records with originals/exports breakdown; the site-wide usage card shows total project usage plus cover, resampled and export sizes separately.
+- **Project Storage Controls**: Project settings gain a storage-move section (site admin only) with current location, target picker, "move here", a lock switch and the latest migration progress. The move API handles migration, restore and pool-to-pool transfer; locked projects are excluded from scanning and cannot be moved or retried.
+- **Capacity Badges**: Project and image cards show a size badge left of the progress bar, coloured by size, with exact bytes on hover.
+- **Migration Visibility**: Transfer records render direct moves as "source A → source B"; the project route reports an editing heartbeat (throttled keydown/input) so the scanner does not treat projects being edited as cold.
+- **Proofread Draft Marker Layout**: Team settings gain a creator-only section to toggle the proofread-draft marker and adjust its dot opacity. The marker is baked with the configured alpha while numbers stay opaque, and a change re-bakes the images so every recipient sees the same layout.
+- **Image Translator Polish**: Unified symbol panel across proofread/translate/raw modes with persisted open state, shared function-bar buttons, a drag-resizable bottom panel, a configurable tip trigger character, and a fixed sidebar notification bell colour.
