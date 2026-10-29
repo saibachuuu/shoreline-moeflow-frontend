@@ -110,7 +110,8 @@ export interface StoragePoolUsage {
   total: {
     projects: number;
     bytes: number;
-    derivedBytes: number;
+    coverBytes: number;
+    resampleBytes: number;
     outputBytes: number;
   };
   pending: { projects: number; bytes: number };

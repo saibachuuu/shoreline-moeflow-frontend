@@ -601,8 +601,12 @@ export const StoragePoolPage: React.FC = () => {
               value: formatBytes(usage?.total.bytes) || '—',
             },
             {
-              label: fm({ id: 'storagePool.usageDerived' }),
-              value: formatBytes(usage?.total.derivedBytes) || '—',
+              label: fm({ id: 'storagePool.usageCover' }),
+              value: formatBytes(usage?.total.coverBytes) || '—',
+            },
+            {
+              label: fm({ id: 'storagePool.usageResample' }),
+              value: formatBytes(usage?.total.resampleBytes) || '—',
             },
             {
               label: fm({ id: 'storagePool.usageOutput' }),

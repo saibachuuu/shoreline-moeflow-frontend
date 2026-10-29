@@ -33,8 +33,10 @@ export interface APIProject {
   targetCount: number;
   /** 项目总占用（KB，含派生图与导出产物的近似）—— 容量徽标用 */
   fileSize?: number | null;
-  /** 派生图（缩略图）占用（bytes，精确） */
-  derivedBytes?: number | null;
+  /** 缩略图占用（bytes，精确） */
+  coverBytes?: number | null;
+  /** 重采样图占用（bytes，精确） */
+  resampleBytes?: number | null;
   /** 导出产物占用（bytes，精确） */
   outputBytes?: number | null;
   /** 存储来源 id：null = 默认存储，否则为存储池来源 id（站长手动搬迁用） */
