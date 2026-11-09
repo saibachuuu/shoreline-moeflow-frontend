@@ -38,6 +38,7 @@ import siteSetting from './siteSetting';
 import storage from './storage';
 import { lazyThenable } from '@jokester/ts-commonutil/lib/concurrency/lazy-thenable';
 import { configureApiClient } from '@/services/runtimeExtensions';
+import { installLabelRevisionGuard } from '@/services/labelRevisionGuard';
 
 const debugLogger = createDebugLogger('apis:index');
 
@@ -47,6 +48,7 @@ const instanceP = lazyThenable(async () => {
   });
 
   configureApiClient(instance);
+  installLabelRevisionGuard(instance);
 
   return instance;
 });

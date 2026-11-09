@@ -1,6 +1,5 @@
 import { css } from '@emotion/core';
 import {
-  Alert,
   Button,
   Card,
   Col,
@@ -10,7 +9,6 @@ import {
   message,
   Modal,
   Popconfirm,
-  Progress,
   Row,
   Select,
   Statistic,
@@ -20,11 +18,13 @@ import {
   Tag,
 } from 'antd';
 import dayjs from 'dayjs';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useIntl } from 'react-intl';
 import {
   createSource,
   deleteSource,
+  cancelTransfer,
+  deleteTransfer,
   getSettings,
   getStats,
   getUsage,
@@ -43,6 +43,7 @@ import {
   updateSource,
 } from './api';
 import { formatBytes } from '@/utils/size';
+import { TransferProgress } from './TransferProgress';
 
 /** 与后端 TransferStatus 对应，仅用于上色。 */
 const TRANSFER_STATUS_COLOR: Record<number, string> = {
@@ -53,6 +54,7 @@ const TRANSFER_STATUS_COLOR: Record<number, string> = {
   4: 'success',
   5: 'error',
   6: 'warning',
+  7: 'default',
 };
 
 /** 可重试的状态：FAILED / ABORTED。 */
@@ -62,6 +64,9 @@ export const StoragePoolPage: React.FC = () => {
   const { formatMessage: fm } = useIntl();
   const [sources, setSources] = useState<StorageSource[]>([]);
   const [transfers, setTransfers] = useState<TransferRecord[]>([]);
+  const [transferPage, setTransferPage] = useState(1);
+  const [transferTotal, setTransferTotal] = useState(0);
+  const reloadSequence = useRef(0);
   const [stats, setStats] = useState<StoragePoolStats | null>(null);
   const [settings, setSettings] = useState<StoragePoolSetting | null>(null);
   const [usage, setUsage] = useState<StoragePoolUsage | null>(null);
@@ -78,10 +83,11 @@ export const StoragePoolPage: React.FC = () => {
   const [form] = Form.useForm<StorageSourceInput>();
 
   const reload = useCallback(() => {
+    const sequence = ++reloadSequence.current;
     setLoading(true);
     Promise.all([
       listSources(),
-      listTransfers(),
+      listTransfers(undefined, { page: transferPage, limit: 20 }),
       getStats(),
       getSettings(),
       getUsage(),
@@ -94,8 +100,15 @@ export const StoragePoolPage: React.FC = () => {
           settingResult,
           usageResult,
         ]) => {
+          if (sequence !== reloadSequence.current) return;
           setSources(sourceResult.data || []);
           setTransfers(transferResult.data || []);
+          const count = Number(
+            transferResult.headers['x-pagination-count'] || 0,
+          );
+          setTransferTotal(count);
+          if (transferPage > Math.max(1, Math.ceil(count / 20)))
+            setTransferPage(Math.max(1, Math.ceil(count / 20)));
           setStats(statsResult.data || null);
           setSettings(settingResult.data || null);
           setUsage(usageResult.data || null);
@@ -108,8 +121,10 @@ export const StoragePoolPage: React.FC = () => {
             fm({ id: 'storagePool.loadFailed' }),
         );
       })
-      .finally(() => setLoading(false));
-  }, []);
+      .finally(() => {
+        if (sequence === reloadSequence.current) setLoading(false);
+      });
+  }, [transferPage, fm]);
 
   useEffect(() => {
     reload();
@@ -211,7 +226,9 @@ export const StoragePoolPage: React.FC = () => {
       if (result.data?.ok) {
         message.success(fm({ id: 'storagePool.testOk' }));
       } else {
-        message.error(result.data?.message || fm({ id: 'storagePool.testFailed' }));
+        message.error(
+          result.data?.message || fm({ id: 'storagePool.testFailed' }),
+        );
       }
     } catch (error: any) {
       message.error(
@@ -313,7 +330,9 @@ export const StoragePoolPage: React.FC = () => {
     setScanning(true);
     try {
       const result = await runScanOnce();
-      message.success(result.data?.message || fm({ id: 'storagePool.scanQueued' }));
+      message.success(
+        result.data?.message || fm({ id: 'storagePool.scanQueued' }),
+      );
       // 任务已入队，稍后刷新能看到迁移记录；这里先拉一次状态。
       reload();
     } catch (error: any) {
@@ -338,7 +357,10 @@ export const StoragePoolPage: React.FC = () => {
     >
       <Row gutter={16}>
         {[
-          { label: fm({ id: 'storagePool.statSources' }), value: stats?.sources },
+          {
+            label: fm({ id: 'storagePool.statSources' }),
+            value: stats?.sources,
+          },
           {
             label: fm({ id: 'storagePool.statEnabled' }),
             value: stats?.enabledSources,
@@ -423,7 +445,8 @@ export const StoragePoolPage: React.FC = () => {
                   color: #8c8c8c;
                 `}
               >
-                {settings?.lastScanResult || fm({ id: 'storagePool.neverScanned' })}
+                {settings?.lastScanResult ||
+                  fm({ id: 'storagePool.neverScanned' })}
               </div>
             </div>
           </Col>
@@ -743,7 +766,10 @@ export const StoragePoolPage: React.FC = () => {
                   dataIndex: 'endpoint',
                   ellipsis: true,
                 },
-                { title: fm({ id: 'storagePool.bucket' }), dataIndex: 'bucket' },
+                {
+                  title: fm({ id: 'storagePool.bucket' }),
+                  dataIndex: 'bucket',
+                },
                 {
                   title: fm({ id: 'storagePool.subPath' }),
                   dataIndex: 'subPath',
@@ -771,7 +797,9 @@ export const StoragePoolPage: React.FC = () => {
                       size="small"
                       checked={value}
                       loading={togglingSourceId === record.id}
-                      onChange={(checked) => handleToggleEnabled(record, checked)}
+                      onChange={(checked) =>
+                        handleToggleEnabled(record, checked)
+                      }
                     />
                   ),
                 },
@@ -820,12 +848,25 @@ export const StoragePoolPage: React.FC = () => {
             key="transfers"
             tab={fm({ id: 'storagePool.tabTransfers' })}
           >
+            <Button
+              onClick={reload}
+              loading={loading}
+              style={{ marginBottom: 12 }}
+            >
+              {fm({ id: 'storagePool.refreshProgress' })}
+            </Button>
             <Table
               rowKey="id"
               size="small"
               loading={loading}
               dataSource={transfers}
-              pagination={false}
+              pagination={{
+                current: transferPage,
+                pageSize: 20,
+                total: transferTotal,
+                onChange: setTransferPage,
+                showSizeChanger: false,
+              }}
               columns={[
                 {
                   title: fm({ id: 'storagePool.project' }),
@@ -860,39 +901,7 @@ export const StoragePoolPage: React.FC = () => {
                 {
                   title: fm({ id: 'storagePool.progress' }),
                   render: (_: unknown, record: TransferRecord) => (
-                    <div>
-                      <Progress
-                        size="small"
-                        percent={record.progressPercent}
-                        format={() =>
-                          `${record.copiedObjects}/${record.totalObjects}`
-                        }
-                      />
-                      <div
-                        css={css`
-                          font-size: 12px;
-                          color: #8c8c8c;
-                          line-height: 18px;
-                        `}
-                      >
-                        {formatBytes(record.copiedBytes) || '0 B'} /{' '}
-                        {formatBytes(record.totalBytes) || '0 B'}
-                      </div>
-                      {record.breakdown?.objectCount ? (
-                        <div
-                          css={css`
-                            font-size: 12px;
-                            color: #8c8c8c;
-                            line-height: 18px;
-                          `}
-                        >
-                          {fm({ id: 'storagePool.breakdownOrigin' })}{' '}
-                          {formatBytes(record.breakdown.originBytes) || '0 B'} ·{' '}
-                          {fm({ id: 'storagePool.breakdownOutput' })}{' '}
-                          {formatBytes(record.breakdown.outputBytes) || '0 B'}
-                        </div>
-                      ) : null}
-                    </div>
+                    <TransferProgress record={record} />
                   ),
                 },
                 {
@@ -902,12 +911,55 @@ export const StoragePoolPage: React.FC = () => {
                 },
                 {
                   title: fm({ id: 'storagePool.actions' }),
-                  render: (_: unknown, record: TransferRecord) =>
-                    RETRYABLE_STATUS.includes(record.status) ? (
-                      <Button size="small" onClick={() => handleRetry(record)}>
-                        {fm({ id: 'storagePool.retry' })}
-                      </Button>
-                    ) : null,
+                  render: (_: unknown, record: TransferRecord) => (
+                    <>
+                      {RETRYABLE_STATUS.includes(record.status) && (
+                        <Button
+                          size="small"
+                          onClick={() => handleRetry(record)}
+                        >
+                          {fm({ id: 'storagePool.retry' })}
+                        </Button>
+                      )}
+                      {(record.status === 0 ||
+                        record.status === 7 ||
+                        (record.status === 4 && !record.lastError)) && (
+                        <Popconfirm
+                          title={fm({
+                            id:
+                              record.status === 0
+                                ? 'storagePool.cancelQueueConfirm'
+                                : 'storagePool.deleteRecordConfirm',
+                            defaultMessage:
+                              record.status === 0
+                                ? '删除这个尚未开始的排队任务？'
+                                : '只删除迁移历史记录，不删除存储对象？',
+                          })}
+                          onConfirm={async () => {
+                            try {
+                              if (record.status === 0)
+                                await cancelTransfer(record.id);
+                              else await deleteTransfer(record.id);
+                              reload();
+                            } catch (error) {
+                              (error as { default?: () => void }).default?.();
+                            }
+                          }}
+                        >
+                          <Button size="small" danger>
+                            {fm({
+                              id:
+                                record.status === 0
+                                  ? 'storagePool.cancelQueue'
+                                  : 'storagePool.deleteRecord',
+                              defaultMessage:
+                                record.status === 0 ? '删除队列' : '删除记录',
+                            })}
+                          </Button>
+                        </Popconfirm>
+                      )}
+                    </>
+                  ),
                 },
               ]}
             />
@@ -965,7 +1017,9 @@ export const StoragePoolPage: React.FC = () => {
             <Input
               disabled={subPathLocked}
               placeholder="storage/"
-              addonAfter={subPathLocked ? fm({ id: 'storagePool.locked' }) : null}
+              addonAfter={
+                subPathLocked ? fm({ id: 'storagePool.locked' }) : null
+              }
             />
           </Form.Item>
           {subPathLocked && (
