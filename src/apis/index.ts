@@ -281,6 +281,13 @@ const defaultBasicFailure = (data: BasicFailureResultData) => {
 const validateBasicFailure = (data: ValidationFailureResultData) => {
   // 什么都不做，需要将错误信息放入 Form 内
   return (form?: FormInstance) => {
+    // 整条消息形式的验证错误（Python 的 ValidateError(str)，例如项目名命中黑名单）
+    // 没有字段可以挂，直接弹提示，否则用户看不到任何反馈。
+    const payload: unknown = data.message;
+    if (typeof payload === 'string') {
+      message.error(payload);
+      return;
+    }
     if (form) {
       // 如果提供了 form，则将错误写入其中
       const errors = toFormErrors(data.message);
