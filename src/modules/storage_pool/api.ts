@@ -1,8 +1,8 @@
-import { request } from '@/apis';
+import { BasicSuccessResult, request } from '@/apis';
 import { toLowerCamelCase, toUnderScoreCase } from '@/utils';
 
 /** 后端一律 snake_case，这里统一转 camel，调用方直接用驼峰字段。 */
-const camel = <T>(promise: Promise<{ data: T; [key: string]: any }>) =>
+const camel = <T>(promise: Promise<BasicSuccessResult<T>>) =>
   promise.then((result) => ({
     ...result,
     data: toLowerCamelCase(result.data) as T,
@@ -67,6 +67,10 @@ export interface TransferRecord {
   directionName: string;
   totalObjects: number;
   copiedObjects: number;
+  processedObjects: number;
+  skippedObjects: number;
+  verifiedObjects: number;
+  deletedObjects: number;
   totalBytes: number;
   copiedBytes: number;
   /** 本次实际搬运的分类字节数（原图 / 导出产物） */
@@ -128,9 +132,7 @@ export interface StoragePoolUsage {
 const base = '/v1/admin/storage-pool';
 
 export const listSources = () =>
-  camel(
-    request<StorageSource[]>({ method: 'GET', url: `${base}/sources` }),
-  );
+  camel(request<StorageSource[]>({ method: 'GET', url: `${base}/sources` }));
 
 export const createSource = (data: StorageSourceInput) =>
   camel(
@@ -159,14 +161,25 @@ export const testSource = (id: string) =>
     url: `${base}/sources/${id}/test`,
   });
 
-export const listTransfers = (projectId?: string) =>
+export const listTransfers = (
+  projectId?: string,
+  pagination: { page?: number; limit?: number } = {},
+) =>
   camel(
     request<TransferRecord[]>({
       method: 'GET',
       url: `${base}/transfers`,
-      params: projectId ? { project_id: projectId } : undefined,
+      params: {
+        ...pagination,
+        ...(projectId ? { project_id: projectId } : {}),
+      },
     }),
   );
+
+export const cancelTransfer = (id: string) =>
+  request({ method: 'POST', url: `${base}/transfers/${id}/cancel` });
+export const deleteTransfer = (id: string) =>
+  request({ method: 'DELETE', url: `${base}/transfers/${id}` });
 
 export const migrateProject = (projectId: string, sourceId: string) =>
   camel(

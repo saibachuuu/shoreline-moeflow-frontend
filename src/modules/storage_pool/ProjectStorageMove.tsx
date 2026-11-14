@@ -1,14 +1,6 @@
 import { css } from '@emotion/core';
-import {
-  Button,
-  message,
-  Popconfirm,
-  Progress,
-  Select,
-  Switch,
-  Tag,
-} from 'antd';
-import { useCallback, useEffect, useState } from 'react';
+import { Button, message, Popconfirm, Table, Select, Switch, Tag } from 'antd';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
 import api from '@/apis';
@@ -17,13 +9,15 @@ import { FC, Project } from '@/interfaces';
 import { AppState } from '@/store';
 import { editProject, setCurrentProject } from '@/store/project/slice';
 import { toLowerCamelCase } from '@/utils';
-import { formatBytes } from '@/utils/size';
+import { TransferProgress } from './TransferProgress';
 import {
   listSources,
   listTransfers,
   lockProject,
   moveProject,
   retryTransfer,
+  cancelTransfer,
+  deleteTransfer,
   StorageSource,
   TransferRecord,
 } from './api';
@@ -58,23 +52,49 @@ export const ProjectStorageMove: FC<ProjectStorageMoveProps> = ({
   ) as Project | null;
   const [sources, setSources] = useState<StorageSource[]>([]);
   const [transfers, setTransfers] = useState<TransferRecord[]>([]);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const sequence = useRef(0);
   const [loading, setLoading] = useState(false);
   const [acting, setActing] = useState(false);
   const [locking, setLocking] = useState(false);
   const [targetValue, setTargetValue] = useState<string | undefined>(undefined);
 
+  const refreshProject = useCallback(
+    () =>
+      api
+        .getProject({ id: projectId })
+        .then((result) => {
+          const nextProject = toLowerCamelCase(result.data) as Project;
+          dispatch(setCurrentProject(nextProject));
+          dispatch(editProject(nextProject));
+        })
+        .catch(() => undefined),
+    [projectId, dispatch],
+  );
+
   const reload = useCallback(() => {
+    if (!isAdmin) return;
+    const requestSequence = ++sequence.current;
     setLoading(true);
-    Promise.all([listSources(), listTransfers(projectId)])
+    Promise.all([listSources(), listTransfers(projectId, { page, limit: 5 })])
       .then(([sourceResult, transferResult]) => {
+        if (requestSequence !== sequence.current) return;
         setSources(sourceResult.data || []);
         setTransfers(transferResult.data || []);
+        const count = Number(transferResult.headers['x-pagination-count'] || 0);
+        setTotal(count);
+        if (page > Math.max(1, Math.ceil(count / 5)))
+          setPage(Math.max(1, Math.ceil(count / 5)));
+        void refreshProject();
       })
       .catch(() => {
         message.error(fm({ id: 'storagePool.loadFailed' }));
       })
-      .finally(() => setLoading(false));
-  }, [projectId]);
+      .finally(() => {
+        if (requestSequence === sequence.current) setLoading(false);
+      });
+  }, [projectId, isAdmin, page, refreshProject, fm]);
 
   useEffect(() => {
     reload();
@@ -87,12 +107,10 @@ export const ProjectStorageMove: FC<ProjectStorageMoveProps> = ({
       return;
     }
     const timer = window.setInterval(() => {
-      listTransfers(projectId)
-        .then((result) => setTransfers(result.data || []))
-        .catch(() => undefined);
+      reload();
     }, 10000);
     return () => window.clearInterval(timer);
-  }, [hasActive, projectId]);
+  }, [hasActive, reload]);
 
   if (!isAdmin) {
     return null;
@@ -100,29 +118,11 @@ export const ProjectStorageMove: FC<ProjectStorageMoveProps> = ({
 
   const storageSourceId = currentProject?.storageSourceId || null;
   const locked = !!currentProject?.storagePoolLocked;
-  const currentSource =
-    sources.find((s) => s.id === storageSourceId) || null;
+  const currentSource = sources.find((s) => s.id === storageSourceId) || null;
   // 目标下拉：默认存储 + 启用的来源，但去掉当前所在（原地踏步后端会拒）。
   const enabledSources = sources.filter(
     (s) => s.enabled && s.id !== storageSourceId,
   );
-  const latest = transfers[0] || null;
-  // 直转任务显示「源 → 目标」，一眼看出往哪搬。
-  const latestTarget =
-    latest?.targetSource?.id && latest.targetSource.id !== latest.source.id
-      ? latest.targetSource.name
-      : null;
-
-  /** 操作完刷新项目详情：指针切了之后 storageSourceId 才会变。 */
-  const refreshProject = () =>
-    api
-      .getProject({ id: projectId })
-      .then((result: any) => {
-        const nextProject = toLowerCamelCase(result.data) as Project;
-        dispatch(setCurrentProject(nextProject));
-        dispatch(editProject(nextProject));
-      })
-      .catch(() => undefined);
 
   const handleMove = async () => {
     if (!targetValue) {
@@ -139,7 +139,9 @@ export const ProjectStorageMove: FC<ProjectStorageMoveProps> = ({
       reload();
       refreshProject();
     } catch (error: any) {
-      message.error(error?.data?.message || fm({ id: 'storagePool.moveFailed' }));
+      message.error(
+        error?.data?.message || fm({ id: 'storagePool.moveFailed' }),
+      );
     } finally {
       setActing(false);
     }
@@ -152,7 +154,9 @@ export const ProjectStorageMove: FC<ProjectStorageMoveProps> = ({
       message.success(fm({ id: 'storagePool.saved' }));
       refreshProject();
     } catch (error: any) {
-      message.error(error?.data?.message || fm({ id: 'storagePool.saveFailed' }));
+      message.error(
+        error?.data?.message || fm({ id: 'storagePool.saveFailed' }),
+      );
     } finally {
       setLocking(false);
     }
@@ -165,7 +169,9 @@ export const ProjectStorageMove: FC<ProjectStorageMoveProps> = ({
       message.success(fm({ id: 'storagePool.retried' }));
       reload();
     } catch (error: any) {
-      message.error(error?.data?.message || fm({ id: 'storagePool.retryFailed' }));
+      message.error(
+        error?.data?.message || fm({ id: 'storagePool.retryFailed' }),
+      );
     } finally {
       setActing(false);
     }
@@ -252,70 +258,100 @@ export const ProjectStorageMove: FC<ProjectStorageMoveProps> = ({
           <span>{fm({ id: 'storagePool.lockHint' })}</span>
         </div>
       </ContentItem>
-      {latest && (
+      {
         <ContentItem>
-          <div
-            css={css`
-              width: 100%;
-            `}
-          >
-            <div
-              css={css`
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-              `}
-            >
-              <span>
-                {latest.directionName}
-                {latestTarget ? `：${latest.source.name} → ${latestTarget}` : ''}
-                {' · '}
-                {latest.statusName}
-              </span>
-              {RETRYABLE_STATUS.includes(latest.status) && !locked && (
-                <Button size="small" onClick={() => handleRetry(latest)}>
-                  {fm({ id: 'storagePool.retry' })}
-                </Button>
-              )}
-            </div>
-            <Progress
-              size="small"
-              percent={latest.progressPercent}
-              format={() => `${latest.copiedObjects}/${latest.totalObjects}`}
-            />
-            <div
-              css={css`
-                font-size: 12px;
-                color: #8c8c8c;
-              `}
-            >
-              {formatBytes(latest.copiedBytes) || '0 B'} /{' '}
-              {formatBytes(latest.totalBytes) || '0 B'}
-            </div>
-            {latest.lastError && (
-              <div
-                css={css`
-                  font-size: 12px;
-                  color: #cf1322;
-                `}
-              >
-                {latest.lastError}
-              </div>
-            )}
-            <Button
-              size="small"
-              type="link"
-              onClick={reload}
-              loading={loading}
-              css={css`
-                padding-left: 0;
-              `}
-            >
+          <div style={{ width: '100%' }}>
+            <Button size="small" type="link" onClick={reload} loading={loading}>
               {fm({ id: 'storagePool.refreshProgress' })}
             </Button>
+            <Table<TransferRecord>
+              rowKey="id"
+              size="small"
+              dataSource={transfers}
+              loading={loading}
+              pagination={{
+                current: page,
+                total,
+                pageSize: 5,
+                onChange: setPage,
+                showSizeChanger: false,
+              }}
+              columns={[
+                {
+                  title: fm({ id: 'storagePool.direction' }),
+                  render: (_, record) =>
+                    `${record.directionName} · ${record.source.name}${record.targetSource?.id && record.targetSource.id !== record.source.id ? ` → ${record.targetSource.name}` : ''}`,
+                },
+                {
+                  title: fm({ id: 'storagePool.status' }),
+                  dataIndex: 'statusName',
+                },
+                {
+                  title: fm({ id: 'storagePool.progress' }),
+                  render: (_, record) => <TransferProgress record={record} />,
+                },
+                {
+                  title: fm({ id: 'storagePool.lastError' }),
+                  dataIndex: 'lastError',
+                },
+                {
+                  title: fm({ id: 'storagePool.actions' }),
+                  render: (_, record) => (
+                    <>
+                      {RETRYABLE_STATUS.includes(record.status) && !locked && (
+                        <Button
+                          size="small"
+                          disabled={acting}
+                          onClick={() => handleRetry(record)}
+                        >
+                          {fm({ id: 'storagePool.retry' })}
+                        </Button>
+                      )}
+                      {(record.status === 0 ||
+                        record.status === 7 ||
+                        (record.status === 4 && !record.lastError)) && (
+                        <Popconfirm
+                          title={fm({
+                            id:
+                              record.status === 0
+                                ? 'storagePool.cancelQueueConfirm'
+                                : 'storagePool.deleteRecordConfirm',
+                            defaultMessage:
+                              record.status === 0
+                                ? '删除尚未开始的排队任务？'
+                                : '只删除历史记录，不删除存储对象？',
+                          })}
+                          onConfirm={async () => {
+                            try {
+                              if (record.status === 0)
+                                await cancelTransfer(record.id);
+                              else await deleteTransfer(record.id);
+                              reload();
+                            } catch (error) {
+                              (error as { default?: () => void }).default?.();
+                            }
+                          }}
+                        >
+                          <Button size="small" danger>
+                            {fm({
+                              id:
+                                record.status === 0
+                                  ? 'storagePool.cancelQueue'
+                                  : 'storagePool.deleteRecord',
+                              defaultMessage:
+                                record.status === 0 ? '删除队列' : '删除记录',
+                            })}
+                          </Button>
+                        </Popconfirm>
+                      )}
+                    </>
+                  ),
+                },
+              ]}
+            />
           </div>
         </ContentItem>
-      )}
+      }
     </Content>
   );
 };

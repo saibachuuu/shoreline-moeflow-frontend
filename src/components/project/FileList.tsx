@@ -1,5 +1,13 @@
 import { css, Global } from '@emotion/core';
-import { Button as AntdButton, Drawer, message, Modal, Spin } from 'antd';
+import {
+  Button as AntdButton,
+  Drawer,
+  Dropdown,
+  Menu,
+  message,
+  Modal,
+  Spin,
+} from 'antd';
 import loadImage from 'blueimp-load-image';
 import classNames from 'classnames';
 import { useRef, useState } from 'react';
@@ -15,6 +23,8 @@ import {
 import { OutputList } from './OutputList';
 import { FileItem } from './FileItem';
 import { FileOrderEditor } from './FileOrderEditor';
+import { LabelSnapshotActions, SnapshotAction } from './LabelSnapshotActions';
+import { LabelCapabilities } from '@/apis/labelSnapshot';
 import { api, resultTypes } from '@/apis';
 import {
   FILE_NOT_EXIST_REASON,
@@ -62,6 +72,11 @@ export const FileList: FC<FileListProps> = ({
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const [orderEditing, setOrderEditing] = useState(false);
+  const [moreVisible, setMoreVisible] = useState(false);
+  const [snapshotAction, setSnapshotAction] = useState<SnapshotAction>(null);
+  const [labelCapabilities, setLabelCapabilities] = useState<LabelCapabilities>(
+    { create: false, restore: false, clearProofread: false, merge: false },
+  );
   const [listMode] = useState<'image' | 'text'>('image');
   const [total, setTotal] = useState(0); // 元素总个数
   const runtimeConfig = useSelector(
@@ -426,28 +441,129 @@ export const FileList: FC<FileListProps> = ({
             ' - ' +
             target?.language.i18nName}
         </ToolbarButton>
-        {!readOnly && !orderEditing && aiEnabled && aiTranslateApi && (
-          <ToolbarButton
-            tooltipProps={{
-              overlay: formatMessage({ id: 'fileList.aiTranslate.buttonTip' }),
-            }}
-            icon="robot"
-            actionKey="ai"
-            description={formatMessage({
-              id: 'fileList.aiTranslate.buttonTip',
-            })}
-            onClick={() =>
-              aiTranslateApi.start({
-                onFileSaved(f2) {
-                  setItems((items) =>
-                    items.map((f) => (f.id === f2.id ? f2 : f)),
-                  );
-                },
-              })
+        {!readOnly && !orderEditing && (
+          <Dropdown
+            visible={moreVisible}
+            onVisibleChange={setMoreVisible}
+            trigger={[]}
+            overlay={
+              <Menu onClick={() => setMoreVisible(false)}>
+                {project.canOrderFiles && (
+                  <Menu.Item
+                    key="order"
+                    disabled={
+                      loading ||
+                      spinningIDs.length > 0 ||
+                      items.some((file) => file.uploadState === 'uploading')
+                    }
+                    onClick={() => setOrderEditing(true)}
+                  >
+                    {formatMessage({ id: 'fileList.order.edit' })}
+                  </Menu.Item>
+                )}
+                {can(project, PROJECT_PERMISSION.CHANGE) && (
+                  <Menu.Item
+                    key="thumbnails"
+                    onClick={() => {
+                      Modal.confirm({
+                        title: formatMessage({
+                          id: 'fileList.regenerateThumbnails.title',
+                        }),
+                        content: formatMessage({
+                          id: 'fileList.regenerateThumbnails.content',
+                        }),
+                        onOk: () =>
+                          api.file
+                            .regenerateThumbnails({ projectID: project.id })
+                            .then((result) => {
+                              message.success(result.data.message);
+                            })
+                            .catch((error) => {
+                              error.default();
+                            }),
+                        okText: formatMessage({ id: 'form.ok' }),
+                        cancelText: formatMessage({ id: 'form.cancel' }),
+                      });
+                    }}
+                  >
+                    {formatMessage({
+                      id: 'fileList.regenerateThumbnails.buttonText',
+                    })}
+                  </Menu.Item>
+                )}
+                {aiEnabled && aiTranslateApi && (
+                  <Menu.Item
+                    key="ai"
+                    onClick={() =>
+                      aiTranslateApi.start({
+                        onFileSaved(f2) {
+                          setItems((old) =>
+                            old.map((file) => (file.id === f2.id ? f2 : file)),
+                          );
+                        },
+                      })
+                    }
+                  >
+                    {formatMessage({ id: 'fileList.aiTranslate.buttonText' })}
+                  </Menu.Item>
+                )}
+                {(labelCapabilities.create ||
+                  labelCapabilities.restore ||
+                  labelCapabilities.clearProofread ||
+                  labelCapabilities.merge) && <Menu.Divider />}
+                {labelCapabilities.create && (
+                  <Menu.Item
+                    key="create"
+                    onClick={() => setSnapshotAction('create')}
+                  >
+                    {formatMessage({
+                      id: 'labelSnapshot.create',
+                      defaultMessage: '建立快照',
+                    })}
+                  </Menu.Item>
+                )}
+                {(labelCapabilities.restore ||
+                  labelCapabilities.clearProofread) && (
+                  <Menu.Item
+                    key="restore"
+                    onClick={() => setSnapshotAction('restore')}
+                  >
+                    {formatMessage({
+                      id: 'labelSnapshot.restore',
+                      defaultMessage: '读取快照',
+                    })}
+                  </Menu.Item>
+                )}
+                {labelCapabilities.merge && (
+                  <Menu.Item
+                    key="merge"
+                    disabled={!target}
+                    onClick={() => setSnapshotAction('merge')}
+                  >
+                    {formatMessage({
+                      id: 'labelSnapshot.merge',
+                      defaultMessage: '合并到翻译',
+                    })}
+                  </Menu.Item>
+                )}
+              </Menu>
             }
           >
-            {formatMessage({ id: 'fileList.aiTranslate.buttonText' })}
-          </ToolbarButton>
+            <ToolbarButton
+              icon="ellipsis-h"
+              actionKey="more"
+              description={formatMessage({
+                id: 'labelSnapshot.more',
+                defaultMessage: '更多',
+              })}
+              onClick={() => setMoreVisible(!moreVisible)}
+            >
+              {formatMessage({
+                id: 'labelSnapshot.more',
+                defaultMessage: '更多',
+              })}
+            </ToolbarButton>
+          </Dropdown>
         )}
         {!readOnly &&
           !orderEditing &&
@@ -476,63 +592,17 @@ export const FileList: FC<FileListProps> = ({
               {formatMessage({ id: 'site.upload' })}
             </ToolbarButton>
           )}
-        {!readOnly &&
-          !orderEditing &&
-          can(project, PROJECT_PERMISSION.CHANGE) && (
-            <ToolbarButton
-              icon="image"
-              actionKey="thumbnails"
-              description={formatMessage({
-                id: 'fileList.regenerateThumbnails.buttonText',
-              })}
-              onClick={() => {
-                Modal.confirm({
-                  title: formatMessage({
-                    id: 'fileList.regenerateThumbnails.title',
-                  }),
-                  content: formatMessage({
-                    id: 'fileList.regenerateThumbnails.content',
-                  }),
-                  onOk: () => {
-                    api.file
-                      .regenerateThumbnails({
-                        projectID: project.id,
-                      })
-                      .then((result) => {
-                        message.success(result.data.message);
-                      })
-                      .catch((error) => {
-                        error.default();
-                      });
-                  },
-                  onCancel: () => {},
-                  okText: formatMessage({ id: 'form.ok' }),
-                  cancelText: formatMessage({ id: 'form.cancel' }),
-                });
-              }}
-            >
-              {formatMessage({
-                id: 'fileList.regenerateThumbnails.buttonText',
-              })}
-            </ToolbarButton>
-          )}
-        {!readOnly && !orderEditing && project.canOrderFiles && (
-          <ToolbarButton
-            elem="button"
-            icon="arrows-alt-v"
-            actionKey="order"
-            description={formatMessage({ id: 'fileList.order.edit' })}
-            disabled={
-              loading ||
-              spinningIDs.length > 0 ||
-              items.some((file) => file.uploadState === 'uploading')
-            }
-            onClick={() => setOrderEditing(true)}
-          >
-            {formatMessage({ id: 'fileList.order.edit' })}
-          </ToolbarButton>
-        )}
       </ResponsiveToolbar>
+      {!readOnly && (
+        <LabelSnapshotActions
+          projectId={project.id}
+          targetId={target?.id}
+          languageName={target?.language.i18nName || ''}
+          action={snapshotAction}
+          onClose={() => setSnapshotAction(null)}
+          onCapabilities={setLabelCapabilities}
+        />
+      )}
       {orderEditing && (
         <FileOrderEditor
           key={project.id}

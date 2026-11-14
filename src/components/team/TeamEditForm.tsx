@@ -1,5 +1,5 @@
 import { css } from '@emotion/core';
-import { Button, Form as AntdForm, Input, InputNumber, message } from 'antd';
+import { Button, Form as AntdForm, Input, InputNumber, message, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
@@ -33,6 +33,8 @@ export const TeamEditForm: FC<TeamEditFormProps> = ({ className }) => {
   const [isAllowApply, setIsAllowApply] = useState(
     currentTeam.allowApplyType !== GROUP_ALLOW_APPLY_TYPE.NONE,
   );
+  // 只有团队创建者可以维护项目名称黑名单。
+  const isCreator = (currentTeam as any).baseTag === 'creator';
 
   // id 改变时，获取初始值
   useEffect(() => {
@@ -67,6 +69,27 @@ export const TeamEditForm: FC<TeamEditFormProps> = ({ className }) => {
     if (!Number.isInteger(num) || num === 0) {
       return Promise.reject(
         new Error(formatMessage({ id: 'site.staffListPageInvalid' })),
+      );
+    }
+    return Promise.resolve();
+  };
+
+  /** 项目名称黑名单：最多 100 项，每项不超过 50 个字符。 */
+  const validateProjectNameBlocklist = (
+    _: any,
+    value: string[] | undefined,
+  ) => {
+    if (!value || value.length === 0) {
+      return Promise.resolve();
+    }
+    if (value.length > 100) {
+      return Promise.reject(
+        new Error(formatMessage({ id: 'site.projectNameBlocklistTooMany' })),
+      );
+    }
+    if (value.some((word) => word.length > 50)) {
+      return Promise.reject(
+        new Error(formatMessage({ id: 'site.projectNameBlocklistTooLong' })),
       );
     }
     return Promise.resolve();
@@ -166,6 +189,24 @@ export const TeamEditForm: FC<TeamEditFormProps> = ({ className }) => {
             placeholder={formatMessage({ id: 'site.staffListPagePlaceholder' })}
             style={{ width: '100%' }}
             disabled={!can(currentTeam, TEAM_PERMISSION.CHANGE)}
+          />
+        </FormItem>
+        <FormItem
+          name="projectNameBlocklist"
+          label={formatMessage({ id: 'site.projectNameBlocklistLabel' })}
+          extra={formatMessage({ id: 'site.projectNameBlocklistTip' })}
+          rules={[{ validator: validateProjectNameBlocklist }]}
+        >
+          <Select
+            mode="tags"
+            tokenSeparators={[',', '，']}
+            placeholder={formatMessage({
+              id: 'site.projectNameBlocklistPlaceholder',
+            })}
+            style={{ width: '100%' }}
+            disabled={
+              !can(currentTeam, TEAM_PERMISSION.CHANGE) || !isCreator
+            }
           />
         </FormItem>
         {/* Preserve the legacy field for the current PUT contract without

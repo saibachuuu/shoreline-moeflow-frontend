@@ -1,5 +1,116 @@
 # source of truth of UI translations.
 # other JSON files are generated from this.
+labelSnapshot.more:
+  zhCn: 更多
+  en: More
+labelSnapshot.create:
+  zhCn: 建立快照
+  en: Create Snapshot
+labelSnapshot.restore:
+  zhCn: 读取快照
+  en: Load Snapshot
+labelSnapshot.merge:
+  zhCn: 合并到翻译
+  en: Merge into Translations
+labelSnapshot.created:
+  zhCn: 快照已建立
+  en: Snapshot created
+labelSnapshot.confirm:
+  zhCn: 确认建立保护快照并执行？
+  en: Create a protection snapshot and continue?
+labelSnapshot.deleteWarning:
+  zhCn: 将完全删除项目标签，包括其他语言的翻译、校对和批注。执行前自动建立全量快照；未提交修改不会保存。
+  en: All project labels, translations in other languages, proofreading and comments will be deleted. A full snapshot is created first. Unsaved changes are not included.
+labelSnapshot.overwriteWarning:
+  zhCn: 将覆盖或清空对应标签数据。执行前自动建立项目全量快照；未提交修改不会保存，其他编辑页面需要重新打开。
+  en: The corresponding label data will be overwritten or cleared. A full project snapshot is created first. Unsaved changes are not included; other editors must be reopened.
+labelSnapshot.execute:
+  zhCn: 建立快照并执行
+  en: Create Snapshot and Execute
+labelSnapshot.continue:
+  zhCn: 继续
+  en: Continue
+labelSnapshot.recoveryRequired:
+  zhCn: 上次标签操作未完成，需要恢复保护快照
+  en: The previous label operation did not finish. Restore its protection snapshot.
+labelSnapshot.recover:
+  zhCn: 恢复保护快照
+  en: Restore Protection Snapshot
+labelSnapshot.scope:
+  zhCn: 保存项目全部标签、所有语言和作者的翻译、校对、选定状态及批注（含历史文件修订）；不备份图片和导出文件。
+  en: Save all labels, translations by all authors in every language, proofreading, selections and comments, including historical file revisions. Images and exported files are not backed up.
+labelSnapshot.name:
+  zhCn: 快照名称（可选）
+  en: Snapshot name (optional)
+labelSnapshot.empty:
+  zhCn: 空存档（按栏位清空）
+  en: Empty Snapshot (clear selected fields)
+labelSnapshot.nameColumn:
+  zhCn: 名称
+  en: Name
+labelSnapshot.creator:
+  zhCn: 建立者
+  en: Created By
+labelSnapshot.createdAt:
+  zhCn: 建立时间
+  en: Created At
+labelSnapshot.labelCount:
+  zhCn: 标签数
+  en: Labels
+labelSnapshot.source:
+  zhCn: 清空原文（连带翻译和校对）
+  en: Clear source text (and translations and proofreading)
+labelSnapshot.translation:
+  zhCn: 清空翻译（所有人的翻译和校对）
+  en: Clear translations (all authors and proofreading)
+labelSnapshot.proofread:
+  zhCn: 清空校对（保留选定状态）
+  en: Clear proofreading (keep selections)
+labelSnapshot.deleteLabels:
+  zhCn: 完全删除标签
+  en: Delete Labels Completely
+labelSnapshot.hasSource:
+  zhCn: 原文字段有内容，不能删除标签
+  en: Source text is present; labels cannot be deleted
+labelSnapshot.clearTips:
+  zhCn: 清除批注
+  en: Clear Comments
+labelSnapshot.crossLanguage:
+  zhCn: 标签共用于所有语言，完全删除会连带删除其他语言的数据。
+  en: Labels are shared across languages. Deleting them also deletes data in other languages.
+labelSnapshot.restoreScope:
+  zhCn: 完整覆盖项目所有语言的标签数据。新增文件的标签也会被清空，但不会删除文件；快照关联文件或语言被删除、替换时拒绝恢复。
+  en: Replace label data in every project language. Labels on new files are also cleared, but files are kept. Restoration is refused if referenced files or languages were deleted or replaced.
+labelSnapshot.mergeScope:
+  zhCn: 仅合并当前项目当前语言；自动建立全量快照，随后清空该语言全部校对栏，保留批注。
+  en: Merge only the current language in this project. Create a full snapshot first, then clear proofreading in this language while keeping comments.
+labelSnapshot.nothing:
+  zhCn: 当前语言没有校对记录
+  en: No proofreading records in this language
+labelSnapshot.chooseVersion:
+  zhCn: 请选择保留的校对内容
+  en: Choose the proofreading content to keep
+labelSnapshot.chooseSelected:
+  zhCn: 多位校对者的翻译都会保留，请选择最终选定者
+  en: Keep translations by every proofreader; choose the final selected author
+labelSnapshot.ready:
+  zhCn: 冲突已解决，可以建立快照并执行合并
+  en: Conflicts resolved. Create a snapshot and execute the merge.
+storagePool.cancelQueue:
+  zhCn: 删除队列
+  en: Remove from Queue
+storagePool.cancelQueueConfirm:
+  zhCn: 删除这个尚未开始的排队任务？
+  en: Remove this task before it starts?
+storagePool.deleteRecord:
+  zhCn: 删除记录
+  en: Delete Record
+storagePool.deleteRecordConfirm:
+  zhCn: 只删除迁移历史记录，不删除存储对象？
+  en: Delete only the migration record and keep stored objects?
+storagePool.skipped:
+  zhCn: 已跳过
+  en: Skipped
 imageTranslator.imageViewerZoomPanel.back:
   zhCn: 返回
   en: Back
@@ -367,6 +478,21 @@ site.staffListPagePlaceholder:
 site.staffListPageInvalid:
   zhCn: 请输入非零整数（如 1 或 -1）
   en: Please enter a non-zero integer (e.g. 1 or -1)
+site.projectNameBlocklistLabel:
+  zhCn: 项目名称黑名单
+  en: Project name blocklist
+site.projectNameBlocklistTip:
+  zhCn: 团队成员创建项目时，名称若包含列表中的任一词（不区分大小写）会被拒绝；只有团队创建者可以修改
+  en: When a teammate creates a project, the name is rejected if it contains any of these words (case-insensitive). Only the team creator can change this list
+site.projectNameBlocklistPlaceholder:
+  zhCn: 输入词语后按回车，可用逗号分隔
+  en: Type a word and press Enter; commas also separate
+site.projectNameBlocklistTooMany:
+  zhCn: 最多只能添加 100 个词
+  en: At most 100 words are allowed
+site.projectNameBlocklistTooLong:
+  zhCn: 每个词不能超过 50 个字符
+  en: Each word must be at most 50 characters
 site.defaultRoleLabel:
   zhCn: 加入后默认角色
   en: Default Role After Joining

@@ -100,6 +100,8 @@ interface EditTeamData {
   proofreadMarkerOpacity?: number;
   /** 团队内项目默认的导出人员名单植入页序号（非零整数；null 表示未设置）。 */
   staffListPage?: number | null;
+  /** 项目名称黑名单：成员创建项目时命中任一词即被拒绝（仅团队创建者可改）。 */
+  projectNameBlocklist?: string[];
   /** 画廊归档导入的第三方档案 API key 列表：含 id 的项保留/更新，含 key 的项新增，未引用的旧 id 被删除。 */
   archiveApiKeys?: { id?: string; key?: string; remark?: string; enabled?: boolean }[];
   /** 画廊归档导入的第三方档案 API 基址（空字符串 = 使用系统默认）。 */
