@@ -478,6 +478,21 @@ site.staffListPagePlaceholder:
 site.staffListPageInvalid:
   zhCn: 请输入非零整数（如 1 或 -1）
   en: Please enter a non-zero integer (e.g. 1 or -1)
+site.projectNameBlocklistLabel:
+  zhCn: 项目名称黑名单
+  en: Project name blocklist
+site.projectNameBlocklistTip:
+  zhCn: 团队成员创建项目时，名称若包含列表中的任一词（不区分大小写）会被拒绝；只有团队创建者可以修改
+  en: When a teammate creates a project, the name is rejected if it contains any of these words (case-insensitive). Only the team creator can change this list
+site.projectNameBlocklistPlaceholder:
+  zhCn: 输入词语后按回车，可用逗号分隔
+  en: Type a word and press Enter; commas also separate
+site.projectNameBlocklistTooMany:
+  zhCn: 最多只能添加 100 个词
+  en: At most 100 words are allowed
+site.projectNameBlocklistTooLong:
+  zhCn: 每个词不能超过 50 个字符
+  en: Each word must be at most 50 characters
 site.defaultRoleLabel:
   zhCn: 加入后默认角色
   en: Default Role After Joining
